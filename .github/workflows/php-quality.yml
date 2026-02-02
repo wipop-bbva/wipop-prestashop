@@ -1,0 +1,64 @@
+name: PHP Quality
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: php-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  php-quality:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.2']
+    env:
+      CI: true
+      COMPOSER_CACHE_DIR: ${{ github.workspace }}/.composer-cache
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer
+
+      - name: Cache Composer + QA tooling
+        uses: actions/cache@v4
+        with:
+          path: |
+            .composer-cache
+            tools/vendor
+            wipop/.php-cs-fixer.cache
+          key: ${{ runner.os }}-php${{ matrix.php }}-tools-${{ hashFiles('wipop/composer.lock', 'wipop/composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-php${{ matrix.php }}-tools-
+            ${{ runner.os }}-php${{ matrix.php }}-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+        working-directory: wipop
+
+      - name: PHP lint
+        run: composer lint:php
+        working-directory: wipop
+
+      - name: PHP CS Fixer (dry-run)
+        run: composer lint:cs
+        working-directory: wipop
+
+      - name: PHPCS
+        run: composer lint:phpcs
+        working-directory: wipop
+
+      - name: PHPStan
+        run: composer lint:phpstan
+        working-directory: wipop
+

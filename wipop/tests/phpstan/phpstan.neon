@@ -1,0 +1,14 @@
+parameters:
+    level: 4
+    paths:
+        - %currentWorkingDirectory%
+    excludePaths:
+        analyse:
+            - %currentWorkingDirectory%/vendor/*
+            - %currentWorkingDirectory%/var/*
+    bootstrapFiles:
+        - %currentWorkingDirectory%/tests/phpstan/bootstrap.php
+    tmpDir: %currentWorkingDirectory%/var/phpstan
+    reportUnmatchedIgnoredErrors: true
+    treatPhpDocTypesAsCertain: true
+    checkImplicitMixed: true

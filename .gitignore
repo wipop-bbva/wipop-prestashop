@@ -1,0 +1,38 @@
+.env
+
+# Composer
+vendor/
+composer.lock
+wipop/vendor/
+wipop/composer.lock
+
+# QA tools
+.php-cs-fixer.cache
+wipop/.php-cs-fixer.cache
+.phpunit.cache/
+wipop/.phpunit.cache/
+var/
+wipop/var/
+
+# Node 
+node_modules/
+wipop/node_modules/
+
+# IDEs
+.idea/
+.vscode/
+
+# Local docker compose overrides
+docker-compose.local.yml
+prestashop-core/
+
+tools/vendor/
+
+TODO.md
+.devcontainer/devcontainer.json
+
+# GrumPHP
+.grumphp/
+
+WP/
+wipop.zip

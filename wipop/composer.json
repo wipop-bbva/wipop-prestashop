@@ -1,0 +1,52 @@
+{
+  "name": "wipop/prestashop-module",
+  "description": "Wipöp payment gateway module for PrestaShop.",
+  "type": "prestashop-module",
+  "license": "AFL-3.0",
+  "require": {
+    "php": ">=8.1"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "3.92.0",
+    "phpro/grumphp": "2.15",
+    "phpstan/phpstan": "2.1.33",
+    "prestashop/autoindex": "2.1.0",
+    "prestashop/header-stamp": "2.6.0",
+    "prestashop/php-dev-tools": "5.0",
+    "squizlabs/php_codesniffer": "4.0.1"
+  },
+  "scripts": {
+    "grumphp-init": [
+      "@php -r 'if (getenv(\"CI\")) { echo \"Skipping GrumPHP init on CI\".PHP_EOL; exit(0); } $bin = \"../tools/vendor/bin/grumphp\"; if (!file_exists($bin)) { echo \"Skipping GrumPHP init (binary missing)\".PHP_EOL; exit(0); } $cmd = escapeshellarg(PHP_BINARY) . \" \" . escapeshellarg($bin) . \" git:init\"; passthru($cmd, $exit); exit($exit);'"
+    ],
+    "post-install-cmd": [
+      "@grumphp-init"
+    ],
+    "post-update-cmd": [
+      "@grumphp-init"
+    ],
+    "cs-fixer:init": "php ../tools/vendor/bin/prestashop-coding-standards cs-fixer:init",
+    "phpstan:init": "php ../tools/vendor/bin/prestashop-coding-standards phpstan:init",
+    "lint:php": "php -l wipop.php",
+    "lint:cs": "php ../tools/vendor/bin/php-cs-fixer fix --dry-run --diff",
+    "lint:phpcs": "php ../tools/vendor/bin/phpcs -q --standard=phpcs.xml",
+    "fix:cs": "php ../tools/vendor/bin/php-cs-fixer fix",
+    "lint:phpstan": "@php -r 'echo \"Phpstan disabled\\n\";'",
+    "lint": [
+      "@lint:php",
+      "@lint:cs",
+      "@lint:phpcs",
+      "@lint:phpstan"
+    ],
+    "autoindex": "php ../tools/vendor/bin/autoindex prestashop:add:index .",
+    "header-stamp": "php ../tools/vendor/bin/header-stamp --license=assets/afl.txt --exclude=vendor,node_modules"
+  },
+  "config": {
+    "allow-plugins": {
+      "phpro/grumphp": true
+    },
+    "bin-dir": "../tools/vendor/bin",
+    "vendor-dir": "../tools/vendor",
+    "sort-packages": true
+  }
+}

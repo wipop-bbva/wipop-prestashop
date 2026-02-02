@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+  issues: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer
+
+      - name: Install PHP dependencies (no-dev)
+        run: composer install --no-interaction --no-progress --prefer-dist --no-dev --optimize-autoloader
+        working-directory: wipop
+
+      - name: Build module zip
+        run: |
+          command -v zip
+          zip -r wipop.zip wipop \
+            -x "wipop/vendor/bin/*" \
+            -x "wipop/node_modules/*" \
+            -x "wipop/tests/*" \
+            -x "wipop/var/*" \
+            -x "wipop/.php-cs-fixer.cache" \
+            -x "wipop/.phpunit.cache/*" \
+            -x "wipop/.grumphp/*" \
+            -x "wipop/dist/*"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          npx -y
+          -p semantic-release@24
+          -p @semantic-release/commit-analyzer@12
+          -p @semantic-release/release-notes-generator@13
+          -p @semantic-release/changelog@6
+          -p @semantic-release/git@10
+          -p @semantic-release/github@10
+          semantic-release

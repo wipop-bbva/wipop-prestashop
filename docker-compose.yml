@@ -1,0 +1,35 @@
+services:
+  mysql:
+    image: mysql:5.7
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: prestashop
+    volumes:
+      - prestashop-db:/var/lib/mysql
+    networks:
+      - prestashop_network
+  prestashop:
+    image: prestashop/prestashop:8.1
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    ports:
+      - 8081:80
+    environment:
+      DB_SERVER: mysql
+      DB_NAME: prestashop
+      DB_USER: root
+      DB_PASSWD: admin
+      PS_INSTALL_AUTO: 1
+      PS_DEV_MODE: 1
+      PS_DOMAIN: localhost:8081
+    volumes:
+      - ./wipop:/var/www/html/modules/wipop
+    networks:
+      - prestashop_network
+networks:
+    prestashop_network:
+
+volumes:
+  prestashop-db:

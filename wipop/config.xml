@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>wipop</name>
+	<displayName><![CDATA[Wipöp]]></displayName>
+	<version><![CDATA[0.1.0]]></version>
+	<description><![CDATA[PrestaShop module that integrates the Wipöp payment gateway, enabling your store to accept payments with card and Bizum.]]></description>
+	<author><![CDATA[BBVA]]></author>
+	<tab><![CDATA[payments_gateways]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+</module>
