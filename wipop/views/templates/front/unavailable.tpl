@@ -23,8 +23,16 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
-<div class="panel">
-	<h3><i class="icon icon-credit-card"></i> {l s='Wipöp' mod='wipop'}</h3>
-	<p>{l s='Configure your Wipöp credentials below.' mod='wipop'}</p>
-	<p class="text-muted">{l s='Tip: use Sandbox credentials for testing, and enable Live mode only when going to production.' mod='wipop'}</p>
-</div>
+<section class="wipop-unavailable">
+	<div class="card">
+		<div class="card-block">
+			<h1 class="h3">{$title|escape:'htmlall':'UTF-8'}</h1>
+			<p>{$message|escape:'htmlall':'UTF-8'}</p>
+			<p class="mt-3">
+				<a class="btn btn-primary" href="{$checkout_url|escape:'htmlall':'UTF-8'}">
+					{l s='Return to checkout' mod='wipop'}
+				</a>
+			</p>
+		</div>
+	</div>
+</section>

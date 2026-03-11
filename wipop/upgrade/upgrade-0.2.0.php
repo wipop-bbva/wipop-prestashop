@@ -24,12 +24,19 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
-header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
-header('Cache-Control: no-store, no-cache, must-revalidate');
-header('Cache-Control: post-check=0, pre-check=0', false);
-header('Pragma: no-cache');
+require_once dirname(__DIR__) . '/autoload.php';
 
-header('Location: ../');
-exit;
+use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
+use PrestaShop\Module\Wipop\Install\ModuleInstaller;
+
+function upgrade_module_0_2_0($module)
+{
+    $installer = new ModuleInstaller(new SettingsRepository());
+
+    return $installer->installSettings()
+        && $installer->installTables();
+}
