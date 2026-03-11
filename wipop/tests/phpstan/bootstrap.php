@@ -16,7 +16,7 @@ if (!defined('_PS_ROOT_DIR_')) {
 }
 
 if (!is_file($prestashopRoot . '/config/settings.inc.php')) {
-    fwrite(STDERR, "Invalid _PS_ROOT_DIR_: cannot find");
+    fwrite(STDERR, 'Invalid _PS_ROOT_DIR_: cannot find');
     exit(1);
 }
 
@@ -31,3 +31,5 @@ foreach ($files as $file) {
         require_once $file;
     }
 }
+
+require_once dirname(__DIR__, 2) . '/autoload.php';

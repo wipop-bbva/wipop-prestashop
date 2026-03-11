@@ -6,6 +6,11 @@
   "require": {
     "php": ">=8.1"
   },
+  "autoload": {
+    "psr-4": {
+      "PrestaShop\\Module\\Wipop\\": "src/"
+    }
+  },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "3.92.0",
     "phpro/grumphp": "2.15",
@@ -27,11 +32,11 @@
     ],
     "cs-fixer:init": "php ../tools/vendor/bin/prestashop-coding-standards cs-fixer:init",
     "phpstan:init": "php ../tools/vendor/bin/prestashop-coding-standards phpstan:init",
-    "lint:php": "php -l wipop.php",
+    "lint:php": "find . -type f -name '*.php' -not -path './var/*' -not -path './dist/*' -print0 | xargs -0 -n1 php -l",
     "lint:cs": "php ../tools/vendor/bin/php-cs-fixer fix --dry-run --diff",
     "lint:phpcs": "php ../tools/vendor/bin/phpcs -q --standard=phpcs.xml",
     "fix:cs": "php ../tools/vendor/bin/php-cs-fixer fix",
-    "lint:phpstan": "@php -r 'echo \"Phpstan disabled\\n\";'",
+    "lint:phpstan": "_PS_ROOT_DIR_=../prestashop-core php ../tools/vendor/bin/phpstan --configuration=tests/phpstan/phpstan.neon analyse .",
     "lint": [
       "@lint:php",
       "@lint:cs",

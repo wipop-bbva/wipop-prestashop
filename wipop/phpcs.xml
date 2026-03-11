@@ -5,15 +5,37 @@
   <arg name="basepath" value="."/>
   <arg name="colors"/>
 
+  <file>autoload.php</file>
+  <file>src</file>
   <file>wipop.php</file>
   <file>controllers</file>
-  <file>sql</file>
   <file>upgrade</file>
   <file>tests</file>
 
+  <exclude-pattern>dist/*</exclude-pattern>
   <exclude-pattern>vendor/*</exclude-pattern>
   <exclude-pattern>var/*</exclude-pattern>
 
   <rule ref="PSR12"/>
-</ruleset>
 
+  <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
+    <exclude-pattern>wipop.php</exclude-pattern>
+    <exclude-pattern>controllers/*</exclude-pattern>
+    <exclude-pattern>upgrade/*</exclude-pattern>
+  </rule>
+
+  <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+    <exclude-pattern>autoload.php</exclude-pattern>
+    <exclude-pattern>controllers/*</exclude-pattern>
+    <exclude-pattern>wipop.php</exclude-pattern>
+    <exclude-pattern>upgrade/*</exclude-pattern>
+    <exclude-pattern>tests/phpstan/bootstrap.php</exclude-pattern>
+  </rule>
+
+  <rule ref="PSR12.Files.FileHeader.SpacingAfterDocblockBlock">
+    <exclude-pattern>autoload.php</exclude-pattern>
+    <exclude-pattern>controllers/*</exclude-pattern>
+    <exclude-pattern>wipop.php</exclude-pattern>
+    <exclude-pattern>upgrade/*</exclude-pattern>
+  </rule>
+</ruleset>

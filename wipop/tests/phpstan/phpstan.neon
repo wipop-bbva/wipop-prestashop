@@ -1,7 +1,13 @@
 parameters:
     level: 4
+    parallel:
+        maximumNumberOfProcesses: 1
     paths:
-        - %currentWorkingDirectory%
+        - %currentWorkingDirectory%/autoload.php
+        - %currentWorkingDirectory%/controllers
+        - %currentWorkingDirectory%/src
+        - %currentWorkingDirectory%/upgrade
+        - %currentWorkingDirectory%/wipop.php
     excludePaths:
         analyse:
             - %currentWorkingDirectory%/vendor/*
