@@ -24,6 +24,12 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
+$composerAutoloadFile = __DIR__ . '/vendor/autoload.php';
+
+if (is_file($composerAutoloadFile)) {
+    require_once $composerAutoloadFile;
+}
+
 spl_autoload_register(static function ($class): void {
     $prefix = 'PrestaShop\\Module\\Wipop\\';
     $prefixLength = strlen($prefix);
