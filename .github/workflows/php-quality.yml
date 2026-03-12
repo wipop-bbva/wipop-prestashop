@@ -35,7 +35,7 @@ jobs:
         with:
           path: |
             .composer-cache
-            wipop/vendor
+            tools/vendor
             wipop/.php-cs-fixer.cache
           key: ${{ runner.os }}-php${{ matrix.php }}-tools-${{ hashFiles('wipop/composer.lock', 'wipop/composer.json') }}
           restore-keys: |
