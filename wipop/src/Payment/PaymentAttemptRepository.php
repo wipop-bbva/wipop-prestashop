@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Payment;
 
-use PrestaShop\Module\Wipop\Checkout\PaymentMethod;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 
 final class PaymentAttemptRepository
@@ -20,7 +19,7 @@ final class PaymentAttemptRepository
 
     public function createForCart(
         \Cart $cart,
-        PaymentMethod $paymentMethod,
+        string $paymentMethod,
         Settings $settings,
         string $wipopOrderId,
     ): int {
@@ -31,7 +30,7 @@ final class PaymentAttemptRepository
             'id_cart' => (int) $cart->id,
             'id_shop' => (int) $cart->id_shop,
             'wipop_order_id' => pSQL($wipopOrderId),
-            'payment_method' => pSQL($paymentMethod->value),
+            'payment_method' => pSQL($paymentMethod),
             'status' => pSQL(PaymentAttemptStatus::INITIALIZED->value),
             'amount' => (float) $cart->getOrderTotal(true, \Cart::BOTH),
             'currency_iso' => pSQL((string) $currency->iso_code),

@@ -6,11 +6,22 @@ namespace PrestaShop\Module\Wipop\Checkout;
 
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use Wipop\Domain\ChargeMethod;
 
 final class PaymentOptionFactory
 {
+    private const CHARGE_METHODS = [
+        ChargeMethod::CARD,
+        ChargeMethod::BIZUM,
+    ]; // add GOOGLE_PAY when available
+
     public function __construct(private SettingsRepository $settingsRepository)
     {
+    }
+
+    public static function supportsChargeMethod(string $method): bool
+    {
+        return in_array($method, self::CHARGE_METHODS, true);
     }
 
     /**
@@ -32,32 +43,34 @@ final class PaymentOptionFactory
 
         $options = [];
 
-        foreach (PaymentMethod::checkoutMethods() as $method) {
+        foreach (self::CHARGE_METHODS as $method) {
             $options[] = $this->buildOption($module, $method);
         }
 
         return $options;
     }
 
-    private function buildOption(\Wipop $module, PaymentMethod $method): PaymentOption
+    private function buildOption(\Wipop $module, string $method): PaymentOption
     {
         $option = new PaymentOption();
         $option->setCallToActionText($this->label($module, $method))
             ->setAction(\Context::getContext()->link->getModuleLink(
                 $module->name,
                 'start',
-                ['method' => $method->value],
+                ['method' => $method],
                 true
             ));
 
         return $option;
     }
 
-    private function label(\Wipop $module, PaymentMethod $method): string
+    private function label(\Wipop $module, string $method): string
     {
         return match ($method) {
-            PaymentMethod::CARD => $module->l('Pay by card with Wipöp'),
-            PaymentMethod::BIZUM => $module->l('Pay with Bizum via Wipöp'),
+            ChargeMethod::CARD => $module->l('Pay by card with Wipöp'),
+            ChargeMethod::BIZUM => $module->l('Pay with Bizum via Wipöp'),
+            ChargeMethod::GOOGLE_PAY => $module->l('Pay with Google Pay via Wipöp'),
+            default => $module->l('Pay with Wipöp'),
         };
     }
 

@@ -28,7 +28,7 @@
 require_once dirname(__DIR__, 2) . '/autoload.php';
 
 use PrestaShop\Module\Wipop\Checkout\CartOrderIdFactory;
-use PrestaShop\Module\Wipop\Checkout\PaymentMethod;
+use PrestaShop\Module\Wipop\Checkout\PaymentOptionFactory;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
@@ -39,8 +39,8 @@ class WipopStartModuleFrontController extends ModuleFrontController
     {
         parent::initContent();
 
-        $paymentMethod = PaymentMethod::tryFrom((string) Tools::getValue('method'));
-        if ($paymentMethod === null) {
+        $paymentMethod = trim((string) Tools::getValue('method'));
+        if (!PaymentOptionFactory::supportsChargeMethod($paymentMethod)) {
             $this->logger()->warning('Unsupported payment method received on start controller.');
             $this->renderUnavailable($this->module->l('Unsupported Wipöp payment method.'));
 
@@ -50,7 +50,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
         $settings = $this->settingsRepository()->get();
         if (!$settings->isConfigured()) {
             $this->logger()->warning('Wipöp start controller reached without complete credentials.', [
-                'payment_method' => $paymentMethod->value,
+                'payment_method' => $paymentMethod,
             ]);
             $this->renderUnavailable($this->module->l('Configuration required.'));
 
@@ -59,7 +59,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
 
         if (!Validate::isLoadedObject($this->context->cart) || (int) $this->context->cart->id <= 0) {
             $this->logger()->error('Wipöp start controller reached without cart.', [
-                'payment_method' => $paymentMethod->value,
+                'payment_method' => $paymentMethod,
             ]);
             $this->renderUnavailable($this->module->l('A valid cart is required.'));
 
@@ -77,7 +77,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
         $this->logger()->info('Wipöp payment attempt init.', [
             'attempt_id' => $attemptId,
             'cart_id' => (int) $this->context->cart->id,
-            'payment_method' => $paymentMethod->value,
+            'payment_method' => $paymentMethod,
             'wipop_order_id' => $wipopOrderId,
         ]);
 
