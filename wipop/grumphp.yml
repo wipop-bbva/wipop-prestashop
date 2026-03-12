@@ -1,6 +1,6 @@
 parameters:
   git_dir: ..
-  bin_dir: ../tools/vendor/bin
+  bin_dir: vendor/bin
   process_timeout: 600
   tasks:
     phpcsfixer:

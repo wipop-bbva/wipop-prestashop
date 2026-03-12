@@ -23,7 +23,7 @@
   },
   "scripts": {
     "grumphp-init": [
-      "@php -r 'if (getenv(\"CI\")) { echo \"Skipping GrumPHP init on CI\".PHP_EOL; exit(0); } $bin = \"../tools/vendor/bin/grumphp\"; if (!file_exists($bin)) { echo \"Skipping GrumPHP init (binary missing)\".PHP_EOL; exit(0); } $cmd = escapeshellarg(PHP_BINARY) . \" \" . escapeshellarg($bin) . \" git:init\"; passthru($cmd, $exit); exit($exit);'"
+      "@php -r 'if (getenv(\"CI\")) { echo \"Skipping GrumPHP init on CI\".PHP_EOL; exit(0); } $bin = \"vendor/bin/grumphp\"; if (!file_exists($bin)) { echo \"Skipping GrumPHP init (binary missing)\".PHP_EOL; exit(0); } $cmd = escapeshellarg(PHP_BINARY) . \" \" . escapeshellarg($bin) . \" git:init\"; passthru($cmd, $exit); exit($exit);'"
     ],
     "post-install-cmd": [
       "@grumphp-init"
@@ -31,28 +31,26 @@
     "post-update-cmd": [
       "@grumphp-init"
     ],
-    "cs-fixer:init": "php ../tools/vendor/bin/prestashop-coding-standards cs-fixer:init",
-    "phpstan:init": "php ../tools/vendor/bin/prestashop-coding-standards phpstan:init",
-    "lint:php": "find . -type f -name '*.php' -not -path './var/*' -not -path './dist/*' -print0 | xargs -0 -n1 php -l",
-    "lint:cs": "php ../tools/vendor/bin/php-cs-fixer fix --dry-run --diff",
-    "lint:phpcs": "php ../tools/vendor/bin/phpcs -q --standard=phpcs.xml",
-    "fix:cs": "php ../tools/vendor/bin/php-cs-fixer fix",
-    "lint:phpstan": "_PS_ROOT_DIR_=../prestashop-core php ../tools/vendor/bin/phpstan --configuration=tests/phpstan/phpstan.neon analyse .",
+    "cs-fixer:init": "php vendor/bin/prestashop-coding-standards cs-fixer:init",
+    "phpstan:init": "php vendor/bin/prestashop-coding-standards phpstan:init",
+    "lint:php": "find . -type f -name '*.php' -not -path './var/*' -not -path './dist/*' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l",
+    "lint:cs": "php vendor/bin/php-cs-fixer fix --dry-run --diff",
+    "lint:phpcs": "php vendor/bin/phpcs -q --standard=phpcs.xml",
+    "fix:cs": "php vendor/bin/php-cs-fixer fix",
+    "lint:phpstan": "_PS_ROOT_DIR_=../prestashop-core php vendor/bin/phpstan --configuration=tests/phpstan/phpstan.neon analyse .",
     "lint": [
       "@lint:php",
       "@lint:cs",
       "@lint:phpcs",
       "@lint:phpstan"
     ],
-    "autoindex": "php ../tools/vendor/bin/autoindex prestashop:add:index .",
-    "header-stamp": "php ../tools/vendor/bin/header-stamp --license=assets/afl.txt --exclude=vendor,node_modules"
+    "autoindex": "php vendor/bin/autoindex prestashop:add:index .",
+    "header-stamp": "php vendor/bin/header-stamp --license=assets/afl.txt --exclude=vendor,node_modules"
   },
   "config": {
     "allow-plugins": {
       "phpro/grumphp": true
     },
-    "bin-dir": "../tools/vendor/bin",
-    "vendor-dir": "../tools/vendor",
     "sort-packages": true
   }
 }

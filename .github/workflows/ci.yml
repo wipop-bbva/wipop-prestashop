@@ -32,7 +32,7 @@ jobs:
         with:
           path: |
             .composer-cache
-            tools/vendor
+            wipop/vendor
           key: ${{ runner.os }}-php8.1-tools-${{ hashFiles('wipop/composer.lock', 'wipop/composer.json') }}
           restore-keys: |
             ${{ runner.os }}-php8.1-tools-
@@ -68,7 +68,7 @@ jobs:
         with:
           path: |
             .composer-cache
-            tools/vendor
+            wipop/vendor
           key: ${{ runner.os }}-php8.1-tools-${{ hashFiles('wipop/composer.lock', 'wipop/composer.json') }}
           restore-keys: |
             ${{ runner.os }}-php8.1-tools-
