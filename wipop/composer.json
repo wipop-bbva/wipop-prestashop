@@ -4,7 +4,8 @@
   "type": "prestashop-module",
   "license": "AFL-3.0",
   "require": {
-    "php": ">=8.1"
+    "php": ">=8.1",
+    "wipop-bbva/wipop-php-client": "^0.8.2"
   },
   "autoload": {
     "psr-4": {
