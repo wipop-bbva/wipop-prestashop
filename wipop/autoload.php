@@ -24,12 +24,25 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
-header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+$composerAutoloadFile = __DIR__ . '/vendor/autoload.php';
 
-header('Cache-Control: no-store, no-cache, must-revalidate');
-header('Cache-Control: post-check=0, pre-check=0', false);
-header('Pragma: no-cache');
+if (is_file($composerAutoloadFile)) {
+    require_once $composerAutoloadFile;
+}
 
-header('Location: ../');
-exit;
+spl_autoload_register(static function ($class): void {
+    $prefix = 'PrestaShop\\Module\\Wipop\\';
+    $prefixLength = strlen($prefix);
+
+    if (strncmp($class, $prefix, $prefixLength) !== 0) {
+        return;
+    }
+
+    $relativeClass = substr($class, $prefixLength);
+    $relativePath = str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass) . '.php';
+    $file = __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . $relativePath;
+
+    if (is_file($file)) {
+        require_once $file;
+    }
+});

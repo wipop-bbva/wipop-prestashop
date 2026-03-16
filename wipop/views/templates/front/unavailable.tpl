@@ -1,4 +1,4 @@
-/**
+{*
 * 2007-2025 PrestaShop
 *
 * NOTICE OF LICENSE
@@ -21,7 +21,18 @@
 *  @copyright 2007-2025 PrestaShop SA
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
-*
-* Don't forget to prefix your containers with your own identifier
-* to avoid any conflicts with others containers.
-*/
+*}
+
+<section class="wipop-unavailable">
+	<div class="card">
+		<div class="card-block">
+			<h1 class="h3">{$title|escape:'htmlall':'UTF-8'}</h1>
+			<p>{$message|escape:'htmlall':'UTF-8'}</p>
+			<p class="mt-3">
+				<a class="btn btn-primary" href="{$checkout_url|escape:'htmlall':'UTF-8'}">
+					{l s='Return to checkout' mod='wipop'}
+				</a>
+			</p>
+		</div>
+	</div>
+</section>

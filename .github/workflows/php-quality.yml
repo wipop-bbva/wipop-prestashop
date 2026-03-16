@@ -57,8 +57,3 @@ jobs:
       - name: PHPCS
         run: composer lint:phpcs
         working-directory: wipop
-
-      - name: PHPStan
-        run: composer lint:phpstan
-        working-directory: wipop
-

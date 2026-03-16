@@ -24,15 +24,19 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
-$sql = [];
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
-$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'wipop` (
-    `id_wipop` int(11) NOT NULL AUTO_INCREMENT,
-    PRIMARY KEY  (`id_wipop`)
-) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+require_once dirname(__DIR__) . '/autoload.php';
 
-foreach ($sql as $query) {
-    if (Db::getInstance()->execute($query) == false) {
-        return false;
-    }
+use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
+use PrestaShop\Module\Wipop\Install\ModuleInstaller;
+
+function upgrade_module_0_2_0($module)
+{
+    $installer = new ModuleInstaller(new SettingsRepository());
+
+    return $installer->installSettings()
+        && $installer->installTables();
 }

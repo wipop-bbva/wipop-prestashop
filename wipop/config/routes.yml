@@ -1,0 +1,5 @@
+wipop_configuration:
+  path: /wipop/configuration
+  methods: [GET, POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController::configurationAction

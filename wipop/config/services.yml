@@ -1,0 +1,15 @@
+services:
+  _defaults:
+    public: true
+
+  PrestaShop\Module\Wipop\Configuration\SettingsRepository: ~
+
+  PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController:
+    arguments:
+      $settingsRepository: '@PrestaShop\Module\Wipop\Configuration\SettingsRepository'
+
+  PrestaShop\Module\Wipop\Form\Type\SettingsType:
+    parent: 'form.type.translatable.aware'
+    public: true
+    tags:
+      - { name: form.type }
