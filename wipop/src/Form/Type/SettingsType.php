@@ -19,25 +19,25 @@ final class SettingsType extends TranslatorAwareType
     {
         $builder
             ->add('live_mode', SwitchType::class, [
-                'label' => $this->trans('Live mode', 'Modules.Wipop.Admin'),
+                'label' => $this->trans('Live mode', \Wipop::TRANSLATION_DOMAIN_ADMIN),
                 'required' => false,
             ])
             ->add('merchant_id', TextType::class, [
-                'label' => $this->trans('Merchant ID', 'Modules.Wipop.Admin'),
+                'label' => $this->trans('Merchant ID', \Wipop::TRANSLATION_DOMAIN_ADMIN),
                 'required' => false,
             ])
             ->add('secret_key', PasswordType::class, [
-                'label' => $this->trans('Secret key', 'Modules.Wipop.Admin'),
+                'label' => $this->trans('Secret key', \Wipop::TRANSLATION_DOMAIN_ADMIN),
                 'required' => false,
                 'empty_data' => '',
             ])
             ->add('public_secret_key', PasswordType::class, [
-                'label' => $this->trans('Public secret key', 'Modules.Wipop.Admin'),
+                'label' => $this->trans('Public secret key', \Wipop::TRANSLATION_DOMAIN_ADMIN),
                 'required' => false,
                 'empty_data' => '',
             ])
             ->add('terminal_id', IntegerType::class, [
-                'label' => $this->trans('Terminal ID', 'Modules.Wipop.Admin'),
+                'label' => $this->trans('Terminal ID', \Wipop::TRANSLATION_DOMAIN_ADMIN),
                 'required' => false,
                 'empty_data' => '',
                 'attr' => [

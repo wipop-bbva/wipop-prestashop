@@ -42,7 +42,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
         $paymentMethod = trim((string) Tools::getValue('method'));
         if (!PaymentOptionFactory::supportsChargeMethod($paymentMethod)) {
             $this->logger()->warning('Unsupported payment method received on start controller.');
-            $this->renderUnavailable($this->module->l('Unsupported Wipöp payment method.'));
+            $this->renderUnavailable($this->translateMessage('Unsupported Wipöp payment method.'));
 
             return;
         }
@@ -52,7 +52,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
             $this->logger()->warning('Wipöp start controller reached without complete credentials.', [
                 'payment_method' => $paymentMethod,
             ]);
-            $this->renderUnavailable($this->module->l('Configuration required.'));
+            $this->renderUnavailable($this->translateMessage('Configuration required.'));
 
             return;
         }
@@ -61,7 +61,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
             $this->logger()->error('Wipöp start controller reached without cart.', [
                 'payment_method' => $paymentMethod,
             ]);
-            $this->renderUnavailable($this->module->l('A valid cart is required.'));
+            $this->renderUnavailable($this->translateMessage('A valid cart is required.'));
 
             return;
         }
@@ -81,7 +81,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
             'wipop_order_id' => $wipopOrderId,
         ]);
 
-        $this->renderUnavailable($this->module->l('WIP.'));
+        $this->renderUnavailable($this->translateMessage('WIP.'));
     }
 
     private function renderUnavailable(string $message): void
@@ -89,7 +89,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign([
             'checkout_url' => $this->context->link->getPageLink('order', true, null, 'step=3'),
             'message' => $message,
-            'title' => $this->module->l('WIP'),
+            'title' => $this->translateMessage('WIP'),
         ]);
 
         $this->setTemplate('module:wipop/views/templates/front/unavailable.tpl');
@@ -103,5 +103,10 @@ class WipopStartModuleFrontController extends ModuleFrontController
     private function settingsRepository(): SettingsRepository
     {
         return new SettingsRepository();
+    }
+
+    private function translateMessage(string $message, array $parameters = []): string
+    {
+        return $this->module->trans($message, $parameters, Wipop::TRANSLATION_DOMAIN_SHOP);
     }
 }

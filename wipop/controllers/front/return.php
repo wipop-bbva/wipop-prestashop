@@ -47,8 +47,8 @@ class WipopReturnModuleFrontController extends ModuleFrontController
 
         $this->context->smarty->assign([
             'checkout_url' => $this->context->link->getPageLink('order', true, null, 'step=3'),
-            'message' => $this->module->l('Unavailable.'),
-            'title' => $this->module->l('Wipöp return'),
+            'message' => $this->translateMessage('Unavailable.'),
+            'title' => $this->translateMessage('Wipöp return'),
         ]);
 
         $this->setTemplate('module:wipop/views/templates/front/unavailable.tpl');
@@ -72,5 +72,10 @@ class WipopReturnModuleFrontController extends ModuleFrontController
         $cartId = (int) $this->context->cart->id;
 
         return $cartId > 0 ? $cartId : null;
+    }
+
+    private function translateMessage(string $message, array $parameters = []): string
+    {
+        return $this->module->trans($message, $parameters, Wipop::TRANSLATION_DOMAIN_SHOP);
     }
 }

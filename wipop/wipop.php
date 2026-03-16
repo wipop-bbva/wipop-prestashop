@@ -38,6 +38,10 @@ use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 class Wipop extends PaymentModule
 {
+    public const TRANSLATION_DOMAIN_ADMIN = 'Modules.Wipop.Admin';
+    public const TRANSLATION_DOMAIN_MAIN = 'Modules.Wipop.Wipop';
+    public const TRANSLATION_DOMAIN_SHOP = 'Modules.Wipop.Shop';
+
     public function __construct()
     {
         $this->name = 'wipop';
@@ -49,20 +53,35 @@ class Wipop extends PaymentModule
 
         parent::__construct();
 
-        $this->displayName = $this->l('Wipöp');
-        $this->description = $this->l(
-            'PrestaShop module that integrates the Wipöp payment gateway'
+        $this->displayName = $this->trans('Wipöp', [], self::TRANSLATION_DOMAIN_MAIN);
+        $this->description = $this->trans(
+            'PrestaShop module that integrates the Wipöp payment gateway',
+            [],
+            self::TRANSLATION_DOMAIN_MAIN
         );
 
-        $this->confirmUninstall = $this->l('Are you sure you want to uninstall Wipöp?');
+        $this->confirmUninstall = $this->trans(
+            'Are you sure you want to uninstall Wipöp?',
+            [],
+            self::TRANSLATION_DOMAIN_MAIN
+        );
 
         $this->ps_versions_compliancy = ['min' => '8.1.0', 'max' => '9.0.0'];
+    }
+
+    public function isUsingNewTranslationSystem(): bool
+    {
+        return true;
     }
 
     public function install()
     {
         if (extension_loaded('curl') == false) {
-            $this->_errors[] = $this->l('You have to enable the cURL extension on your server to install this module');
+            $this->_errors[] = $this->trans(
+                'You have to enable the cURL extension on your server to install this module',
+                [],
+                self::TRANSLATION_DOMAIN_MAIN
+            );
 
             return false;
         }
