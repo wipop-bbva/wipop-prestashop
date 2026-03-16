@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin" source-language="en-US" target-language="ca-ES" datatype="plaintext">
+    <body>
+      <trans-unit id="e6ef20d1b254c6b9681ff8e117482f63">
+        <source>Wipöp</source>
+        <target>Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cebd5bbe0ffdecc270a8a324e5a277dd">
+        <source>Live mode</source>
+        <target>Mode real</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="229a7ec501323b94db7ff3157a7623c9">
+        <source>Merchant ID</source>
+        <target>ID de comerç</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="952bf87c967660b7bbd4e1eb08cefc92">
+        <source>Secret key</source>
+        <target>Clau secreta</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f9cf8789f6151a8af67a593838125b0a">
+        <source>Public secret key</source>
+        <target>Clau secreta pública</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f642c37324f865b5d27bd38a831f1702">
+        <source>Terminal ID</source>
+        <target>ID del terminal</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="80964a30587af49027407cc4a6840bcf">
+        <source>Unable to save the Wipöp settings.</source>
+        <target>No s'ha pogut desar la configuració de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

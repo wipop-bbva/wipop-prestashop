@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin" source-language="en-US" target-language="gl-ES" datatype="plaintext">
+    <body>
+      <trans-unit id="e6ef20d1b254c6b9681ff8e117482f63">
+        <source>Wipöp</source>
+        <target>Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7dbe755bd5fda446bd6c46ecb69acae2">
+        <source>PrestaShop module that integrates the Wipöp payment gateway</source>
+        <target>Módulo de PrestaShop que integra a pasarela de pagamento Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5520c33468764ae6c39df6d5ae71c600">
+        <source>Are you sure you want to uninstall Wipöp?</source>
+        <target>Seguro que queres desinstalar Wipöp?</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="92d4773a9f32fc3333cb8238471cf763">
+        <source>You have to enable the cURL extension on your server to install this module</source>
+        <target>Debes activar a extensión cURL no teu servidor para instalar este módulo</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dccf0a7987391bfc8f541204eaae296e">
+        <source>Pay by card with Wipöp</source>
+        <target>Pagar con tarxeta con Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5c1c3aefe53746246190ef5e6713d352">
+        <source>Pay with Bizum via Wipöp</source>
+        <target>Pagar con Bizum a través de Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dbbc228291734636cbefb5241dbe2885">
+        <source>Pay with Google Pay via Wipöp</source>
+        <target>Pagar con Google Pay a través de Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3702a6eb8aaac85a2d6bd66e33ec8c0e">
+        <source>Pay with Wipöp</source>
+        <target>Pagar con Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cebd5bbe0ffdecc270a8a324e5a277dd">
+        <source>Live mode</source>
+        <target>Modo real</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="229a7ec501323b94db7ff3157a7623c9">
+        <source>Merchant ID</source>
+        <target>ID de comercio</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="952bf87c967660b7bbd4e1eb08cefc92">
+        <source>Secret key</source>
+        <target>Chave secreta</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f9cf8789f6151a8af67a593838125b0a">
+        <source>Public secret key</source>
+        <target>Chave secreta pública</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f642c37324f865b5d27bd38a831f1702">
+        <source>Terminal ID</source>
+        <target>ID do terminal</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="80964a30587af49027407cc4a6840bcf">
+        <source>Unable to save the Wipöp settings.</source>
+        <target>Non foi posible gardar a configuración de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
