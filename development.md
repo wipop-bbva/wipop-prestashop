@@ -104,6 +104,35 @@ Para que intellilense y PhpStan vean el core de PrestaShop podemos crear una cop
 docker cp tu_container:/var/www/html ./prestashop-core
 ```
 
-## 8) Empaquetado
+## 8) Traducciones (i18n)
+
+Este módulo usa el sistema moderno de traducciones de PrestaShop.
+
+Las cadenas viven en el código y se agrupan por dominio:
+
+- `Modules.Wipop.Wipop`: textos del módulo principal `wipop.php`
+- `Modules.Wipop.Admin`: configuración y back office
+- `Modules.Wipop.Shop`: front office, checkout y `.tpl`
+
+### Cómo actualizar traducciones desde Back Office
+
+1. Arranca el entorno con `docker compose up -d`.
+2. Entra al Back Office de PrestaShop.
+3. Ve a `Internacional > Traducciones`.
+4. En `Modificar traducciones`, elige `Traducciones de módulos instalados`, selecciona `wipop` y el idioma.
+5. Edita las cadenas y guarda.
+6. En `Exportar traducciones`, exporta ese mismo módulo e idioma.
+7. Descomprime el ZIP dentro de `wipop/translations/`, sustituyendo los ficheros del locale correspondiente.
+8. Repite para cada idioma que haya que refrescar y haz commit de los `.xlf`.
+
+Locales que mantenemos versionados en el repo:
+
+- `en-US`
+- `es-ES`
+- `ca-ES`
+- `gl-ES`
+- `eu-ES`
+
+## 9) Empaquetado
 
 Para distribuir el módulo creamos un zip con la carpeta `wipop/`. Excluye `wipop/vendor/` del zip final (o ejecutando `composer install --no-dev` antes de empaquetar).
