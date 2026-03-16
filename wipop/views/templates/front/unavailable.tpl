@@ -30,7 +30,7 @@
 			<p>{$message|escape:'htmlall':'UTF-8'}</p>
 			<p class="mt-3">
 				<a class="btn btn-primary" href="{$checkout_url|escape:'htmlall':'UTF-8'}">
-					{l s='Return to checkout' mod='wipop'}
+					{l s='Return to checkout' d='Modules.Wipop.Shop'}
 				</a>
 			</p>
 		</div>
