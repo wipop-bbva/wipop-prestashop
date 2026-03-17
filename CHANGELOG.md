@@ -1,3 +1,15 @@
+## [1.1.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.0.0...v1.1.0) (2026-03-17)
+
+### Features
+
+* **translation:** add section for managing translations in development guide ([6eaa60b](https://github.com/wipop-bbva/wipop-prestashop/commit/6eaa60b7738f30464e59548ed846cfdf4f81e147))
+* **translation:** add xlf files for supported languajes ([063b419](https://github.com/wipop-bbva/wipop-prestashop/commit/063b419745004708ba48d3ec43ccd120bae92f96))
+* **translation:** implement translation system for user messages and labels ([5de33f4](https://github.com/wipop-bbva/wipop-prestashop/commit/5de33f43c8604bb720d1cb0888adb210c386d3fc))
+
+### Bug Fixes
+
+* **translation:** update translation domain for Wipöp settings and checkout button ([3f3b08c](https://github.com/wipop-bbva/wipop-prestashop/commit/3f3b08cd34f8dd4b11ba7f32cd0b76d21d4c8231))
+
 ## 1.0.0 (2026-03-16)
 
 ### Features
