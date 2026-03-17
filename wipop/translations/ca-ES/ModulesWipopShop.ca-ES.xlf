@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin" source-language="en-US" target-language="ca-ES" datatype="plaintext">
+    <body>
+      <trans-unit id="fc8238ac558549bdf182e1367245e0e4">
+        <source>Return to checkout</source>
+        <target>Tornar al pagament</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8811b65545f5ff277e4be49a1cd2f203">
+        <source>Unsupported Wipöp payment method.</source>
+        <target>Mètode de pagament de Wipöp no compatible.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b89a1f531bde94315df2a9321b7b3131">
+        <source>Configuration required.</source>
+        <target>Cal configuració.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8c88ec5f11a029b69a92848826d281cc">
+        <source>A valid cart is required.</source>
+        <target>Cal un carretó vàlid.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dd235ae78af574cc39e559648a5dbe84">
+        <source>WIP.</source>
+        <target>En desenvolupament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="60f2bfeaed0a36ff9864e008e1e67a36">
+        <source>WIP</source>
+        <target>En desenvolupament</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="837016e06b58966629d56676e667e648">
+        <source>Unavailable.</source>
+        <target>No disponible.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e8d173a1deac0ee4541823bd2c6f32f1">
+        <source>Wipöp return</source>
+        <target>Retorn de Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dccf0a7987391bfc8f541204eaae296e">
+        <source>Pay by card with Wipöp</source>
+        <target>Paga amb targeta amb Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5c1c3aefe53746246190ef5e6713d352">
+        <source>Pay with Bizum via Wipöp</source>
+        <target>Paga amb Bizum a través de Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dbbc228291734636cbefb5241dbe2885">
+        <source>Pay with Google Pay via Wipöp</source>
+        <target>Paga amb Google Pay a través de Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3702a6eb8aaac85a2d6bd66e33ec8c0e">
+        <source>Pay with Wipöp</source>
+        <target>Paga amb Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

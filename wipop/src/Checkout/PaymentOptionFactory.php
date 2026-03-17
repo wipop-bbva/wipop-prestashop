@@ -67,10 +67,14 @@ final class PaymentOptionFactory
     private function label(\Wipop $module, string $method): string
     {
         return match ($method) {
-            ChargeMethod::CARD => $module->l('Pay by card with Wipöp'),
-            ChargeMethod::BIZUM => $module->l('Pay with Bizum via Wipöp'),
-            ChargeMethod::GOOGLE_PAY => $module->l('Pay with Google Pay via Wipöp'),
-            default => $module->l('Pay with Wipöp'),
+            ChargeMethod::CARD => $module->trans('Pay by card with Wipöp', [], \Wipop::TRANSLATION_DOMAIN_SHOP),
+            ChargeMethod::BIZUM => $module->trans('Pay with Bizum via Wipöp', [], \Wipop::TRANSLATION_DOMAIN_SHOP),
+            ChargeMethod::GOOGLE_PAY => $module->trans(
+                'Pay with Google Pay via Wipöp',
+                [],
+                \Wipop::TRANSLATION_DOMAIN_SHOP
+            ),
+            default => $module->trans('Pay with Wipöp', [], \Wipop::TRANSLATION_DOMAIN_SHOP),
         };
     }
 
