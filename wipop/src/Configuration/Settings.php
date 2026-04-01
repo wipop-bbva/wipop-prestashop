@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Configuration;
 
+use Wipop\Domain\Value\Terminal;
+
 final class Settings
 {
-    public const MIN_TERMINAL_ID = 0;
-    public const MAX_TERMINAL_ID = 99;
-    public const DEFAULT_TERMINAL_ID = 1;
+    public const MIN_TERMINAL_ID = Terminal::MIN_TERMINAL_ID;
+    public const MAX_TERMINAL_ID = Terminal::MAX_TERMINAL_ID;
+    public const DEFAULT_TERMINAL_ID = self::MIN_TERMINAL_ID;
 
     public function __construct(
         public bool $liveMode,
