@@ -40,8 +40,54 @@ final class PaymentAttemptRepository
             'date_upd' => pSQL($now),
         ];
 
-        $this->db->insert('wipop_payment_attempt', $data);
+        if (!$this->db->insert('wipop_payment_attempt', $data)) {
+            throw new \RuntimeException('Unable to create Wipop payment attempt.');
+        }
 
-        return (int) $this->db->Insert_ID();
+        $attemptId = (int) $this->db->Insert_ID();
+        if ($attemptId <= 0) {
+            throw new \RuntimeException('Unable to retrieve the Wipop payment attempt identifier.');
+        }
+
+        return $attemptId;
+    }
+
+    public function markCheckoutPending(int $attemptId, ?string $transactionId): void
+    {
+        $data = [
+            'status' => pSQL(PaymentAttemptStatus::CHECKOUT_PENDING->value),
+            'date_upd' => pSQL($this->currentDateTime()),
+        ];
+
+        if ($transactionId !== null) {
+            $data['wipop_transaction_id'] = pSQL($transactionId);
+        }
+
+        $this->update($attemptId, $data);
+    }
+
+    public function markFailed(int $attemptId): void
+    {
+        $this->update($attemptId, [
+            'status' => pSQL(PaymentAttemptStatus::FAILED->value),
+            'date_upd' => pSQL($this->currentDateTime()),
+        ]);
+    }
+
+    /**
+     * @param array<string, int|string> $data
+     */
+    private function update(int $attemptId, array $data): void
+    {
+        $condition = sprintf('id_wipop_payment_attempt = %d', $attemptId);
+
+        if (!$this->db->update('wipop_payment_attempt', $data, $condition)) {
+            throw new \RuntimeException('Unable to update Wipop payment attempt.');
+        }
+    }
+
+    private function currentDateTime(): string
+    {
+        return (new \DateTimeImmutable())->format('Y-m-d H:i:s');
     }
 }

@@ -77,7 +77,7 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
         }
 
         return [
-            $this->trans('Unable to save the Wipöp settings.', TranslationDomains::ADMIN),
+            $this->trans('Unable to save the Wipop settings.', TranslationDomains::ADMIN),
         ];
     }
 
