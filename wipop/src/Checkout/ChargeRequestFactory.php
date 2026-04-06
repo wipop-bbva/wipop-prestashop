@@ -7,16 +7,12 @@ namespace PrestaShop\Module\Wipop\Checkout;
 use Address;
 use Cart;
 use Context;
-use Country;
 use Currency;
 use Customer;
 use PrestaShop\Module\Wipop\Configuration\Settings;
-use State;
 use Validate;
-use Wipop\Domain\Input\Address as WipopAddress;
 use Wipop\Domain\Input\Customer as WipopCustomer;
 use Wipop\Domain\Input\OriginChannel;
-use Wipop\Domain\Language;
 use Wipop\Domain\ProductType;
 use Wipop\Domain\Value\OrderId;
 use Wipop\Domain\Value\Terminal;
@@ -35,14 +31,14 @@ final class ChargeRequestFactory
         $currency = new Currency((int) $cart->id_currency);
         $params = (new CreateChargeParams())
             ->method($method)
-            ->amount((float) $cart->getOrderTotal(true, Cart::BOTH))
+            ->amount(round((float) $cart->getOrderTotal(true, Cart::BOTH), 2))
             ->currency((string) $currency->iso_code)
             ->description($this->buildDescription($cart))
             ->redirectUrl($redirectUrl)
             ->orderId(new OrderId($wipopOrderId))
             ->productType(ProductType::PAYMENT_GATEWAY)
             ->originChannel(OriginChannel::CHECKOUT)
-            ->language($this->resolveLanguage())
+            ->language(WipopLanguage::fromPrestashopLocale($this->resolveLocale())->value)
             ->terminal(new Terminal($settings->terminalId))
             ->capture($captureImmediately);
 
@@ -98,36 +94,7 @@ final class ChargeRequestFactory
             null,
             $externalCustomerId,
             $this->resolvePhone($address),
-            $this->buildAddress($address),
-        );
-    }
-
-    private function buildAddress(?Address $address): ?WipopAddress
-    {
-        if ($address === null) {
-            return null;
-        }
-
-        $addressParts = [
-            trim((string) $address->address1),
-            trim((string) $address->address2),
-        ];
-        $addressLine = implode(' ', array_filter($addressParts));
-        $zipCode = trim((string) $address->postcode);
-        $city = trim((string) $address->city);
-        $state = $this->resolveState($address);
-        $countryCode = $this->resolveCountryCode($address);
-
-        if ($addressLine === '' && $zipCode === '' && $city === '' && $countryCode === '') {
-            return null;
-        }
-
-        return new WipopAddress(
-            $addressLine,
-            $zipCode,
-            $city,
-            $state,
-            $countryCode,
+            null,
         );
     }
 
@@ -157,51 +124,13 @@ final class ChargeRequestFactory
         return $address;
     }
 
-    private function resolveState(Address $address): string
-    {
-        if ((int) $address->id_state <= 0) {
-            return '';
-        }
-
-        $state = new State((int) $address->id_state);
-        if (!Validate::isLoadedObject($state)) {
-            return '';
-        }
-
-        $name = trim((string) $state->name);
-        if ($name !== '') {
-            return $name;
-        }
-
-        return trim((string) $state->iso_code);
-    }
-
-    private function resolveCountryCode(Address $address): string
-    {
-        if ((int) $address->id_country <= 0) {
-            return '';
-        }
-
-        $country = new Country((int) $address->id_country);
-        if (!Validate::isLoadedObject($country)) {
-            return '';
-        }
-
-        return trim((string) $country->iso_code);
-    }
-
-    private function resolveLanguage(): string
+    private function resolveLocale(): string
     {
         $language = Context::getContext()->language;
         if ($language === null || !is_string($language->locale)) {
-            return Language::SPANISH;
+            return '';
         }
 
-        $locale = trim($language->locale);
-        if ($locale === '') {
-            return Language::SPANISH;
-        }
-
-        return str_replace('_', '-', $locale);
+        return $language->locale;
     }
 }
