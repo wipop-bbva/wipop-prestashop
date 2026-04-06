@@ -3,7 +3,7 @@
   <file original="admin" source-language="en-US" target-language="gl-ES" datatype="plaintext">
     <body>
       <trans-unit id="e6ef20d1b254c6b9681ff8e117482f63">
-        <source>Wipöp</source>
+        <source>Wipop</source>
         <target>Wipöp</target>
         <note>Line: </note>
       </trans-unit>
@@ -33,7 +33,7 @@
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="80964a30587af49027407cc4a6840bcf">
-        <source>Unable to save the Wipöp settings.</source>
+        <source>Unable to save the Wipop settings.</source>
         <target>Non foi posible gardar a configuración de Wipöp.</target>
         <note>Line: </note>
       </trans-unit>

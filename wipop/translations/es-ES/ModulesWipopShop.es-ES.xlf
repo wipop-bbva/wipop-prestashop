@@ -8,7 +8,7 @@
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="8811b65545f5ff277e4be49a1cd2f203">
-        <source>Unsupported Wipöp payment method.</source>
+        <source>Unsupported Wipop payment method.</source>
         <target>Método de pago de Wipöp no compatible.</target>
         <note>Line: </note>
       </trans-unit>
@@ -38,27 +38,27 @@
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="e8d173a1deac0ee4541823bd2c6f32f1">
-        <source>Wipöp return</source>
+        <source>Wipop return</source>
         <target>Retorno de Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="dccf0a7987391bfc8f541204eaae296e">
-        <source>Pay by card with Wipöp</source>
+        <source>Pay by card with Wipop</source>
         <target>Pagar con tarjeta con Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="5c1c3aefe53746246190ef5e6713d352">
-        <source>Pay with Bizum via Wipöp</source>
+        <source>Pay with Bizum via Wipop</source>
         <target>Pagar con Bizum a través de Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="dbbc228291734636cbefb5241dbe2885">
-        <source>Pay with Google Pay via Wipöp</source>
+        <source>Pay with Google Pay via Wipop</source>
         <target>Pagar con Google Pay a través de Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="3702a6eb8aaac85a2d6bd66e33ec8c0e">
-        <source>Pay with Wipöp</source>
+        <source>Pay with Wipop</source>
         <target>Pagar con Wipöp</target>
         <note>Line: </note>
       </trans-unit>

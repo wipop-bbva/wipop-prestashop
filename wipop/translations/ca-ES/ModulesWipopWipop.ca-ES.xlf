@@ -3,17 +3,17 @@
   <file original="admin" source-language="en-US" target-language="ca-ES" datatype="plaintext">
     <body>
       <trans-unit id="e6ef20d1b254c6b9681ff8e117482f63">
-        <source>Wipöp</source>
+        <source>Wipop</source>
         <target>Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="7dbe755bd5fda446bd6c46ecb69acae2">
-        <source>PrestaShop module that integrates the Wipöp payment gateway</source>
+        <source>PrestaShop module that integrates the Wipop payment gateway</source>
         <target>Mòdul de PrestaShop que integra la passarel·la de pagament Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="5520c33468764ae6c39df6d5ae71c600">
-        <source>Are you sure you want to uninstall Wipöp?</source>
+        <source>Are you sure you want to uninstall Wipop?</source>
         <target>Segur que vols desinstal·lar Wipöp?</target>
         <note>Line: </note>
       </trans-unit>
@@ -23,22 +23,22 @@
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="dccf0a7987391bfc8f541204eaae296e">
-        <source>Pay by card with Wipöp</source>
+        <source>Pay by card with Wipop</source>
         <target>Paga amb targeta amb Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="5c1c3aefe53746246190ef5e6713d352">
-        <source>Pay with Bizum via Wipöp</source>
+        <source>Pay with Bizum via Wipop</source>
         <target>Paga amb Bizum a través de Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="dbbc228291734636cbefb5241dbe2885">
-        <source>Pay with Google Pay via Wipöp</source>
+        <source>Pay with Google Pay via Wipop</source>
         <target>Paga amb Google Pay a través de Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="3702a6eb8aaac85a2d6bd66e33ec8c0e">
-        <source>Pay with Wipöp</source>
+        <source>Pay with Wipop</source>
         <target>Paga amb Wipöp</target>
         <note>Line: </note>
       </trans-unit>
@@ -68,7 +68,7 @@
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="80964a30587af49027407cc4a6840bcf">
-        <source>Unable to save the Wipöp settings.</source>
+        <source>Unable to save the Wipop settings.</source>
         <target>No s'ha pogut desar la configuració de Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
