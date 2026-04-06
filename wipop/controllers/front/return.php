@@ -28,6 +28,7 @@
 require_once dirname(__DIR__, 2) . '/autoload.php';
 
 use PrestaShop\Module\Wipop\Log\Logger;
+use PrestaShop\Module\Wipop\TranslationDomains;
 
 class WipopReturnModuleFrontController extends ModuleFrontController
 {
@@ -47,7 +48,7 @@ class WipopReturnModuleFrontController extends ModuleFrontController
 
         $this->context->smarty->assign([
             'checkout_url' => $this->context->link->getPageLink('order', true, null, 'step=3'),
-            'message' => $this->translateMessage('Unavailable.'),
+            'message' => $this->translateMessage('You have returned from Wipöp.'),
             'title' => $this->translateMessage('Wipöp return'),
         ]);
 
@@ -76,6 +77,6 @@ class WipopReturnModuleFrontController extends ModuleFrontController
 
     private function translateMessage(string $message, array $parameters = []): string
     {
-        return $this->module->trans($message, $parameters, Wipop::TRANSLATION_DOMAIN_SHOP);
+        return $this->context->getTranslator()->trans($message, $parameters, TranslationDomains::SHOP);
     }
 }

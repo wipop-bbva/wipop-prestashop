@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Checkout;
 
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
+use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Wipop\Domain\ChargeMethod;
 
@@ -66,15 +67,12 @@ final class PaymentOptionFactory
 
     private function label(\Wipop $module, string $method): string
     {
+        $translator = \Context::getContext()->getTranslator();
+
         return match ($method) {
-            ChargeMethod::CARD => $module->trans('Pay by card with Wipöp', [], \Wipop::TRANSLATION_DOMAIN_SHOP),
-            ChargeMethod::BIZUM => $module->trans('Pay with Bizum via Wipöp', [], \Wipop::TRANSLATION_DOMAIN_SHOP),
-            ChargeMethod::GOOGLE_PAY => $module->trans(
-                'Pay with Google Pay via Wipöp',
-                [],
-                \Wipop::TRANSLATION_DOMAIN_SHOP
-            ),
-            default => $module->trans('Pay with Wipöp', [], \Wipop::TRANSLATION_DOMAIN_SHOP),
+            ChargeMethod::CARD => $translator->trans('Pay by card with Wipöp', [], TranslationDomains::SHOP),
+            ChargeMethod::BIZUM => $translator->trans('Pay with Bizum via Wipöp', [], TranslationDomains::SHOP),
+            default => $translator->trans('Pay with Wipöp', [], TranslationDomains::SHOP),
         };
     }
 

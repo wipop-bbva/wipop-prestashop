@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Form\Type;
 
 use PrestaShop\Module\Wipop\Configuration\Settings;
+use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShopBundle\Form\Admin\Type\SwitchType;
 use PrestaShopBundle\Form\Admin\Type\TranslatorAwareType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -19,25 +20,25 @@ final class SettingsType extends TranslatorAwareType
     {
         $builder
             ->add('live_mode', SwitchType::class, [
-                'label' => $this->trans('Live mode', \Wipop::TRANSLATION_DOMAIN_ADMIN),
+                'label' => $this->trans('Live mode', TranslationDomains::ADMIN),
                 'required' => false,
             ])
             ->add('merchant_id', TextType::class, [
-                'label' => $this->trans('Merchant ID', \Wipop::TRANSLATION_DOMAIN_ADMIN),
+                'label' => $this->trans('Merchant ID', TranslationDomains::ADMIN),
                 'required' => false,
             ])
             ->add('secret_key', PasswordType::class, [
-                'label' => $this->trans('Secret key', \Wipop::TRANSLATION_DOMAIN_ADMIN),
+                'label' => $this->trans('Secret key', TranslationDomains::ADMIN),
                 'required' => false,
                 'empty_data' => '',
             ])
             ->add('public_secret_key', PasswordType::class, [
-                'label' => $this->trans('Public secret key', \Wipop::TRANSLATION_DOMAIN_ADMIN),
+                'label' => $this->trans('Public secret key', TranslationDomains::ADMIN),
                 'required' => false,
                 'empty_data' => '',
             ])
             ->add('terminal_id', IntegerType::class, [
-                'label' => $this->trans('Terminal ID', \Wipop::TRANSLATION_DOMAIN_ADMIN),
+                'label' => $this->trans('Terminal ID', TranslationDomains::ADMIN),
                 'required' => false,
                 'empty_data' => '',
                 'attr' => [
