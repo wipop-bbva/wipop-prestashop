@@ -34,14 +34,11 @@ use PrestaShop\Module\Wipop\Checkout\PaymentOptionFactory;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Install\ModuleInstaller;
 use PrestaShop\Module\Wipop\Install\ModuleUninstaller;
+use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 class Wipop extends PaymentModule
 {
-    public const TRANSLATION_DOMAIN_ADMIN = 'Modules.Wipop.Admin';
-    public const TRANSLATION_DOMAIN_MAIN = 'Modules.Wipop.Wipop';
-    public const TRANSLATION_DOMAIN_SHOP = 'Modules.Wipop.Shop';
-
     public function __construct()
     {
         $this->name = 'wipop';
@@ -53,17 +50,17 @@ class Wipop extends PaymentModule
 
         parent::__construct();
 
-        $this->displayName = $this->trans('Wipöp', [], self::TRANSLATION_DOMAIN_MAIN);
+        $this->displayName = $this->trans('Wipop', [], TranslationDomains::MAIN);
         $this->description = $this->trans(
-            'PrestaShop module that integrates the Wipöp payment gateway',
+            'PrestaShop module that integrates the Wipop payment gateway',
             [],
-            self::TRANSLATION_DOMAIN_MAIN
+            TranslationDomains::MAIN
         );
 
         $this->confirmUninstall = $this->trans(
-            'Are you sure you want to uninstall Wipöp?',
+            'Are you sure you want to uninstall Wipop?',
             [],
-            self::TRANSLATION_DOMAIN_MAIN
+            TranslationDomains::MAIN
         );
 
         $this->ps_versions_compliancy = ['min' => '8.1.0', 'max' => '9.0.0'];
@@ -80,7 +77,7 @@ class Wipop extends PaymentModule
             $this->_errors[] = $this->trans(
                 'You have to enable the cURL extension on your server to install this module',
                 [],
-                self::TRANSLATION_DOMAIN_MAIN
+                TranslationDomains::MAIN
             );
 
             return false;

@@ -7,6 +7,7 @@ namespace PrestaShop\Module\Wipop\Controller\Admin;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Form\Type\SettingsType;
+use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -76,7 +77,7 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
         }
 
         return [
-            $this->trans('Unable to save the Wipöp settings.', \Wipop::TRANSLATION_DOMAIN_ADMIN),
+            $this->trans('Unable to save the Wipop settings.', TranslationDomains::ADMIN),
         ];
     }
 

@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Checkout;
 
+use Cart;
+use Context;
+use Currency;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
+use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Wipop\Domain\ChargeMethod;
 
@@ -27,7 +31,7 @@ final class PaymentOptionFactory
     /**
      * @return PaymentOption[]
      */
-    public function buildOptions(\Wipop $module, \Cart $cart): array
+    public function buildOptions(\Wipop $module, Cart $cart): array
     {
         if (!$module->active) {
             return [];
@@ -53,8 +57,8 @@ final class PaymentOptionFactory
     private function buildOption(\Wipop $module, string $method): PaymentOption
     {
         $option = new PaymentOption();
-        $option->setCallToActionText($this->label($module, $method))
-            ->setAction(\Context::getContext()->link->getModuleLink(
+        $option->setCallToActionText($this->label($method))
+            ->setAction(Context::getContext()->link->getModuleLink(
                 $module->name,
                 'start',
                 ['method' => $method],
@@ -64,23 +68,20 @@ final class PaymentOptionFactory
         return $option;
     }
 
-    private function label(\Wipop $module, string $method): string
+    private function label(string $method): string
     {
+        $translator = Context::getContext()->getTranslator();
+
         return match ($method) {
-            ChargeMethod::CARD => $module->trans('Pay by card with Wipöp', [], \Wipop::TRANSLATION_DOMAIN_SHOP),
-            ChargeMethod::BIZUM => $module->trans('Pay with Bizum via Wipöp', [], \Wipop::TRANSLATION_DOMAIN_SHOP),
-            ChargeMethod::GOOGLE_PAY => $module->trans(
-                'Pay with Google Pay via Wipöp',
-                [],
-                \Wipop::TRANSLATION_DOMAIN_SHOP
-            ),
-            default => $module->trans('Pay with Wipöp', [], \Wipop::TRANSLATION_DOMAIN_SHOP),
+            ChargeMethod::CARD => $translator->trans('Pay by card with Wipop', [], TranslationDomains::SHOP),
+            ChargeMethod::BIZUM => $translator->trans('Pay with Bizum via Wipop', [], TranslationDomains::SHOP),
+            default => $translator->trans('Pay with Wipop', [], TranslationDomains::SHOP),
         };
     }
 
-    private function supportsCurrency(\Wipop $module, \Cart $cart): bool
+    private function supportsCurrency(\Wipop $module, Cart $cart): bool
     {
-        $currencyOrder = new \Currency((int) $cart->id_currency);
+        $currencyOrder = new Currency((int) $cart->id_currency);
         $currenciesModule = $module->getCurrency((int) $cart->id_currency);
 
         if (!is_array($currenciesModule)) {
@@ -101,7 +102,7 @@ final class PaymentOptionFactory
     /**
      * @param mixed $currencyModule
      */
-    private function matchesCurrency(\Currency $currencyOrder, mixed $currencyModule): bool
+    private function matchesCurrency(Currency $currencyOrder, mixed $currencyModule): bool
     {
         if (!is_array($currencyModule)) {
             return false;

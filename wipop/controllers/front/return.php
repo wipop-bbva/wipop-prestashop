@@ -28,6 +28,7 @@
 require_once dirname(__DIR__, 2) . '/autoload.php';
 
 use PrestaShop\Module\Wipop\Log\Logger;
+use PrestaShop\Module\Wipop\TranslationDomains;
 
 class WipopReturnModuleFrontController extends ModuleFrontController
 {
@@ -38,17 +39,17 @@ class WipopReturnModuleFrontController extends ModuleFrontController
         $cartId = $this->cartId();
 
         if ($cartId === null) {
-            $this->logger()->warning('Wipöp return endpoint reached without cart.');
+            $this->logger()->warning('Wipop return endpoint reached without cart.');
         } else {
-            $this->logger()->info('Wipöp return endpoint reached.', [
+            $this->logger()->info('Wipop return endpoint reached.', [
                 'cart_id' => $cartId,
             ]);
         }
 
         $this->context->smarty->assign([
             'checkout_url' => $this->context->link->getPageLink('order', true, null, 'step=3'),
-            'message' => $this->translateMessage('Unavailable.'),
-            'title' => $this->translateMessage('Wipöp return'),
+            'message' => $this->translateMessage('You have returned from Wipop.'),
+            'title' => $this->translateMessage('Wipop return'),
         ]);
 
         $this->setTemplate('module:wipop/views/templates/front/unavailable.tpl');
@@ -76,6 +77,6 @@ class WipopReturnModuleFrontController extends ModuleFrontController
 
     private function translateMessage(string $message, array $parameters = []): string
     {
-        return $this->module->trans($message, $parameters, Wipop::TRANSLATION_DOMAIN_SHOP);
+        return $this->context->getTranslator()->trans($message, $parameters, TranslationDomains::SHOP);
     }
 }

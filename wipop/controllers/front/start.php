@@ -27,11 +27,18 @@
 
 require_once dirname(__DIR__, 2) . '/autoload.php';
 
+use PrestaShop\Module\Wipop\Api\ClientFactory;
+use PrestaShop\Module\Wipop\Api\SdkCaller;
 use PrestaShop\Module\Wipop\Checkout\CartOrderIdFactory;
+use PrestaShop\Module\Wipop\Checkout\ChargeRequestFactory;
+use PrestaShop\Module\Wipop\Checkout\ChargeStarter;
 use PrestaShop\Module\Wipop\Checkout\PaymentOptionFactory;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
+use PrestaShop\Module\Wipop\Exception\ApiCallException;
+use PrestaShop\Module\Wipop\Exception\ClientConfigurationException;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
+use PrestaShop\Module\Wipop\TranslationDomains;
 
 class WipopStartModuleFrontController extends ModuleFrontController
 {
@@ -39,17 +46,18 @@ class WipopStartModuleFrontController extends ModuleFrontController
     {
         parent::initContent();
 
-        $paymentMethod = trim((string) Tools::getValue('method'));
+        $logger = $this->logger();
+        $paymentMethod = strtoupper(trim((string) Tools::getValue('method')));
         if (!PaymentOptionFactory::supportsChargeMethod($paymentMethod)) {
-            $this->logger()->warning('Unsupported payment method received on start controller.');
-            $this->renderUnavailable($this->translateMessage('Unsupported Wipöp payment method.'));
+            $logger->warning('Unsupported payment method received on start controller.');
+            $this->renderUnavailable($this->translateMessage('Unsupported Wipop payment method.'));
 
             return;
         }
 
         $settings = $this->settingsRepository()->get();
         if (!$settings->isConfigured()) {
-            $this->logger()->warning('Wipöp start controller reached without complete credentials.', [
+            $logger->warning('Wipop start controller reached without complete credentials.', [
                 'payment_method' => $paymentMethod,
             ]);
             $this->renderUnavailable($this->translateMessage('Configuration required.'));
@@ -58,7 +66,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
         }
 
         if (!Validate::isLoadedObject($this->context->cart) || (int) $this->context->cart->id <= 0) {
-            $this->logger()->error('Wipöp start controller reached without cart.', [
+            $logger->error('Wipop start controller reached without cart.', [
                 'payment_method' => $paymentMethod,
             ]);
             $this->renderUnavailable($this->translateMessage('A valid cart is required.'));
@@ -66,22 +74,49 @@ class WipopStartModuleFrontController extends ModuleFrontController
             return;
         }
 
-        $wipopOrderId = (new CartOrderIdFactory())->fromCart($this->context->cart);
-        $attemptId = PaymentAttemptRepository::createDefault()->createForCart(
-            $this->context->cart,
-            $paymentMethod,
-            $settings,
-            $wipopOrderId
-        );
+        try {
+            $wipopOrderId = (new CartOrderIdFactory())->fromCart($this->context->cart);
+            $attemptId = $this->paymentAttemptRepository()->createForCart(
+                $this->context->cart,
+                $paymentMethod,
+                $settings,
+                $wipopOrderId,
+            );
 
-        $this->logger()->info('Wipöp payment attempt init.', [
-            'attempt_id' => $attemptId,
-            'cart_id' => (int) $this->context->cart->id,
-            'payment_method' => $paymentMethod,
-            'wipop_order_id' => $wipopOrderId,
-        ]);
+            $logger->info('Wipop payment attempt init.', [
+                'attempt_id' => $attemptId,
+                'cart_id' => (int) $this->context->cart->id,
+                'payment_method' => $paymentMethod,
+                'wipop_order_id' => $wipopOrderId,
+            ]);
 
-        $this->renderUnavailable($this->translateMessage('WIP.'));
+            $redirectUrl = $this->chargeStarter()->start(
+                $this->context->cart,
+                $paymentMethod,
+                $this->returnUrl(),
+                $settings,
+                $wipopOrderId,
+                $attemptId,
+            );
+
+            Tools::redirect($redirectUrl);
+
+            return;
+        } catch (ClientConfigurationException | ApiCallException $exception) {
+            $logger->error('Wipop checkout start failed.', [
+                'payment_method' => $paymentMethod,
+                'error_class' => $exception::class,
+            ]);
+            $this->renderUnavailable($exception->getMessage());
+
+            return;
+        } catch (Throwable $throwable) {
+            $logger->error('Unexpected Wipop checkout start failure.', [
+                'payment_method' => $paymentMethod,
+                'error_class' => $throwable::class,
+            ]);
+            $this->renderUnavailable($this->translateMessage('Unable to start the Wipop checkout.'));
+        }
     }
 
     private function renderUnavailable(string $message): void
@@ -89,7 +124,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign([
             'checkout_url' => $this->context->link->getPageLink('order', true, null, 'step=3'),
             'message' => $message,
-            'title' => $this->translateMessage('WIP'),
+            'title' => $this->translateMessage('Wipop unavailable'),
         ]);
 
         $this->setTemplate('module:wipop/views/templates/front/unavailable.tpl');
@@ -105,8 +140,31 @@ class WipopStartModuleFrontController extends ModuleFrontController
         return new SettingsRepository();
     }
 
+    private function paymentAttemptRepository(): PaymentAttemptRepository
+    {
+        return PaymentAttemptRepository::createDefault();
+    }
+
+    private function chargeStarter(): ChargeStarter
+    {
+        $logger = $this->logger();
+
+        return new ChargeStarter(
+            new ClientFactory(),
+            new SdkCaller($logger),
+            new ChargeRequestFactory(),
+            $this->paymentAttemptRepository(),
+            $logger,
+        );
+    }
+
+    private function returnUrl(): string
+    {
+        return $this->context->link->getModuleLink($this->module->name, 'return', [], true);
+    }
+
     private function translateMessage(string $message, array $parameters = []): string
     {
-        return $this->module->trans($message, $parameters, Wipop::TRANSLATION_DOMAIN_SHOP);
+        return $this->context->getTranslator()->trans($message, $parameters, TranslationDomains::SHOP);
     }
 }
