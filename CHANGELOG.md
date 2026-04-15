@@ -1,3 +1,17 @@
+## [1.2.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.1.0...v1.2.0) (2026-04-15)
+
+### Features
+
+* **checkout:** start real Wipop charge flow for card and bizum ([ff80ae8](https://github.com/wipop-bbva/wipop-prestashop/commit/ff80ae815c06e46761b24f728b04fe90d8b3ddeb))
+* **language:** add WipopLanguage enum for locale handling ([0e403e8](https://github.com/wipop-bbva/wipop-prestashop/commit/0e403e8c385ad2071e0ca6b9c59fd71d8b34410c))
+
+### Bug Fixes
+
+* **admin:** load module services from the PrestaShop admin container ([2240d7a](https://github.com/wipop-bbva/wipop-prestashop/commit/2240d7a8cb60d8c1edd8b878258e280c86fd9a5f))
+* **library:** update library dependence ([677353a](https://github.com/wipop-bbva/wipop-prestashop/commit/677353a284426cb08131418a3322c510988eb5cf))
+* **module:** centralize translation domains ([3d79342](https://github.com/wipop-bbva/wipop-prestashop/commit/3d793422774b9a379542fbcd57f83ff739c6fded))
+* **template:** correct spelling of Wipop ([9f11dff](https://github.com/wipop-bbva/wipop-prestashop/commit/9f11dffb9a163722fb9a593fa6da199b64e9553d))
+
 ## [1.1.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.0.0...v1.1.0) (2026-03-17)
 
 ### Features
