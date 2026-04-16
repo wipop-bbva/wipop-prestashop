@@ -1,3 +1,10 @@
+## [1.3.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.2.0...v1.3.0) (2026-04-16)
+
+### Features
+
+* **admin:** verify merchant gateways on settings save ([5db5e31](https://github.com/wipop-bbva/wipop-prestashop/commit/5db5e319ca569be3ae5c977da6a0b832ff1ffa25))
+* **checkout:** use merchant gateways for payment options ([e1e1607](https://github.com/wipop-bbva/wipop-prestashop/commit/e1e16073b39f50e8c6ac06818c605a869d803a6f))
+
 ## [1.2.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.1.0...v1.2.0) (2026-04-15)
 
 ### Features
