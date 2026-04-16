@@ -31,9 +31,13 @@ if (!defined('_PS_VERSION_')) {
 require_once __DIR__ . '/autoload.php';
 
 use PrestaShop\Module\Wipop\Checkout\PaymentOptionFactory;
+use PrestaShop\Module\Wipop\Api\ClientFactory;
+use PrestaShop\Module\Wipop\Api\MerchantOperationsService;
+use PrestaShop\Module\Wipop\Api\SdkCaller;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Install\ModuleInstaller;
 use PrestaShop\Module\Wipop\Install\ModuleUninstaller;
+use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
@@ -116,11 +120,23 @@ class Wipop extends PaymentModule
 
     private function paymentOptionFactory(): PaymentOptionFactory
     {
-        return new PaymentOptionFactory($this->settingsRepository());
+        return new PaymentOptionFactory(
+            $this->merchantOperationsService(),
+            $this->getTranslator(),
+        );
     }
 
     private function settingsRepository(): SettingsRepository
     {
         return new SettingsRepository();
+    }
+
+    private function merchantOperationsService(): MerchantOperationsService
+    {
+        return new MerchantOperationsService(
+            $this->settingsRepository(),
+            new ClientFactory(),
+            new SdkCaller(new Logger()),
+        );
     }
 }

@@ -28,11 +28,11 @@
 require_once dirname(__DIR__, 2) . '/autoload.php';
 
 use PrestaShop\Module\Wipop\Api\ClientFactory;
+use PrestaShop\Module\Wipop\Api\MerchantOperationsService;
 use PrestaShop\Module\Wipop\Api\SdkCaller;
 use PrestaShop\Module\Wipop\Checkout\CartOrderIdFactory;
 use PrestaShop\Module\Wipop\Checkout\ChargeRequestFactory;
 use PrestaShop\Module\Wipop\Checkout\ChargeStarter;
-use PrestaShop\Module\Wipop\Checkout\PaymentOptionFactory;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Exception\ApiCallException;
 use PrestaShop\Module\Wipop\Exception\ClientConfigurationException;
@@ -48,7 +48,17 @@ class WipopStartModuleFrontController extends ModuleFrontController
 
         $logger = $this->logger();
         $paymentMethod = strtoupper(trim((string) Tools::getValue('method')));
-        if (!PaymentOptionFactory::supportsChargeMethod($paymentMethod)) {
+
+        if (!$this->isTokenValid()) {
+            $logger->warning('Invalid token received on Wipop start controller.', [
+                'payment_method' => $paymentMethod,
+            ]);
+            $this->renderUnavailable($this->translateMessage('Invalid checkout session.'));
+
+            return;
+        }
+
+        if (!MerchantOperationsService::supportsGateway($paymentMethod)) {
             $logger->warning('Unsupported payment method received on start controller.');
             $this->renderUnavailable($this->translateMessage('Unsupported Wipop payment method.'));
 
@@ -70,6 +80,26 @@ class WipopStartModuleFrontController extends ModuleFrontController
                 'payment_method' => $paymentMethod,
             ]);
             $this->renderUnavailable($this->translateMessage('A valid cart is required.'));
+
+            return;
+        }
+
+        $merchantOperationsService = $this->merchantOperationsService();
+
+        try {
+            if (!$merchantOperationsService->isGatewayAvailable($paymentMethod)) {
+                $logger->warning('Unavailable payment method received on start controller.', [
+                    'payment_method' => $paymentMethod,
+                ]);
+                $this->renderUnavailable($this->translateMessage('Unsupported Wipop payment method.'));
+
+                return;
+            }
+        } catch (ClientConfigurationException | ApiCallException) {
+            $logger->warning('Wipop start controller could not verify available payment methods.', [
+                'payment_method' => $paymentMethod,
+            ]);
+            $this->renderUnavailable($this->translateMessage('Unable to verify the available payment methods.'));
 
             return;
         }
@@ -155,6 +185,15 @@ class WipopStartModuleFrontController extends ModuleFrontController
             new ChargeRequestFactory(),
             $this->paymentAttemptRepository(),
             $logger,
+        );
+    }
+
+    private function merchantOperationsService(): MerchantOperationsService
+    {
+        return new MerchantOperationsService(
+            $this->settingsRepository(),
+            new ClientFactory(),
+            new SdkCaller($this->logger()),
         );
     }
 
