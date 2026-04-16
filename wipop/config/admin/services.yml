@@ -4,10 +4,27 @@ services:
 
   PrestaShop\Module\Wipop\Configuration\SettingsRepository: ~
 
+  PrestaShop\Module\Wipop\Log\Logger: ~
+
+  PrestaShop\Module\Wipop\Api\ClientFactory: ~
+
+  PrestaShop\Module\Wipop\Api\SdkCaller:
+    class: PrestaShop\Module\Wipop\Api\SdkCaller
+    arguments:
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
+  PrestaShop\Module\Wipop\Api\MerchantOperationsService:
+    class: PrestaShop\Module\Wipop\Api\MerchantOperationsService
+    arguments:
+      $settingsRepository: '@PrestaShop\Module\Wipop\Configuration\SettingsRepository'
+      $clientFactory: '@PrestaShop\Module\Wipop\Api\ClientFactory'
+      $sdkCaller: '@PrestaShop\Module\Wipop\Api\SdkCaller'
+
   PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController:
     class: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController
     arguments:
       $settingsRepository: '@PrestaShop\Module\Wipop\Configuration\SettingsRepository'
+      $merchantOperationsService: '@PrestaShop\Module\Wipop\Api\MerchantOperationsService'
 
   PrestaShop\Module\Wipop\Form\Type\SettingsType:
     class: PrestaShop\Module\Wipop\Form\Type\SettingsType

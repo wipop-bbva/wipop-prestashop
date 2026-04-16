@@ -48,10 +48,18 @@ final class SettingsRepository
 
     public function save(Settings $settings): bool
     {
-        return PrestaShopConfiguration::updateValue(ConfigKeys::LIVE_MODE, $settings->liveMode)
+        $saved = PrestaShopConfiguration::updateValue(ConfigKeys::LIVE_MODE, $settings->liveMode)
             && PrestaShopConfiguration::updateValue(ConfigKeys::MERCHANT_ID, $settings->merchantId)
             && PrestaShopConfiguration::updateValue(ConfigKeys::SECRET_KEY, $settings->secretKey)
             && PrestaShopConfiguration::updateValue(ConfigKeys::PUBLIC_SECRET_KEY, $settings->publicSecretKey)
             && PrestaShopConfiguration::updateValue(ConfigKeys::TERMINAL_ID, $settings->terminalId);
+
+        if (!$saved) {
+            return false;
+        }
+
+        PrestaShopConfiguration::deleteByName(ConfigKeys::AVAILABLE_GATEWAYS_CACHE);
+
+        return true;
     }
 }

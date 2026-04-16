@@ -11,6 +11,7 @@ final class ConfigKeys
     public const SECRET_KEY = 'WIPOP_SECRET_KEY';
     public const PUBLIC_SECRET_KEY = 'WIPOP_PUBLIC_SECRET_KEY';
     public const TERMINAL_ID = 'WIPOP_TERMINAL_ID';
+    public const AVAILABLE_GATEWAYS_CACHE = 'WIPOP_AVAILABLE_GATEWAYS_CACHE';
 
     /**
      * @return array<string, bool|int|string>
@@ -37,6 +38,7 @@ final class ConfigKeys
             self::SECRET_KEY,
             self::PUBLIC_SECRET_KEY,
             self::TERMINAL_ID,
+            self::AVAILABLE_GATEWAYS_CACHE,
         ];
     }
 }
