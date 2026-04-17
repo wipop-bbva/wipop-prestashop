@@ -31,7 +31,7 @@ final class ModuleInstaller
                 `id_cart` INT UNSIGNED NOT NULL,
                 `id_order` INT UNSIGNED DEFAULT NULL,
                 `id_shop` INT UNSIGNED NOT NULL,
-                `wipop_order_id` VARCHAR(12) NOT NULL,
+                `wipop_order_id` VARCHAR(12) DEFAULT NULL,
                 `wipop_transaction_id` VARCHAR(64) DEFAULT NULL,
                 `payment_method` VARCHAR(32) DEFAULT NULL,
                 `status` VARCHAR(32) NOT NULL,
@@ -44,7 +44,7 @@ final class ModuleInstaller
                 PRIMARY KEY (`id_wipop_payment_attempt`),
                 KEY `wipop_payment_attempt_cart_idx` (`id_cart`),
                 KEY `wipop_payment_attempt_order_idx` (`id_order`),
-                KEY `wipop_payment_attempt_order_id_idx` (`wipop_order_id`),
+                UNIQUE KEY `wipop_payment_attempt_order_id_uidx` (`wipop_order_id`),
                 UNIQUE KEY `wipop_payment_attempt_transaction_uidx` (`wipop_transaction_id`)
             ) ENGINE=%s DEFAULT CHARSET=utf8;',
             $this->dbPrefix(),
