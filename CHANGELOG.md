@@ -1,3 +1,13 @@
+## [1.4.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.3.0...v1.4.0) (2026-04-20)
+
+### Features
+
+* **checkout:** generate Wipop order ids from payment attempts ([99ed385](https://github.com/wipop-bbva/wipop-prestashop/commit/99ed38532008c530aa912fbe7c2d00c351739bac))
+
+### Bug Fixes
+
+* **checkout:** add a new line for improved code readability as requested by CI ([3606517](https://github.com/wipop-bbva/wipop-prestashop/commit/3606517fd394b3d2f3e4066d506821dccb53f8d4))
+
 ## [1.3.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.2.0...v1.3.0) (2026-04-16)
 
 ### Features
