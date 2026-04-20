@@ -21,7 +21,6 @@ final class PaymentAttemptRepository
         \Cart $cart,
         string $paymentMethod,
         Settings $settings,
-        string $wipopOrderId,
     ): int {
         $currency = new \Currency((int) $cart->id_currency);
         $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
@@ -29,7 +28,6 @@ final class PaymentAttemptRepository
         $data = [
             'id_cart' => (int) $cart->id,
             'id_shop' => (int) $cart->id_shop,
-            'wipop_order_id' => pSQL($wipopOrderId),
             'payment_method' => pSQL($paymentMethod),
             'status' => pSQL(PaymentAttemptStatus::INITIALIZED->value),
             'amount' => (float) $cart->getOrderTotal(true, \Cart::BOTH),
@@ -50,6 +48,14 @@ final class PaymentAttemptRepository
         }
 
         return $attemptId;
+    }
+
+    public function assignWipopOrderId(int $attemptId, string $wipopOrderId): void
+    {
+        $this->update($attemptId, [
+            'wipop_order_id' => pSQL($wipopOrderId),
+            'date_upd' => pSQL($this->currentDateTime()),
+        ]);
     }
 
     public function markCheckoutPending(int $attemptId, ?string $transactionId): void

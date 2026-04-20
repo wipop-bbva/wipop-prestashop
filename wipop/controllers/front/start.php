@@ -75,7 +75,8 @@ class WipopStartModuleFrontController extends ModuleFrontController
             return;
         }
 
-        if (!Validate::isLoadedObject($this->context->cart) || (int) $this->context->cart->id <= 0) {
+        $cart = $this->context->cart;
+        if (!Validate::isLoadedObject($cart) || (int) $cart->id <= 0) {
             $logger->error('Wipop start controller reached without cart.', [
                 'payment_method' => $paymentMethod,
             ]);
@@ -105,23 +106,24 @@ class WipopStartModuleFrontController extends ModuleFrontController
         }
 
         try {
-            $wipopOrderId = (new CartOrderIdFactory())->fromCart($this->context->cart);
-            $attemptId = $this->paymentAttemptRepository()->createForCart(
-                $this->context->cart,
+            $paymentAttemptRepository = $this->paymentAttemptRepository();
+            $attemptId = $paymentAttemptRepository->createForCart(
+                $cart,
                 $paymentMethod,
                 $settings,
-                $wipopOrderId,
             );
+            $wipopOrderId = (new CartOrderIdFactory())->fromCartAttempt($cart, $attemptId);
+            $paymentAttemptRepository->assignWipopOrderId($attemptId, $wipopOrderId);
 
             $logger->info('Wipop payment attempt init.', [
                 'attempt_id' => $attemptId,
-                'cart_id' => (int) $this->context->cart->id,
+                'cart_id' => (int) $cart->id,
                 'payment_method' => $paymentMethod,
                 'wipop_order_id' => $wipopOrderId,
             ]);
 
             $redirectUrl = $this->chargeStarter()->start(
-                $this->context->cart,
+                $cart,
                 $paymentMethod,
                 $this->returnUrl(),
                 $settings,
