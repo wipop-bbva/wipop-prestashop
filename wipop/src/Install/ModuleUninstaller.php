@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Install;
 
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
+use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 
 final class ModuleUninstaller
 {
-    public function __construct(private SettingsRepository $settingsRepository)
-    {
+    public function __construct(
+        private SettingsRepository $settingsRepository,
+        private WebhookSettingsRepository $webhookSettingsRepository,
+    ) {
     }
 
     public function run(): bool
     {
         return $this->settingsRepository->deleteAll()
+            && $this->webhookSettingsRepository->deleteAll()
             && $this->dropTables();
     }
 
