@@ -25,4 +25,45 @@
       </div>
     </div>
   {{ form_end(configurationForm) }}
+
+  <div class="row justify-content-center">
+    <div class="col-xl-10">
+      <div class="card">
+        <h3 class="card-header">
+          <i class="material-icons">sync_alt</i> {{ 'Webhook authentication'|trans }}
+        </h3>
+        <div class="card-body">
+          {% set webhookRows = [
+            {'label': 'Webhook URL'|trans, 'value': webhook.url},
+            {'label': 'Webhook user'|trans, 'value': webhook.username},
+            {'label': 'Webhook password'|trans, 'value': webhook.password},
+            {'label': 'State'|trans, 'value': webhook.state_label},
+            {'label': 'Verification code'|trans, 'value': webhook.verification_code},
+            {'label': 'Code received at'|trans, 'value': webhook.verification_received_at},
+            {'label': 'Connected at'|trans, 'value': webhook.connected_at}
+          ] %}
+
+          {% for row in webhookRows %}
+            <div class="form-group row">
+              <label class="form-control-label col-lg-3">{{ row.label }}</label>
+              <div class="col-lg-9">
+                <input type="text" class="form-control" readonly value="{{ row.value ?: '-' }}">
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="card-footer">
+          <form method="post" action="{{ path('wipop_webhook_regenerate') }}" class="d-flex align-items-center justify-content-end">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('wipop_webhook_regenerate') }}">
+            <span class="text-muted mr-3">
+              {{ 'After regenerating, update the user and password in the Wipop portal.'|trans }}
+            </span>
+            <button type="submit" class="btn btn-outline-secondary">
+              {{ 'Regenerate credentials'|trans }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

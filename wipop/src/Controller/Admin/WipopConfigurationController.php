@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Controller\Admin;
 
+use Context;
 use PrestaShop\Module\Wipop\Api\MerchantOperationsService;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
@@ -11,6 +12,8 @@ use PrestaShop\Module\Wipop\Exception\ApiCallException;
 use PrestaShop\Module\Wipop\Exception\ClientConfigurationException;
 use PrestaShop\Module\Wipop\Form\Type\SettingsType;
 use PrestaShop\Module\Wipop\TranslationDomains;
+use PrestaShop\Module\Wipop\Webhook\WebhookAuth;
+use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +23,7 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
     public function __construct(
         private SettingsRepository $settingsRepository,
         private MerchantOperationsService $merchantOperationsService,
+        private WebhookAuth $webhookAuth,
     ) {
     }
 
@@ -43,7 +47,22 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
 
         return $this->render('@Modules/wipop/views/templates/admin/configuration.html.twig', [
             'configurationForm' => $form->createView(),
+            'webhook' => $this->webhookData(),
         ]);
+    }
+
+    public function regenerateWebhookCredentialsAction(Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('wipop_webhook_regenerate', (string) $request->request->get('_csrf_token'))) {
+            $this->addFlash('error', $this->trans('Invalid security token.', TranslationDomains::ADMIN));
+
+            return $this->redirectToRoute('wipop_configuration');
+        }
+
+        $this->webhookAuth->regenerateCredentialsStored();
+        $this->addFlash('success', $this->trans('Webhook credentials regenerated.', TranslationDomains::ADMIN));
+
+        return $this->redirectToRoute('wipop_configuration');
     }
 
     /**
@@ -143,5 +162,40 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
         }
 
         return (int) $submittedValue;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function webhookData(): array
+    {
+        $settings = $this->webhookAuth->ensureCredentialsStored();
+        $state = $this->webhookAuth->state($settings);
+
+        return [
+            'url' => $this->webhookUrl(),
+            'username' => (string) ($settings[WebhookSettingsRepository::KEY_USERNAME] ?? ''),
+            'password' => $this->webhookAuth->decryptedPassword($settings),
+            'state_label' => $this->webhookStateLabel($state),
+            'verification_code' => (string) ($settings[WebhookSettingsRepository::KEY_VERIFICATION_CODE] ?? ''),
+            'verification_received_at' => (string) (
+                $settings[WebhookSettingsRepository::KEY_VERIFICATION_RECEIVED_AT] ?? ''
+            ),
+            'connected_at' => (string) ($settings[WebhookSettingsRepository::KEY_CONNECTED_AT] ?? ''),
+        ];
+    }
+
+    private function webhookUrl(): string
+    {
+        return Context::getContext()->link->getModuleLink('wipop', 'webhook', [], true);
+    }
+
+    private function webhookStateLabel(string $state): string
+    {
+        return match ($state) {
+            WebhookAuth::STATE_CONNECTED => $this->trans('Connected', TranslationDomains::ADMIN),
+            WebhookAuth::STATE_PENDING_VERIFICATION => $this->trans('Not verified', TranslationDomains::ADMIN),
+            default => $this->trans('Disconnected', TranslationDomains::ADMIN),
+        };
     }
 }
