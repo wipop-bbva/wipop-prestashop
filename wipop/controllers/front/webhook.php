@@ -2,8 +2,8 @@
 
 require_once dirname(__DIR__, 2) . '/autoload.php';
 
-use PrestaShop\Module\Wipop\Exception\WebhookException;
 use PrestaShop\Module\Wipop\Exception\WebhookCredentialsException;
+use PrestaShop\Module\Wipop\Exception\WebhookException;
 use PrestaShop\Module\Wipop\Exception\WebhookSettingsReadException;
 use PrestaShop\Module\Wipop\Exception\WebhookSettingsWriteException;
 use PrestaShop\Module\Wipop\Log\Logger;

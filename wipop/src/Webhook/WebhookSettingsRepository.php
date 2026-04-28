@@ -121,5 +121,4 @@ final class WebhookSettingsRepository
             self::KEY_CREDENTIALS_ROTATED_AT,
         ];
     }
-
 }
