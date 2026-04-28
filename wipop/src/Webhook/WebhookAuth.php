@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Webhook;
 
-use PrestaShop\Module\Wipop\Log\Logger;
-
 use function trim;
 
 final class WebhookAuth
@@ -19,9 +17,8 @@ final class WebhookAuth
 
     public function __construct(
         private WebhookSettingsRepository $settingsRepository,
-        Logger $logger,
     ) {
-        $this->credentials = new WebhookCredentials($logger);
+        $this->credentials = new WebhookCredentials();
         $this->basicAuth = new WebhookBasicAuth();
     }
 

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Webhook;
 
-use PrestaShop\Module\Wipop\Log\Logger;
+use PrestaShop\Module\Wipop\Exception\WebhookCredentialGenerationException;
+use PrestaShop\Module\Wipop\Exception\WebhookPasswordDecryptionException;
+use PrestaShop\Module\Wipop\Exception\WebhookPasswordEncryptionException;
 use Throwable;
 
 use function base64_decode;
@@ -12,6 +14,7 @@ use function base64_encode;
 use function bin2hex;
 use function gmdate;
 use function hash;
+use function is_int;
 use function is_string;
 use function openssl_cipher_iv_length;
 use function openssl_decrypt;
@@ -25,14 +28,14 @@ final class WebhookCredentials
 {
     private const CIPHER = 'aes-256-cbc';
 
-    public function __construct(private Logger $logger)
-    {
-    }
-
     /**
      * @param array<string, mixed> $settings
      *
      * @return array<string, mixed>
+     *
+     * @throws WebhookCredentialGenerationException
+     * @throws WebhookPasswordDecryptionException
+     * @throws WebhookPasswordEncryptionException
      */
     public function ensure(array $settings, string $state): array
     {
@@ -46,9 +49,6 @@ final class WebhookCredentials
         }
 
         $generated = $this->build();
-        if ($generated === null) {
-            return $settings;
-        }
 
         $settings[WebhookSettingsRepository::KEY_USERNAME] = $generated['username'];
         $settings[WebhookSettingsRepository::KEY_PASSWORD_ENCRYPTED] = $generated['password_enc'];
@@ -62,13 +62,13 @@ final class WebhookCredentials
      * @param array<string, mixed> $settings
      *
      * @return array<string, mixed>
+     *
+     * @throws WebhookCredentialGenerationException
+     * @throws WebhookPasswordEncryptionException
      */
     public function regenerate(array $settings): array
     {
         $generated = $this->build();
-        if ($generated === null) {
-            return $settings;
-        }
 
         $settings[WebhookSettingsRepository::KEY_USERNAME] = $generated['username'];
         $settings[WebhookSettingsRepository::KEY_PASSWORD_ENCRYPTED] = $generated['password_enc'];
@@ -84,6 +84,8 @@ final class WebhookCredentials
 
     /**
      * @param array<string, mixed> $settings
+     *
+     * @throws WebhookPasswordDecryptionException
      */
     public function decryptedPassword(array $settings): string
     {
@@ -101,25 +103,17 @@ final class WebhookCredentials
     }
 
     /**
-     * @return array{username: string, password_enc: string}|null
+     * @return array{username: string, password_enc: string}
+     *
+     * @throws WebhookCredentialGenerationException
+     * @throws WebhookPasswordEncryptionException
      */
-    private function build(): ?array
+    private function build(): array
     {
         $usernameSuffix = self::randomHex(6);
         $password = self::randomHex(16);
 
-        if ($usernameSuffix === null || $password === null) {
-            $this->logger->error('Unable to generate webhook credentials.');
-
-            return null;
-        }
-
         $passwordEncrypted = self::encryptPassword($password);
-        if ($passwordEncrypted === null) {
-            $this->logger->error('Fail during webhook password encryption.');
-
-            return null;
-        }
 
         return [
             'username' => 'wipop_' . $usernameSuffix,
@@ -127,12 +121,19 @@ final class WebhookCredentials
         ];
     }
 
-    private static function randomHex(int $bytes): ?string
+    /**
+     * @throws WebhookCredentialGenerationException
+     */
+    private static function randomHex(int $bytes): string
     {
         try {
             return bin2hex(random_bytes($bytes));
-        } catch (Throwable) {
-            return null;
+        } catch (Throwable $throwable) {
+            throw new WebhookCredentialGenerationException(
+                'Unable to generate secure webhook credential material.',
+                0,
+                $throwable
+            );
         }
     }
 
@@ -144,17 +145,24 @@ final class WebhookCredentials
         return hash('sha256', $cookieKey . '|' . $cookieIv, true);
     }
 
-    private static function encryptPassword(string $password): ?string
+    /**
+     * @throws WebhookPasswordEncryptionException
+     */
+    private static function encryptPassword(string $password): string
     {
         $ivLength = openssl_cipher_iv_length(self::CIPHER);
-        if ($ivLength <= 0) {
-            return null;
+        if (!is_int($ivLength) || $ivLength <= 0) {
+            throw new WebhookPasswordEncryptionException('Unsupported webhook password encryption cipher.');
         }
 
         try {
             $iv = random_bytes($ivLength);
-        } catch (Throwable) {
-            return null;
+        } catch (Throwable $throwable) {
+            throw new WebhookPasswordEncryptionException(
+                'Unable to generate webhook password encryption IV.',
+                0,
+                $throwable
+            );
         }
 
         $encrypted = openssl_encrypt(
@@ -166,22 +174,29 @@ final class WebhookCredentials
         );
 
         if (!is_string($encrypted) || $encrypted === '') {
-            return null;
+            throw new WebhookPasswordEncryptionException('Unable to encrypt webhook password.');
         }
 
         return base64_encode($iv . $encrypted);
     }
 
+    /**
+     * @throws WebhookPasswordDecryptionException
+     */
     private static function decryptPassword(string $encryptedValue): string
     {
         $decoded = base64_decode($encryptedValue, true);
         if (!is_string($decoded) || $decoded === '') {
-            return '';
+            throw new WebhookPasswordDecryptionException('Stored webhook password is not valid base64.');
         }
 
         $ivLength = openssl_cipher_iv_length(self::CIPHER);
-        if ($ivLength <= 0 || strlen($decoded) <= $ivLength) {
-            return '';
+        if (!is_int($ivLength) || $ivLength <= 0) {
+            throw new WebhookPasswordDecryptionException('Unsupported webhook password encryption cipher.');
+        }
+
+        if (strlen($decoded) <= $ivLength) {
+            throw new WebhookPasswordDecryptionException('Stored webhook password payload is incomplete.');
         }
 
         $iv = substr($decoded, 0, $ivLength);
@@ -195,6 +210,10 @@ final class WebhookCredentials
             $iv
         );
 
-        return is_string($plain) ? $plain : '';
+        if (!is_string($plain) || $plain === '') {
+            throw new WebhookPasswordDecryptionException('Unable to decrypt stored webhook password.');
+        }
+
+        return $plain;
     }
 }
