@@ -36,6 +36,7 @@ use PrestaShop\Module\Wipop\Checkout\ChargeStarter;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Exception\ApiCallException;
 use PrestaShop\Module\Wipop\Exception\ClientConfigurationException;
+use PrestaShop\Module\Wipop\Exception\SettingsReadException;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\TranslationDomains;
@@ -65,7 +66,18 @@ class WipopStartModuleFrontController extends ModuleFrontController
             return;
         }
 
-        $settings = $this->settingsRepository()->get();
+        try {
+            $settings = $this->settingsRepository()->get();
+        } catch (SettingsReadException $exception) {
+            $logger->error('Wipop settings storage error: ' . $exception->getMessage(), [
+                'payment_method' => $paymentMethod,
+                'error_class' => $exception::class,
+            ]);
+            $this->renderUnavailable($this->translateMessage('Configuration required.'));
+
+            return;
+        }
+
         if (!$settings->isConfigured()) {
             $logger->warning('Wipop start controller reached without complete credentials.', [
                 'payment_method' => $paymentMethod,
@@ -96,7 +108,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
 
                 return;
             }
-        } catch (ClientConfigurationException | ApiCallException) {
+        } catch (SettingsReadException | ClientConfigurationException | ApiCallException) {
             $logger->warning('Wipop start controller could not verify available payment methods.', [
                 'payment_method' => $paymentMethod,
             ]);

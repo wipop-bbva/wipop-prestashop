@@ -9,6 +9,7 @@ use Context;
 use PrestaShop\Module\Wipop\Api\MerchantOperationsService;
 use PrestaShop\Module\Wipop\Exception\ApiCallException;
 use PrestaShop\Module\Wipop\Exception\ClientConfigurationException;
+use PrestaShop\Module\Wipop\Exception\SettingsReadException;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -38,7 +39,7 @@ final class PaymentOptionFactory
 
         try {
             $availableGateways = $this->merchantOperationsService->getAvailableGateways();
-        } catch (ClientConfigurationException | ApiCallException) {
+        } catch (SettingsReadException | ClientConfigurationException | ApiCallException) {
             return [];
         }
 

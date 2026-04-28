@@ -3,6 +3,9 @@
 require_once dirname(__DIR__, 2) . '/autoload.php';
 
 use PrestaShop\Module\Wipop\Exception\WebhookException;
+use PrestaShop\Module\Wipop\Exception\WebhookCredentialsException;
+use PrestaShop\Module\Wipop\Exception\WebhookSettingsReadException;
+use PrestaShop\Module\Wipop\Exception\WebhookSettingsWriteException;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuth;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuthStatus;
@@ -17,7 +20,7 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
         try {
             $this->ensurePostRequest();
             $payload = $this->decodePayload($this->requestBody());
-            $webhookAuth = $this->webhookAuth($logger);
+            $webhookAuth = $this->webhookAuth();
             $settings = $webhookAuth->ensureCredentialsStored();
             $isAuthenticated = $this->authorizeRequest($webhookAuth, $settings);
 
@@ -37,6 +40,11 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
                 'status_code' => $exception->getStatusCode(),
             ]);
             $this->respond($exception->getStatusCode(), $exception->getMessage());
+        } catch (WebhookCredentialsException | WebhookSettingsReadException | WebhookSettingsWriteException $exception) {
+            $logger->error('Webhook internal configuration error: ' . $exception->getMessage(), [
+                'error_class' => $exception::class,
+            ]);
+            $this->respond(500, 'Error processing the webhook.');
         } catch (Throwable $throwable) {
             $logger->error('Unexpected webhook error: ' . $throwable->getMessage(), [
                 'error_class' => $throwable::class,
@@ -141,9 +149,9 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
         exit;
     }
 
-    private function webhookAuth(Logger $logger): WebhookAuth
+    private function webhookAuth(): WebhookAuth
     {
-        return new WebhookAuth(new WebhookSettingsRepository(), $logger);
+        return new WebhookAuth(new WebhookSettingsRepository());
     }
 
     private function logger(): Logger
