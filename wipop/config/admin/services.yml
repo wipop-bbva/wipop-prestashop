@@ -26,7 +26,6 @@ services:
     class: PrestaShop\Module\Wipop\Webhook\WebhookAuth
     arguments:
       $settingsRepository: '@PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository'
-      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
   PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController:
     class: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController
@@ -34,6 +33,7 @@ services:
       $settingsRepository: '@PrestaShop\Module\Wipop\Configuration\SettingsRepository'
       $merchantOperationsService: '@PrestaShop\Module\Wipop\Api\MerchantOperationsService'
       $webhookAuth: '@PrestaShop\Module\Wipop\Webhook\WebhookAuth'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
   PrestaShop\Module\Wipop\Form\Type\SettingsType:
     class: PrestaShop\Module\Wipop\Form\Type\SettingsType

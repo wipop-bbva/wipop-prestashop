@@ -10,7 +10,13 @@ use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Exception\ApiCallException;
 use PrestaShop\Module\Wipop\Exception\ClientConfigurationException;
+use PrestaShop\Module\Wipop\Exception\SettingsReadException;
+use PrestaShop\Module\Wipop\Exception\SettingsWriteException;
+use PrestaShop\Module\Wipop\Exception\WebhookCredentialsException;
+use PrestaShop\Module\Wipop\Exception\WebhookSettingsReadException;
+use PrestaShop\Module\Wipop\Exception\WebhookSettingsWriteException;
 use PrestaShop\Module\Wipop\Form\Type\SettingsType;
+use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuth;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
@@ -24,19 +30,38 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
         private SettingsRepository $settingsRepository,
         private MerchantOperationsService $merchantOperationsService,
         private WebhookAuth $webhookAuth,
+        private Logger $logger,
     ) {
     }
 
     public function configurationAction(Request $request): Response
     {
-        $form = $this->createForm(SettingsType::class, $this->formData());
+        $currentSettings = null;
+
+        try {
+            $currentSettings = $this->settingsRepository->get();
+            $formData = $this->formData($currentSettings);
+        } catch (SettingsReadException $exception) {
+            $this->logger->error('Unable to load Wipop settings data: ' . $exception->getMessage(), [
+                'error_class' => $exception::class,
+            ]);
+            $this->addFlash(
+                'error',
+                $this->trans('Stored Wipop settings could not be read.', TranslationDomains::ADMIN),
+            );
+            $formData = $this->emptyFormData();
+        }
+
+        $form = $this->createForm(SettingsType::class, $formData);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $settings = $this->buildSettings($form->getData());
+            $settings = null;
+
+            $settings = $this->buildSettings($form->getData(), $currentSettings ?? $this->defaultSettings());
             $errors = $this->saveConfiguration($settings);
 
-            if ($errors === []) {
+            if ($errors === [] && $settings instanceof Settings) {
                 $this->flashSaveResult($settings);
 
                 return $this->redirectToRoute('wipop_configuration');
@@ -45,9 +70,25 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
             $this->flashErrors($errors);
         }
 
+        try {
+            $webhookData = $this->webhookData();
+        } catch (WebhookCredentialsException | WebhookSettingsReadException | WebhookSettingsWriteException $exception) {
+            $this->logger->error('Unable to load webhook credentials data: ' . $exception->getMessage(), [
+                'error_class' => $exception::class,
+            ]);
+            $this->addFlash(
+                'error',
+                $this->trans(
+                    'Webhook credentials are unavailable. Please regenerate them.',
+                    TranslationDomains::ADMIN,
+                ),
+            );
+            $webhookData = $this->emptyWebhookData();
+        }
+
         return $this->render('@Modules/wipop/views/templates/admin/configuration.html.twig', [
             'configurationForm' => $form->createView(),
-            'webhook' => $this->webhookData(),
+            'webhook' => $webhookData,
         ]);
     }
 
@@ -59,7 +100,23 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
             return $this->redirectToRoute('wipop_configuration');
         }
 
-        $this->webhookAuth->regenerateCredentialsStored();
+        try {
+            $this->webhookAuth->regenerateCredentialsStored();
+        } catch (WebhookCredentialsException | WebhookSettingsReadException | WebhookSettingsWriteException $exception) {
+            $this->logger->error('Unable to regenerate webhook credentials: ' . $exception->getMessage(), [
+                'error_class' => $exception::class,
+            ]);
+            $this->addFlash(
+                'error',
+                $this->trans(
+                    'Webhook credentials could not be regenerated. Please check module logs.',
+                    TranslationDomains::ADMIN,
+                ),
+            );
+
+            return $this->redirectToRoute('wipop_configuration');
+        }
+
         $this->addFlash('success', $this->trans('Webhook credentials regenerated.', TranslationDomains::ADMIN));
 
         return $this->redirectToRoute('wipop_configuration');
@@ -68,10 +125,8 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
     /**
      * @return array<string, bool|int|string>
      */
-    private function formData(): array
+    private function formData(Settings $settings): array
     {
-        $settings = $this->settingsRepository->get();
-
         return [
             'live_mode' => $settings->liveMode,
             'merchant_id' => $settings->merchantId,
@@ -82,12 +137,26 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
     }
 
     /**
+     * @return array<string, bool|int|string>
+     */
+    private function emptyFormData(): array
+    {
+        $settings = $this->defaultSettings();
+
+        return [
+            'live_mode' => $settings->liveMode,
+            'merchant_id' => '',
+            'secret_key' => '',
+            'public_secret_key' => '',
+            'terminal_id' => $settings->terminalId,
+        ];
+    }
+
+    /**
      * @param array<string, mixed> $data
      */
-    private function buildSettings(array $data): Settings
+    private function buildSettings(array $data, Settings $currentSettings): Settings
     {
-        $currentSettings = $this->settingsRepository->get();
-
         return new Settings(
             (bool) ($data['live_mode'] ?? false),
             trim((string) ($data['merchant_id'] ?? '')),
@@ -97,13 +166,24 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
         );
     }
 
+    private function defaultSettings(): Settings
+    {
+        return new Settings(false, '', '', '', Settings::DEFAULT_TERMINAL_ID);
+    }
+
     /**
      * @return string[]
      */
     private function saveConfiguration(Settings $settings): array
     {
-        if ($this->settingsRepository->save($settings)) {
+        try {
+            $this->settingsRepository->save($settings);
+
             return [];
+        } catch (SettingsWriteException $exception) {
+            $this->logger->error('Unable to save Wipop settings: ' . $exception->getMessage(), [
+                'error_class' => $exception::class,
+            ]);
         }
 
         return [
@@ -121,7 +201,10 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
 
         try {
             $gateways = $this->merchantOperationsService->getAvailableGateways(true);
-        } catch (ClientConfigurationException | ApiCallException) {
+        } catch (SettingsReadException | ClientConfigurationException | ApiCallException $exception) {
+            $this->logger->warning('Unable to verify Wipop payment methods after saving settings.', [
+                'error_class' => $exception::class,
+            ]);
             $this->addFlash(
                 'warning',
                 $this->trans(
@@ -182,6 +265,22 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
                 $settings[WebhookSettingsRepository::KEY_VERIFICATION_RECEIVED_AT] ?? ''
             ),
             'connected_at' => (string) ($settings[WebhookSettingsRepository::KEY_CONNECTED_AT] ?? ''),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function emptyWebhookData(): array
+    {
+        return [
+            'url' => $this->webhookUrl(),
+            'username' => '',
+            'password' => '',
+            'state_label' => $this->webhookStateLabel(WebhookAuth::STATE_DISCONNECTED),
+            'verification_code' => '',
+            'verification_received_at' => '',
+            'connected_at' => '',
         ];
     }
 
