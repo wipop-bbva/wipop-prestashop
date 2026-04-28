@@ -11,10 +11,9 @@ use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Exception\ApiCallException;
 use PrestaShop\Module\Wipop\Exception\ClientConfigurationException;
 use PrestaShop\Module\Wipop\Exception\SettingsReadException;
+use PrestaShop\Module\Wipop\Exception\SettingsStorageException;
 use PrestaShop\Module\Wipop\Exception\SettingsWriteException;
 use PrestaShop\Module\Wipop\Exception\WebhookCredentialsException;
-use PrestaShop\Module\Wipop\Exception\WebhookSettingsReadException;
-use PrestaShop\Module\Wipop\Exception\WebhookSettingsWriteException;
 use PrestaShop\Module\Wipop\Form\Type\SettingsType;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\TranslationDomains;
@@ -72,7 +71,7 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
 
         try {
             $webhookData = $this->webhookData();
-        } catch (WebhookCredentialsException | WebhookSettingsReadException | WebhookSettingsWriteException $exception) {
+        } catch (WebhookCredentialsException | SettingsStorageException $exception) {
             $this->logger->error('Unable to load webhook credentials data: ' . $exception->getMessage(), [
                 'error_class' => $exception::class,
             ]);
@@ -102,7 +101,7 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
 
         try {
             $this->webhookAuth->regenerateCredentialsStored();
-        } catch (WebhookCredentialsException | WebhookSettingsReadException | WebhookSettingsWriteException $exception) {
+        } catch (WebhookCredentialsException | SettingsStorageException $exception) {
             $this->logger->error('Unable to regenerate webhook credentials: ' . $exception->getMessage(), [
                 'error_class' => $exception::class,
             ]);

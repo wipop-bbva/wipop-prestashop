@@ -129,7 +129,9 @@ final class WebhookCredentials
         try {
             return bin2hex(random_bytes($bytes));
         } catch (Throwable $throwable) {
-            throw new WebhookCredentialGenerationException('Unable to generate secure webhook credential material.', 0, $throwable);
+            $message = 'Unable to generate secure webhook credential material.';
+
+            throw new WebhookCredentialGenerationException($message, 0, $throwable);
         }
     }
 
@@ -154,7 +156,9 @@ final class WebhookCredentials
         try {
             $iv = random_bytes($ivLength);
         } catch (Throwable $throwable) {
-            throw new WebhookPasswordEncryptionException('Unable to generate webhook password encryption IV.', 0, $throwable);
+            $message = 'Unable to generate webhook password encryption IV.';
+
+            throw new WebhookPasswordEncryptionException($message, 0, $throwable);
         }
 
         $encrypted = openssl_encrypt(

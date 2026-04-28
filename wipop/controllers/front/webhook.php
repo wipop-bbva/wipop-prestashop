@@ -2,10 +2,9 @@
 
 require_once dirname(__DIR__, 2) . '/autoload.php';
 
+use PrestaShop\Module\Wipop\Exception\SettingsStorageException;
 use PrestaShop\Module\Wipop\Exception\WebhookCredentialsException;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
-use PrestaShop\Module\Wipop\Exception\WebhookSettingsReadException;
-use PrestaShop\Module\Wipop\Exception\WebhookSettingsWriteException;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuth;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuthStatus;
@@ -40,7 +39,7 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
                 'status_code' => $exception->getStatusCode(),
             ]);
             $this->respond($exception->getStatusCode(), $exception->getMessage());
-        } catch (WebhookCredentialsException | WebhookSettingsReadException | WebhookSettingsWriteException $exception) {
+        } catch (WebhookCredentialsException | SettingsStorageException $exception) {
             $logger->error('Webhook internal configuration error: ' . $exception->getMessage(), [
                 'error_class' => $exception::class,
             ]);
