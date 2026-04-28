@@ -5,9 +5,21 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Webhook;
 
 use Configuration;
+use JsonException;
+use PrestaShop\Module\Wipop\Exception\WebhookSettingsReadException;
+use PrestaShop\Module\Wipop\Exception\WebhookSettingsWriteException;
+
+use function array_fill_keys;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function json_encode;
+use function trim;
 
 final class WebhookSettingsRepository
 {
+    public const CONFIG_KEY = 'WIPOP_WEBHOOK_SETTINGS';
+
     public const KEY_USERNAME = 'webhook_auth_username';
     public const KEY_PASSWORD_ENCRYPTED = 'webhook_auth_password_enc';
     public const KEY_STATE = 'webhook_state';
@@ -17,48 +29,80 @@ final class WebhookSettingsRepository
     public const KEY_CONNECTED_AT = 'webhook_connected_at';
     public const KEY_CREDENTIALS_ROTATED_AT = 'webhook_credentials_rotated_at';
 
-    private const CONFIG_PREFIX = 'WIPOP_';
-
     /**
      * @return array<string, string>
      */
     public function getSettings(): array
     {
-        $settings = [];
-
-        foreach (self::keys() as $key) {
-            $settings[$key] = trim((string) Configuration::get($this->configurationKey($key), ''));
+        $rawSettings = Configuration::get(self::CONFIG_KEY, '');
+        if (!is_string($rawSettings) || $rawSettings === '') {
+            return self::defaults();
         }
 
-        return $settings;
+        try {
+            $settings = json_decode($rawSettings, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new WebhookSettingsReadException('Stored Wipop webhook settings JSON is invalid.', 0, $exception);
+        }
+
+        if (!is_array($settings)) {
+            throw new WebhookSettingsReadException('Stored Wipop webhook settings JSON must be an object.');
+        }
+
+        return self::normalizeSettings($settings);
     }
 
     /**
      * @param array<string, mixed> $settings
+     *
+     * @throws WebhookSettingsWriteException
      */
-    public function saveSettings(array $settings): bool
+    public function saveSettings(array $settings): void
     {
-        $result = true;
+        $payload = [];
 
         foreach (self::keys() as $key) {
-            $result = $result && Configuration::updateValue(
-                $this->configurationKey($key),
-                (string) ($settings[$key] ?? '')
-            );
+            $payload[$key] = (string) ($settings[$key] ?? '');
         }
 
-        return $result;
+        try {
+            $encodedPayload = json_encode($payload, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new WebhookSettingsWriteException('Unable to encode Wipop webhook settings JSON.', 0, $exception);
+        }
+
+        if (!Configuration::updateValue(self::CONFIG_KEY, $encodedPayload)) {
+            throw new WebhookSettingsWriteException('Unable to persist Wipop webhook settings JSON.');
+        }
     }
 
     public function deleteAll(): bool
     {
-        $result = true;
+        return Configuration::deleteByName(self::CONFIG_KEY);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function defaults(): array
+    {
+        return array_fill_keys(self::keys(), '');
+    }
+
+    /**
+     * @param array<string, mixed> $settings
+     *
+     * @return array<string, string>
+     */
+    private static function normalizeSettings(array $settings): array
+    {
+        $normalized = [];
 
         foreach (self::keys() as $key) {
-            $result = $result && Configuration::deleteByName($this->configurationKey($key));
+            $normalized[$key] = trim((string) ($settings[$key] ?? ''));
         }
 
-        return $result;
+        return $normalized;
     }
 
     /**
@@ -78,8 +122,4 @@ final class WebhookSettingsRepository
         ];
     }
 
-    private function configurationKey(string $key): string
-    {
-        return self::CONFIG_PREFIX . strtoupper($key);
-    }
 }
