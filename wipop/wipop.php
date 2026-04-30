@@ -39,10 +39,13 @@ use PrestaShop\Module\Wipop\Install\ModuleInstaller;
 use PrestaShop\Module\Wipop\Install\ModuleUninstaller;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\TranslationDomains;
+use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 class Wipop extends PaymentModule
 {
+    private const WEBHOOK_ROUTE = 'wipop_bbva';
+
     public function __construct()
     {
         $this->name = 'wipop';
@@ -89,12 +92,13 @@ class Wipop extends PaymentModule
 
         return parent::install()
             && (new ModuleInstaller($this->settingsRepository()))->run()
-            && $this->registerHook('paymentOptions');
+            && $this->registerHook('paymentOptions')
+            && $this->registerHook('moduleRoutes');
     }
 
     public function uninstall()
     {
-        return (new ModuleUninstaller($this->settingsRepository()))->run()
+        return (new ModuleUninstaller($this->settingsRepository(), new WebhookSettingsRepository()))->run()
             && parent::uninstall();
     }
 
@@ -116,6 +120,22 @@ class Wipop extends PaymentModule
         }
 
         return $this->paymentOptionFactory()->buildOptions($this, $cart);
+    }
+
+    public function hookModuleRoutes()
+    {
+        return [
+            'module-wipop-webhook' => [
+                'controller' => 'webhook',
+                'rule' => self::WEBHOOK_ROUTE,
+                'keywords' => [],
+                'params' => [
+                    'fc' => 'module',
+                    'module' => $this->name,
+                    'controller' => 'webhook',
+                ],
+            ],
+        ];
     }
 
     private function paymentOptionFactory(): PaymentOptionFactory

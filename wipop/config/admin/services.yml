@@ -4,6 +4,8 @@ services:
 
   PrestaShop\Module\Wipop\Configuration\SettingsRepository: ~
 
+  PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository: ~
+
   PrestaShop\Module\Wipop\Log\Logger: ~
 
   PrestaShop\Module\Wipop\Api\ClientFactory: ~
@@ -20,11 +22,18 @@ services:
       $clientFactory: '@PrestaShop\Module\Wipop\Api\ClientFactory'
       $sdkCaller: '@PrestaShop\Module\Wipop\Api\SdkCaller'
 
+  PrestaShop\Module\Wipop\Webhook\WebhookAuth:
+    class: PrestaShop\Module\Wipop\Webhook\WebhookAuth
+    arguments:
+      $settingsRepository: '@PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository'
+
   PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController:
     class: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController
     arguments:
       $settingsRepository: '@PrestaShop\Module\Wipop\Configuration\SettingsRepository'
       $merchantOperationsService: '@PrestaShop\Module\Wipop\Api\MerchantOperationsService'
+      $webhookAuth: '@PrestaShop\Module\Wipop\Webhook\WebhookAuth'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
   PrestaShop\Module\Wipop\Form\Type\SettingsType:
     class: PrestaShop\Module\Wipop\Form\Type\SettingsType

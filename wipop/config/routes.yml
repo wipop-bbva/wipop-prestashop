@@ -3,3 +3,9 @@ wipop_configuration:
   methods: [GET, POST]
   defaults:
     _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController::configurationAction
+
+wipop_webhook_regenerate:
+  path: /wipop/webhook/regenerate
+  methods: [POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController::regenerateWebhookCredentialsAction
