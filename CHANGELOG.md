@@ -1,3 +1,17 @@
+## [1.5.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.4.0...v1.5.0) (2026-04-30)
+
+### Features
+
+* **admin:** add webhook credential management ([fb19fdc](https://github.com/wipop-bbva/wipop-prestashop/commit/fb19fdc053097e6b23a400a8b9e8f07f15263a13))
+* **settings:** add typed storage exceptions ([ec35285](https://github.com/wipop-bbva/wipop-prestashop/commit/ec35285bf687925b1dcaee8acc7b872f3bbca5c5))
+* **webhook:** add authenticated webhook endpoint ([730bb08](https://github.com/wipop-bbva/wipop-prestashop/commit/730bb0855c41d4c9811e835f197ea53709b4ad2b))
+* **webhook:** add typed credentials exceptions ([5424274](https://github.com/wipop-bbva/wipop-prestashop/commit/5424274ac5b80f6c703ab4594c1f018274bf27a1))
+
+### Bug Fixes
+
+* **admin:** handle settings and webhook persistence failures ([6309141](https://github.com/wipop-bbva/wipop-prestashop/commit/6309141cbc615029cce755e607b5681517f8b27d))
+* **front:** handle settings failures in checkout and webhook flows ([b153a9a](https://github.com/wipop-bbva/wipop-prestashop/commit/b153a9aa0b0be2fd4008d994c3a2876ee84fc89d))
+
 ## [1.4.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.3.0...v1.4.0) (2026-04-20)
 
 ### Features
