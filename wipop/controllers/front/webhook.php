@@ -6,9 +6,13 @@ use PrestaShop\Module\Wipop\Exception\SettingsStorageException;
 use PrestaShop\Module\Wipop\Exception\WebhookCredentialsException;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
 use PrestaShop\Module\Wipop\Log\Logger;
+use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuth;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuthStatus;
+use PrestaShop\Module\Wipop\Webhook\WebhookOrderSynchronizer;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
+use PrestaShop\Module\Wipop\Webhook\WebhookTransactionHandler;
+use PrestaShop\Module\Wipop\Webhook\WebhookTransactionHydrator;
 
 class WipopWebhookModuleFrontController extends ModuleFrontController
 {
@@ -28,11 +32,9 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
                 $this->respond(200, 'OK');
             }
 
+            $this->webhookTransactionHandler($logger)->handle($payload);
             $webhookAuth->markConnectedIfPending($isAuthenticated);
 
-            $logger->info('Webhook payload acknowledged.', [
-                'authenticated' => $isAuthenticated,
-            ]);
             $this->respond(200, 'OK');
         } catch (WebhookException $exception) {
             $logger->error($exception->getMessage(), [
@@ -151,6 +153,22 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
     private function webhookAuth(): WebhookAuth
     {
         return new WebhookAuth(new WebhookSettingsRepository());
+    }
+
+    private function webhookTransactionHandler(Logger $logger): WebhookTransactionHandler
+    {
+        if (!$this->module instanceof PaymentModule) {
+            throw new RuntimeException('Wipop webhook controller requires a payment module instance.');
+        }
+
+        $paymentAttemptRepository = PaymentAttemptRepository::createDefault();
+
+        return new WebhookTransactionHandler(
+            new WebhookTransactionHydrator(),
+            $paymentAttemptRepository,
+            new WebhookOrderSynchronizer($paymentAttemptRepository, $this->module),
+            $logger
+        );
     }
 
     private function logger(): Logger
