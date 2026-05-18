@@ -1,3 +1,11 @@
+## [1.6.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.5.0...v1.6.0) (2026-05-18)
+
+### Features
+
+* **payment:** track webhook state on payment attempts ([b30991e](https://github.com/wipop-bbva/wipop-prestashop/commit/b30991e388d14f71287dc0a83b3ea8681a7c329a))
+* **return:** show payment state from Wipop attempts ([140446a](https://github.com/wipop-bbva/wipop-prestashop/commit/140446af04be209752e1495cdc70086f1c292712))
+* **webhook:** sync completed Wipop charges into PrestaShop orders ([cf6d760](https://github.com/wipop-bbva/wipop-prestashop/commit/cf6d760ac57fad3e2bd70efe7a817249a363ff80))
+
 ## [1.5.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.4.0...v1.5.0) (2026-04-30)
 
 ### Features
