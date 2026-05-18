@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Payment;
 
 use PrestaShop\Module\Wipop\Configuration\Settings;
+use Wipop\Domain\Transaction;
 
 final class PaymentAttemptRepository
 {
@@ -81,19 +82,159 @@ final class PaymentAttemptRepository
     }
 
     /**
-     * @param array<string, int|string> $data
+     * @param array<string, float|int|string|null> $data
      */
     private function update(int $attemptId, array $data): void
     {
         $condition = sprintf('id_wipop_payment_attempt = %d', $attemptId);
 
-        if (!$this->db->update('wipop_payment_attempt', $data, $condition)) {
+        if (!$this->db->update('wipop_payment_attempt', $data, $condition, 0, true)) {
             throw new \RuntimeException('Unable to update Wipop payment attempt.');
         }
+    }
+
+    public function findByRemoteIdentifiers(?string $wipopOrderId, ?string $transactionId): ?PaymentAttempt
+    {
+        $wipopOrderId = $this->nullableString($wipopOrderId);
+        if ($wipopOrderId !== null) {
+            $attempt = $this->findOneByColumn('wipop_order_id', $wipopOrderId);
+            if ($attempt !== null) {
+                return $attempt;
+            }
+        }
+
+        $transactionId = $this->nullableString($transactionId);
+        if ($transactionId !== null) {
+            return $this->findOneByColumn('wipop_transaction_id', $transactionId);
+        }
+
+        return null;
+    }
+
+    public function findLatestByCartId(int $cartId): ?PaymentAttempt
+    {
+        if ($cartId <= 0) {
+            return null;
+        }
+
+        return $this->findOneByColumn('id_cart', $cartId);
+    }
+
+    public function syncFromWebhook(
+        PaymentAttempt $attempt,
+        Transaction $transaction,
+        PaymentAttemptStatus $status,
+    ): void {
+        $now = $this->currentDateTime();
+        $data = [
+            'status' => pSQL($status->value),
+            'remote_status' => $transaction->status === null ? null : pSQL($transaction->status->value),
+            'remote_error_code' => $this->nullableSqlString($transaction->errorCode),
+            'remote_error_message' => $this->nullableSqlString($transaction->errorMessage),
+            'webhook_received_at' => pSQL($now),
+            'date_upd' => pSQL($now),
+        ];
+
+        $transactionId = $this->nullableString($transaction->id);
+        if ($transactionId !== null) {
+            $data['wipop_transaction_id'] = pSQL($transactionId);
+        }
+
+        $wipopOrderId = $this->nullableString($transaction->orderId);
+        if ($wipopOrderId !== null) {
+            $data['wipop_order_id'] = pSQL($wipopOrderId);
+        }
+
+        $this->update($attempt->id, $data);
+    }
+
+    public function assignOrderId(int $attemptId, int $orderId): void
+    {
+        $this->update($attemptId, [
+            'id_order' => $orderId,
+            'date_upd' => pSQL($this->currentDateTime()),
+        ]);
+    }
+
+    private function findOneByColumn(string $column, int|string $value): ?PaymentAttempt
+    {
+        $sql = sprintf(
+            'SELECT
+                `id_wipop_payment_attempt`,
+                `id_cart`,
+                `id_order`,
+                `status`,
+                `amount`
+            FROM `%swipop_payment_attempt`
+            WHERE `%s` = %s
+            ORDER BY `id_wipop_payment_attempt` DESC
+            LIMIT 1',
+            $this->dbPrefix(),
+            bqSQL($column),
+            $this->sqlValue($value)
+        );
+
+        $row = $this->db->getRow($sql);
+        if (!is_array($row)) {
+            return null;
+        }
+
+        return $this->mapRow($row);
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    private function mapRow(array $row): PaymentAttempt
+    {
+        return new PaymentAttempt(
+            (int) $row['id_wipop_payment_attempt'],
+            (int) $row['id_cart'],
+            $this->nullableInt($row['id_order'] ?? null),
+            PaymentAttemptStatus::from((string) $row['status']),
+            (float) $row['amount'],
+        );
+    }
+
+    private function sqlValue(int|string $value): string
+    {
+        if (is_int($value)) {
+            return (string) $value;
+        }
+
+        return sprintf('\'%s\'', pSQL($value));
+    }
+
+    private function nullableInt(mixed $value): ?int
+    {
+        $intValue = (int) $value;
+
+        return $intValue > 0 ? $intValue : null;
+    }
+
+    private function nullableSqlString(?string $value): ?string
+    {
+        $value = $this->nullableString($value);
+
+        return $value === null ? null : pSQL($value);
+    }
+
+    private function nullableString(mixed $value): ?string
+    {
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
     }
 
     private function currentDateTime(): string
     {
         return (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+    }
+
+    private function dbPrefix(): string
+    {
+        $dbPrefix = defined('_DB_PREFIX_') ? _DB_PREFIX_ : 'ps_';
+
+        return is_string($dbPrefix) ? $dbPrefix : 'ps_';
     }
 }

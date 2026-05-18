@@ -28,6 +28,9 @@
 require_once dirname(__DIR__, 2) . '/autoload.php';
 
 use PrestaShop\Module\Wipop\Log\Logger;
+use PrestaShop\Module\Wipop\Payment\PaymentAttempt;
+use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
+use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\TranslationDomains;
 
 class WipopReturnModuleFrontController extends ModuleFrontController
@@ -36,20 +39,56 @@ class WipopReturnModuleFrontController extends ModuleFrontController
     {
         parent::initContent();
 
+        $logger = $this->logger();
         $cartId = $this->cartId();
 
         if ($cartId === null) {
-            $this->logger()->warning('Wipop return endpoint reached without cart.');
-        } else {
-            $this->logger()->info('Wipop return endpoint reached.', [
-                'cart_id' => $cartId,
-            ]);
+            $logger->warning('Wipop return endpoint reached without cart.');
+            $this->renderPendingMessage();
+
+            return;
         }
 
+        $logger->info('Wipop return endpoint reached.', [
+            'cart_id' => $cartId,
+        ]);
+
+        $attempt = $this->paymentAttemptRepository()->findLatestByCartId($cartId);
+        if ($attempt !== null && $attempt->orderId !== null) {
+            Tools::redirect($this->orderConfirmationUrl($attempt));
+
+            return;
+        }
+
+        if ($attempt?->status === PaymentAttemptStatus::FAILED) {
+            $this->renderReturnMessage(
+                $this->translateMessage('Wipop payment failed'),
+                $this->translateMessage('The Wipop payment was not completed. Please return to checkout and try again.')
+            );
+
+            return;
+        }
+
+        $this->renderPendingMessage();
+    }
+
+    private function renderPendingMessage(): void
+    {
+        $this->renderReturnMessage(
+            $this->translateMessage('Wipop payment pending'),
+            $this->translateMessage(
+                'The payment is waiting for webhook confirmation. '
+                . 'Your order will be confirmed when Wipop completes the payment.'
+            )
+        );
+    }
+
+    private function renderReturnMessage(string $title, string $message): void
+    {
         $this->context->smarty->assign([
             'checkout_url' => $this->context->link->getPageLink('order', true, null, 'step=3'),
-            'message' => $this->translateMessage('You have returned from Wipop.'),
-            'title' => $this->translateMessage('Wipop return'),
+            'message' => $message,
+            'title' => $title,
         ]);
 
         $this->setTemplate('module:wipop/views/templates/front/unavailable.tpl');
@@ -58,6 +97,11 @@ class WipopReturnModuleFrontController extends ModuleFrontController
     private function logger(): Logger
     {
         return new Logger();
+    }
+
+    private function paymentAttemptRepository(): PaymentAttemptRepository
+    {
+        return PaymentAttemptRepository::createDefault();
     }
 
     private function cartId(): ?int
@@ -73,6 +117,23 @@ class WipopReturnModuleFrontController extends ModuleFrontController
         $cartId = (int) $this->context->cart->id;
 
         return $cartId > 0 ? $cartId : null;
+    }
+
+    private function orderConfirmationUrl(PaymentAttempt $attempt): string
+    {
+        $order = new Order((int) $attempt->orderId);
+
+        return $this->context->link->getPageLink(
+            'order-confirmation',
+            true,
+            null,
+            [
+                'id_cart' => $attempt->cartId,
+                'id_module' => (int) $this->module->id,
+                'id_order' => (int) $attempt->orderId,
+                'key' => (string) $order->secure_key,
+            ]
+        );
     }
 
     private function translateMessage(string $message, array $parameters = []): string

@@ -60,7 +60,7 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
             $settings = $this->buildSettings($form->getData(), $currentSettings ?? $this->defaultSettings());
             $errors = $this->saveConfiguration($settings);
 
-            if ($errors === [] && $settings instanceof Settings) {
+            if ($errors === []) {
                 $this->flashSaveResult($settings);
 
                 return $this->redirectToRoute('wipop_configuration');
