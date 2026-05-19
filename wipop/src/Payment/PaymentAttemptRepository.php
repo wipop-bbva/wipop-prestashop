@@ -31,7 +31,7 @@ final class PaymentAttemptRepository
             'id_shop' => (int) $cart->id_shop,
             'payment_method' => pSQL($paymentMethod),
             'status' => pSQL(PaymentAttemptStatus::INITIALIZED->value),
-            'amount' => (float) $cart->getOrderTotal(true, \Cart::BOTH),
+            'amount' => round((float) $cart->getOrderTotal(true, \Cart::BOTH), 2),
             'currency_iso' => pSQL((string) $currency->iso_code),
             'is_live' => (int) $settings->liveMode,
             'terminal_id' => (int) $settings->terminalId,
@@ -164,7 +164,8 @@ final class PaymentAttemptRepository
                 `id_cart`,
                 `id_order`,
                 `status`,
-                `amount`
+                `amount`,
+                `currency_iso`
             FROM `%swipop_payment_attempt`
             WHERE `%s` = %s
             ORDER BY `id_wipop_payment_attempt` DESC
@@ -193,6 +194,7 @@ final class PaymentAttemptRepository
             $this->nullableInt($row['id_order'] ?? null),
             PaymentAttemptStatus::from((string) $row['status']),
             (float) $row['amount'],
+            (string) $row['currency_iso'],
         );
     }
 
