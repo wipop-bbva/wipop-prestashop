@@ -10,6 +10,7 @@ use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuth;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuthStatus;
 use PrestaShop\Module\Wipop\Webhook\WebhookOrderSynchronizer;
+use PrestaShop\Module\Wipop\Webhook\WebhookPaymentValidator;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShop\Module\Wipop\Webhook\WebhookTransactionHandler;
 use PrestaShop\Module\Wipop\Webhook\WebhookTransactionHydrator;
@@ -171,7 +172,11 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
         return new WebhookTransactionHandler(
             new WebhookTransactionHydrator(),
             $paymentAttemptRepository,
-            new WebhookOrderSynchronizer($paymentAttemptRepository, $this->module),
+            new WebhookOrderSynchronizer(
+                $paymentAttemptRepository,
+                $this->module,
+                new WebhookPaymentValidator()
+            ),
             $logger
         );
     }

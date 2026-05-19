@@ -12,6 +12,7 @@ final class PaymentAttempt
         public readonly ?int $orderId,
         public readonly PaymentAttemptStatus $status,
         public readonly float $amount,
+        public readonly string $currencyIso,
     ) {
     }
 }

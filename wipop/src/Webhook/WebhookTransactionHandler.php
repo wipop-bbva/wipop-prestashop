@@ -39,8 +39,8 @@ final class WebhookTransactionHandler
             throw new WebhookException('Could not find the local Wipop payment attempt.', 404);
         }
 
-        $this->paymentAttemptRepository->syncFromWebhook($attempt, $transaction, $attemptStatus);
         $this->orderSynchronizer->sync($attempt, $transaction);
+        $this->paymentAttemptRepository->syncFromWebhook($attempt, $transaction, $attemptStatus);
 
         $this->logger->info('Webhook transaction synchronized.', [
             'attempt_id' => $attempt->id,

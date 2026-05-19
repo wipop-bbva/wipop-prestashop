@@ -22,6 +22,7 @@ final class WebhookOrderSynchronizer
     public function __construct(
         private PaymentAttemptRepository $paymentAttemptRepository,
         private PaymentModule $module,
+        private WebhookPaymentValidator $paymentValidator,
     ) {
     }
 
@@ -34,6 +35,8 @@ final class WebhookOrderSynchronizer
             return;
         }
 
+        $this->paymentValidator->assertTransactionMatches($attempt, $transaction);
+
         if ($attempt->orderId !== null) {
             return;
         }
@@ -45,7 +48,10 @@ final class WebhookOrderSynchronizer
             return;
         }
 
-        $this->createOrder($attempt, $transaction);
+        $cart = $this->loadCart($attempt->cartId);
+        $this->paymentValidator->assertCartMatches($attempt, $cart);
+
+        $this->createOrder($attempt, $transaction, $cart);
     }
 
     private function shouldCreateOrLinkOrder(Transaction $transaction): bool
@@ -64,16 +70,24 @@ final class WebhookOrderSynchronizer
     /**
      * @throws WebhookException
      */
-    private function createOrder(PaymentAttempt $attempt, Transaction $transaction): void
+    private function loadCart(int $cartId): Cart
+    {
+        $cart = new Cart($cartId);
+        if (!Validate::isLoadedObject($cart)) {
+            throw new WebhookException('Could not load the cart for the Wipop payment attempt.', 404);
+        }
+
+        return $cart;
+    }
+
+    /**
+     * @throws WebhookException
+     */
+    private function createOrder(PaymentAttempt $attempt, Transaction $transaction, Cart $cart): void
     {
         $transactionId = trim((string) $transaction->id);
         if ($transactionId === '') {
             throw new WebhookException('Missing transaction id for completed payment.', 400);
-        }
-
-        $cart = new Cart($attempt->cartId);
-        if (!Validate::isLoadedObject($cart)) {
-            throw new WebhookException('Could not load the cart for the Wipop payment attempt.', 404);
         }
 
         $secureKey = trim((string) $cart->secure_key);
