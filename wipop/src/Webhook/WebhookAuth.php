@@ -56,11 +56,6 @@ final class WebhookAuth
         return (string) ($settings[WebhookSettingsRepository::KEY_STATE] ?? self::STATE_DISCONNECTED);
     }
 
-    public function isAuthorizationRequired(string $state): bool
-    {
-        return $state === self::STATE_CONNECTED;
-    }
-
     /**
      * @param array<string, mixed> $settings
      */

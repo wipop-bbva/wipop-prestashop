@@ -25,9 +25,10 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
             $payload = $this->decodePayload($this->requestBody());
             $webhookAuth = $this->webhookAuth();
             $settings = $webhookAuth->ensureCredentialsStored();
-            $isAuthenticated = $this->authorizeRequest($webhookAuth, $settings);
+            $isVerificationEvent = $this->isVerificationEvent($payload);
+            $isAuthenticated = $this->authorizeRequest($webhookAuth, $settings, $isVerificationEvent);
 
-            if ($this->isVerificationEvent($payload)) {
+            if ($isVerificationEvent) {
                 $this->handleVerificationPayload($webhookAuth, $payload, $logger);
                 $this->respond(200, 'OK');
             }
@@ -57,7 +58,7 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
     /**
      * @param array<string, mixed> $settings
      */
-    private function authorizeRequest(WebhookAuth $webhookAuth, array $settings): bool
+    private function authorizeRequest(WebhookAuth $webhookAuth, array $settings, bool $isVerificationEvent): bool
     {
         $state = $webhookAuth->state($settings);
         $authorizationStatus = $webhookAuth->authorizationStatus($settings);
@@ -70,11 +71,15 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
             return true;
         }
 
-        if ($webhookAuth->isAuthorizationRequired($state)) {
+        if ($state === WebhookAuth::STATE_CONNECTED) {
             throw new WebhookException('Webhook authentication is required.', 401);
         }
 
-        return false;
+        if ($isVerificationEvent) {
+            return false;
+        }
+
+        throw new WebhookException('Webhook authentication is required.', 401);
     }
 
     private function ensurePostRequest(): void
