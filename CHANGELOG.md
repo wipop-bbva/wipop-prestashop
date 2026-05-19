@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.6.0...v1.6.1) (2026-05-19)
+
+### Bug Fixes
+
+* **webhook:** require auth for connected verification ([d981173](https://github.com/wipop-bbva/wipop-prestashop/commit/d9811737cdedd34da37870eb0dc8c0881b80ef69))
+* **webhook:** validate completed charges idempotently ([ffc2205](https://github.com/wipop-bbva/wipop-prestashop/commit/ffc2205695cf597199a9a263ef3a9602691c14ca))
+
 ## [1.6.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.5.0...v1.6.0) (2026-05-18)
 
 ### Features
