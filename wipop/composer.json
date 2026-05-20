@@ -12,10 +12,16 @@
       "PrestaShop\\Module\\Wipop\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "PrestaShop\\Module\\Wipop\\Tests\\": "tests/"
+    }
+  },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "3.92.0",
     "phpro/grumphp": "2.15",
     "phpstan/phpstan": "2.1.33",
+    "phpunit/phpunit": "10.5.63",
     "prestashop/autoindex": "2.1.0",
     "prestashop/header-stamp": "2.6.0",
     "prestashop/php-dev-tools": "5.0",
@@ -37,13 +43,14 @@
     "lint:cs": "php vendor/bin/php-cs-fixer fix --dry-run --diff",
     "lint:phpcs": "php vendor/bin/phpcs -q --standard=phpcs.xml",
     "fix:cs": "php vendor/bin/php-cs-fixer fix",
-    "lint:phpstan": "_PS_ROOT_DIR_=../prestashop-core php vendor/bin/phpstan --configuration=tests/phpstan/phpstan.neon analyse .",
+    "lint:phpstan": "_PS_ROOT_DIR_=../prestashop-core php vendor/bin/phpstan --configuration=tests/phpstan/phpstan.neon analyse . --debug --no-progress",
     "lint": [
       "@lint:php",
       "@lint:cs",
       "@lint:phpcs",
       "@lint:phpstan"
     ],
+    "test:unit": "php vendor/bin/phpunit --configuration=phpunit.xml.dist",
     "autoindex": "php vendor/bin/autoindex prestashop:add:index .",
     "header-stamp": "php vendor/bin/header-stamp --license=assets/afl.txt --exclude=vendor,node_modules"
   },

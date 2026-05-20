@@ -14,7 +14,6 @@ use function base64_encode;
 use function bin2hex;
 use function gmdate;
 use function hash;
-use function is_int;
 use function is_string;
 use function openssl_cipher_iv_length;
 use function openssl_decrypt;
@@ -149,7 +148,7 @@ final class WebhookCredentials
     private static function encryptPassword(string $password): string
     {
         $ivLength = openssl_cipher_iv_length(self::CIPHER);
-        if (!is_int($ivLength) || $ivLength <= 0) {
+        if ($ivLength <= 0) {
             throw new WebhookPasswordEncryptionException('Unsupported webhook password encryption cipher.');
         }
 
@@ -187,7 +186,7 @@ final class WebhookCredentials
         }
 
         $ivLength = openssl_cipher_iv_length(self::CIPHER);
-        if (!is_int($ivLength) || $ivLength <= 0) {
+        if ($ivLength <= 0) {
             throw new WebhookPasswordDecryptionException('Unsupported webhook password encryption cipher.');
         }
 
