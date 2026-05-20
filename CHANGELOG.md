@@ -1,3 +1,9 @@
+## [1.7.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.6.1...v1.7.0) (2026-05-20)
+
+### Features
+
+* **admin:** show Wipop payment summary on orders ([38d0da5](https://github.com/wipop-bbva/wipop-prestashop/commit/38d0da5391b87f993e18cf3927278c3157439f46))
+
 ## [1.6.1](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.6.0...v1.6.1) (2026-05-19)
 
 ### Bug Fixes
