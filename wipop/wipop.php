@@ -38,6 +38,8 @@ use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Install\ModuleInstaller;
 use PrestaShop\Module\Wipop\Install\ModuleUninstaller;
 use PrestaShop\Module\Wipop\Log\Logger;
+use PrestaShop\Module\Wipop\Order\OrderWipopPaymentPresenter;
+use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
@@ -93,7 +95,8 @@ class Wipop extends PaymentModule
         return parent::install()
             && (new ModuleInstaller($this->settingsRepository()))->run()
             && $this->registerHook('paymentOptions')
-            && $this->registerHook('moduleRoutes');
+            && $this->registerHook('moduleRoutes')
+            && $this->registerHook('displayAdminOrderSide');
     }
 
     public function uninstall()
@@ -138,6 +141,29 @@ class Wipop extends PaymentModule
         ];
     }
 
+    public function hookDisplayAdminOrderSide(array $params): string
+    {
+        $orderId = $params['id_order'] ?? null;
+        if (!is_numeric($orderId) || (int) $orderId <= 0) {
+            return '';
+        }
+
+        $summary = $this->paymentAttemptRepository()->findSummaryByOrderId((int) $orderId);
+        if ($summary === null) {
+            return '';
+        }
+
+        $payment = $this->orderWipopPaymentPresenter()->present($summary);
+
+        $this->context->smarty->assign([
+            'wipopPayment' => $payment,
+        ]);
+
+        $content = $this->display(__FILE__, 'views/templates/hook/admin_order_wipop.tpl');
+
+        return is_string($content) ? $content : '';
+    }
+
     private function paymentOptionFactory(): PaymentOptionFactory
     {
         return new PaymentOptionFactory(
@@ -149,6 +175,16 @@ class Wipop extends PaymentModule
     private function settingsRepository(): SettingsRepository
     {
         return new SettingsRepository();
+    }
+
+    private function paymentAttemptRepository(): PaymentAttemptRepository
+    {
+        return PaymentAttemptRepository::createDefault();
+    }
+
+    private function orderWipopPaymentPresenter(): OrderWipopPaymentPresenter
+    {
+        return new OrderWipopPaymentPresenter();
     }
 
     private function merchantOperationsService(): MerchantOperationsService

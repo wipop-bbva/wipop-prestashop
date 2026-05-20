@@ -120,6 +120,42 @@ final class PaymentAttemptRepository
         return $this->findOneByColumn('id_cart', $cartId);
     }
 
+    public function findSummaryByOrderId(int $orderId): ?PaymentAttemptSummary
+    {
+        if ($orderId <= 0) {
+            return null;
+        }
+
+        $sql = sprintf(
+            'SELECT
+                `id_wipop_payment_attempt`,
+                `id_cart`,
+                `payment_method`,
+                `status`,
+                `amount`,
+                `currency_iso`,
+                `wipop_order_id`,
+                `wipop_transaction_id`,
+                `remote_status`,
+                `remote_error_code`,
+                `remote_error_message`,
+                `webhook_received_at`
+            FROM `%swipop_payment_attempt`
+            WHERE `id_order` = %d
+            ORDER BY `id_wipop_payment_attempt` DESC
+            LIMIT 1',
+            $this->dbPrefix(),
+            $orderId
+        );
+
+        $row = $this->db->getRow($sql);
+        if (!is_array($row)) {
+            return null;
+        }
+
+        return $this->mapSummaryRow($row);
+    }
+
     public function syncFromWebhook(
         PaymentAttempt $attempt,
         Transaction $transaction,
@@ -195,6 +231,27 @@ final class PaymentAttemptRepository
             PaymentAttemptStatus::from((string) $row['status']),
             (float) $row['amount'],
             (string) $row['currency_iso'],
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    private function mapSummaryRow(array $row): PaymentAttemptSummary
+    {
+        return new PaymentAttemptSummary(
+            (int) $row['id_wipop_payment_attempt'],
+            (int) $row['id_cart'],
+            $this->nullableString($row['payment_method'] ?? null),
+            PaymentAttemptStatus::from((string) $row['status']),
+            (float) $row['amount'],
+            (string) $row['currency_iso'],
+            $this->nullableString($row['wipop_order_id'] ?? null),
+            $this->nullableString($row['wipop_transaction_id'] ?? null),
+            $this->nullableString($row['remote_status'] ?? null),
+            $this->nullableString($row['remote_error_code'] ?? null),
+            $this->nullableString($row['remote_error_message'] ?? null),
+            $this->nullableString($row['webhook_received_at'] ?? null),
         );
     }
 
