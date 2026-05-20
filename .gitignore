@@ -11,6 +11,8 @@ wipop/composer.lock
 wipop/.php-cs-fixer.cache
 .phpunit.cache/
 wipop/.phpunit.cache/
+.phpunit.result.cache
+wipop/.phpunit.result.cache
 var/
 wipop/var/
 
