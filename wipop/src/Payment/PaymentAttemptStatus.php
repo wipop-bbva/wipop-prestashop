@@ -13,4 +13,13 @@ enum PaymentAttemptStatus: string
     case FAILED = 'failed';
     case CANCELLED = 'cancelled';
     case REFUNDED = 'refunded';
+
+    public function syncWithWebhookStatus(self $webhookStatus): self
+    {
+        if ($this === self::REFUNDED) {
+            return self::REFUNDED;
+        }
+
+        return $webhookStatus;
+    }
 }

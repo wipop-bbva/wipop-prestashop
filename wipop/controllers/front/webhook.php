@@ -7,10 +7,13 @@ use PrestaShop\Module\Wipop\Exception\WebhookCredentialsException;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
+use PrestaShop\Module\Wipop\Payment\PaymentEventRepository;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuth;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuthStatus;
 use PrestaShop\Module\Wipop\Webhook\WebhookOrderSynchronizer;
 use PrestaShop\Module\Wipop\Webhook\WebhookPaymentValidator;
+use PrestaShop\Module\Wipop\Webhook\WebhookRefundExtractor;
+use PrestaShop\Module\Wipop\Webhook\WebhookRefundSynchronizer;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShop\Module\Wipop\Webhook\WebhookTransactionHandler;
 use PrestaShop\Module\Wipop\Webhook\WebhookTransactionHydrator;
@@ -168,6 +171,8 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
         }
 
         $paymentAttemptRepository = PaymentAttemptRepository::createDefault();
+        $paymentEventRepository = PaymentEventRepository::createDefault();
+        $paymentValidator = new WebhookPaymentValidator();
 
         return new WebhookTransactionHandler(
             new WebhookTransactionHydrator(),
@@ -175,7 +180,13 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
             new WebhookOrderSynchronizer(
                 $paymentAttemptRepository,
                 $this->module,
-                new WebhookPaymentValidator()
+                $paymentValidator
+            ),
+            new WebhookRefundExtractor(),
+            new WebhookRefundSynchronizer(
+                $paymentAttemptRepository,
+                $paymentEventRepository,
+                $paymentValidator
             ),
             $logger
         );

@@ -47,6 +47,44 @@
         </div>
       {/if}
 
+      {if $wipopPayment.has_refund}
+        <hr>
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr>
+              <th scope="row">{l s='Refund status' d='Modules.Wipop.Admin'}</th>
+              <td>{$wipopPayment.refund_status|escape:'html':'UTF-8'}</td>
+            </tr>
+            <tr>
+              <th scope="row">{l s='Refunded amount' d='Modules.Wipop.Admin'}</th>
+              <td>{$wipopPayment.refunded_amount|escape:'html':'UTF-8'}</td>
+            </tr>
+            <tr>
+              <th scope="row">{l s='Last refund' d='Modules.Wipop.Admin'}</th>
+              <td>{$wipopPayment.last_refund_transaction_id|escape:'html':'UTF-8'}</td>
+            </tr>
+            <tr>
+              <th scope="row">{l s='Last refund amount' d='Modules.Wipop.Admin'}</th>
+              <td>{$wipopPayment.last_refund_amount|escape:'html':'UTF-8'}</td>
+            </tr>
+            <tr>
+              <th scope="row">{l s='Last refund status' d='Modules.Wipop.Admin'}</th>
+              <td>{$wipopPayment.last_refund_status|escape:'html':'UTF-8'}</td>
+            </tr>
+            <tr>
+              <th scope="row">{l s='Last refund webhook' d='Modules.Wipop.Admin'}</th>
+              <td>{$wipopPayment.last_refund_received_at|escape:'html':'UTF-8'}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        {if $wipopPayment.has_refund_error}
+          <div class="alert alert-warning mt-2 mb-0">
+            {$wipopPayment.last_refund_error|escape:'html':'UTF-8'}
+          </div>
+        {/if}
+      {/if}
+
       <p class="text-muted small mt-2 mb-0">
         {l s='Attempt' d='Modules.Wipop.Admin'} #{$wipopPayment.attempt_id|escape:'html':'UTF-8'}
         / {l s='Cart' d='Modules.Wipop.Admin'} #{$wipopPayment.cart_id|escape:'html':'UTF-8'}

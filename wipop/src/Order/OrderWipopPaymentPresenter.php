@@ -6,6 +6,7 @@ namespace PrestaShop\Module\Wipop\Order;
 
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
+use PrestaShop\Module\Wipop\Payment\PaymentRefundSummary;
 
 final class OrderWipopPaymentPresenter
 {
@@ -15,6 +16,7 @@ final class OrderWipopPaymentPresenter
     public function present(PaymentAttemptSummary $summary): array
     {
         $remoteError = $this->joinValues($summary->remoteErrorCode, $summary->remoteErrorMessage);
+        $refund = $this->presentRefund($summary);
 
         return [
             'attempt_id' => (string) $summary->id,
@@ -29,6 +31,7 @@ final class OrderWipopPaymentPresenter
             'webhook_received_at' => $this->displayValue($summary->webhookReceivedAt),
             'has_error' => $remoteError !== null,
             'remote_error' => $this->displayValue($remoteError),
+            ...$refund,
         ];
     }
 
@@ -60,6 +63,64 @@ final class OrderWipopPaymentPresenter
     private function formatStatus(string $status): string
     {
         return ucfirst(str_replace('_', ' ', $status));
+    }
+
+    /**
+     * @return array<string, bool|string>
+     */
+    private function presentRefund(PaymentAttemptSummary $summary): array
+    {
+        $refund = $summary->refundSummary;
+        if (!$refund instanceof PaymentRefundSummary) {
+            return [
+                'has_refund' => false,
+                'refund_status' => '-',
+                'refunded_amount' => '-',
+                'last_refund_transaction_id' => '-',
+                'last_refund_amount' => '-',
+                'last_refund_status' => '-',
+                'last_refund_received_at' => '-',
+                'has_refund_error' => false,
+                'last_refund_error' => '-',
+            ];
+        }
+
+        $refundError = $this->joinValues($refund->lastRefundErrorCode, $refund->lastRefundErrorMessage);
+
+        return [
+            'has_refund' => true,
+            'refund_status' => $this->refundStatus($summary),
+            'refunded_amount' => $refund->completedRefundCount === 0
+                ? '-'
+                : $this->formatAmount($refund->refundedAmount, $refund->currencyIso),
+            'last_refund_transaction_id' => $this->displayValue($refund->lastRefundTransactionId),
+            'last_refund_amount' => $this->formatOptionalAmount(
+                $refund->lastRefundAmount,
+                $refund->lastRefundCurrencyIso ?? $refund->currencyIso
+            ),
+            'last_refund_status' => $this->displayValue($refund->lastRefundStatus),
+            'last_refund_received_at' => $this->displayValue($refund->lastRefundReceivedAt),
+            'has_refund_error' => $refundError !== null,
+            'last_refund_error' => $this->displayValue($refundError),
+        ];
+    }
+
+    private function refundStatus(PaymentAttemptSummary $summary): string
+    {
+        if ($summary->status === PaymentAttemptStatus::REFUNDED) {
+            return 'Refunded';
+        }
+
+        if ($summary->refundSummary?->completedRefundCount === 0) {
+            return 'Refund event';
+        }
+
+        return 'Partial refund';
+    }
+
+    private function formatOptionalAmount(?float $amount, string $currencyIso): string
+    {
+        return $amount === null ? '-' : $this->formatAmount($amount, $currencyIso);
     }
 
     private function joinValues(?string $first, ?string $second): ?string

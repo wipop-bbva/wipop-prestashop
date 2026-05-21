@@ -19,6 +19,7 @@ final class PaymentAttemptSummary
         public readonly ?string $remoteErrorCode,
         public readonly ?string $remoteErrorMessage,
         public readonly ?string $webhookReceivedAt,
+        public readonly ?PaymentRefundSummary $refundSummary = null,
     ) {
     }
 }
