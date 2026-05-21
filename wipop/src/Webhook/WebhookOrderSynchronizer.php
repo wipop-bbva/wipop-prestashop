@@ -11,14 +11,14 @@ use PaymentModule;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
 use PrestaShop\Module\Wipop\Payment\PaymentAttempt;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
+use PrestaShop\Module\Wipop\Payment\TransactionType;
+use RuntimeException;
 use Validate;
 use Wipop\Domain\Transaction;
 use Wipop\Domain\TransactionStatus;
 
 final class WebhookOrderSynchronizer
 {
-    private const TRANSACTION_TYPE_CHARGE = 'CHARGE';
-
     public function __construct(
         private PaymentAttemptRepository $paymentAttemptRepository,
         private PaymentModule $module,
@@ -57,7 +57,7 @@ final class WebhookOrderSynchronizer
     private function shouldCreateOrLinkOrder(Transaction $transaction): bool
     {
         return $transaction->status === TransactionStatus::COMPLETED
-            && strtoupper(trim((string) $transaction->transactionType)) === self::TRANSACTION_TYPE_CHARGE;
+            && TransactionType::isCharge($transaction->transactionType);
     }
 
     private function existingOrderId(int $cartId): ?int
@@ -97,7 +97,7 @@ final class WebhookOrderSynchronizer
 
         $paymentStatusId = (int) Configuration::get('PS_OS_PAYMENT');
         if ($paymentStatusId <= 0) {
-            throw new \RuntimeException('Unable to resolve the paid order status.');
+            throw new RuntimeException('Unable to resolve the paid order status.');
         }
 
         $created = $this->module->validateOrder(
@@ -113,7 +113,7 @@ final class WebhookOrderSynchronizer
         );
 
         if (!$created) {
-            throw new \RuntimeException('Unable to create the PrestaShop order from the Wipop webhook.');
+            throw new RuntimeException('Unable to create the PrestaShop order from the Wipop webhook.');
         }
 
         $orderId = (int) $this->module->currentOrder;
@@ -122,7 +122,7 @@ final class WebhookOrderSynchronizer
         }
 
         if ($orderId <= 0) {
-            throw new \RuntimeException('Unable to resolve the created PrestaShop order id.');
+            throw new RuntimeException('Unable to resolve the created PrestaShop order id.');
         }
 
         $this->paymentAttemptRepository->assignOrderId($attempt->id, $orderId);

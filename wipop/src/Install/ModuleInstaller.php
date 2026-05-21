@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Install;
 
+use Db;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 
 final class ModuleInstaller
@@ -24,6 +25,12 @@ final class ModuleInstaller
     }
 
     public function installTables(): bool
+    {
+        return $this->installPaymentAttemptTable()
+            && $this->installPaymentEventTable();
+    }
+
+    private function installPaymentAttemptTable(): bool
     {
         $sql = sprintf(
             'CREATE TABLE IF NOT EXISTS `%swipop_payment_attempt` (
@@ -55,7 +62,39 @@ final class ModuleInstaller
             $this->mysqlEngine()
         );
 
-        return \Db::getInstance()->execute($sql);
+        return Db::getInstance()->execute($sql);
+    }
+
+    private function installPaymentEventTable(): bool
+    {
+        $sql = sprintf(
+            'CREATE TABLE IF NOT EXISTS `%swipop_payment_event` (
+                `id_wipop_payment_event` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `id_wipop_payment_attempt` INT UNSIGNED NOT NULL,
+                `id_order` INT UNSIGNED DEFAULT NULL,
+                `remote_transaction_id` VARCHAR(64) NOT NULL,
+                `parent_transaction_id` VARCHAR(64) DEFAULT NULL,
+                `wipop_order_id` VARCHAR(12) DEFAULT NULL,
+                `transaction_type` VARCHAR(32) NOT NULL,
+                `operation_type` VARCHAR(32) DEFAULT NULL,
+                `status` VARCHAR(32) DEFAULT NULL,
+                `amount` DECIMAL(20, 6) DEFAULT NULL,
+                `currency_iso` CHAR(3) DEFAULT NULL,
+                `remote_error_code` VARCHAR(64) DEFAULT NULL,
+                `remote_error_message` TEXT DEFAULT NULL,
+                `received_at` DATETIME NOT NULL,
+                `date_add` DATETIME NOT NULL,
+                `date_upd` DATETIME NOT NULL,
+                PRIMARY KEY (`id_wipop_payment_event`),
+                KEY `wipop_payment_event_attempt_type_idx` (`id_wipop_payment_attempt`, `transaction_type`),
+                KEY `wipop_payment_event_order_idx` (`id_order`),
+                UNIQUE KEY `wipop_payment_event_remote_uidx` (`remote_transaction_id`, `transaction_type`)
+            ) ENGINE=%s DEFAULT CHARSET=utf8;',
+            $this->dbPrefix(),
+            $this->mysqlEngine()
+        );
+
+        return Db::getInstance()->execute($sql);
     }
 
     private function dbPrefix(): string

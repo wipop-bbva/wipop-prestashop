@@ -4,34 +4,43 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Payment;
 
+use Cart;
+use Currency;
+use DateTimeImmutable;
+use Db;
 use PrestaShop\Module\Wipop\Configuration\Settings;
+use RuntimeException;
 use Wipop\Domain\Transaction;
 
 final class PaymentAttemptRepository
 {
-    public function __construct(private \Db $db)
-    {
+    public function __construct(
+        private Db $db,
+        private ?PaymentEventRepository $paymentEventRepository = null,
+    ) {
     }
 
     public static function createDefault(): self
     {
-        return new self(\Db::getInstance());
+        $db = Db::getInstance();
+
+        return new self($db, new PaymentEventRepository($db));
     }
 
     public function createForCart(
-        \Cart $cart,
+        Cart $cart,
         string $paymentMethod,
         Settings $settings,
     ): int {
-        $currency = new \Currency((int) $cart->id_currency);
-        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $currency = new Currency((int) $cart->id_currency);
+        $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
 
         $data = [
             'id_cart' => (int) $cart->id,
             'id_shop' => (int) $cart->id_shop,
             'payment_method' => pSQL($paymentMethod),
             'status' => pSQL(PaymentAttemptStatus::INITIALIZED->value),
-            'amount' => round((float) $cart->getOrderTotal(true, \Cart::BOTH), 2),
+            'amount' => round((float) $cart->getOrderTotal(true, Cart::BOTH), 2),
             'currency_iso' => pSQL((string) $currency->iso_code),
             'is_live' => (int) $settings->liveMode,
             'terminal_id' => (int) $settings->terminalId,
@@ -40,12 +49,12 @@ final class PaymentAttemptRepository
         ];
 
         if (!$this->db->insert('wipop_payment_attempt', $data)) {
-            throw new \RuntimeException('Unable to create Wipop payment attempt.');
+            throw new RuntimeException('Unable to create Wipop payment attempt.');
         }
 
         $attemptId = (int) $this->db->Insert_ID();
         if ($attemptId <= 0) {
-            throw new \RuntimeException('Unable to retrieve the Wipop payment attempt identifier.');
+            throw new RuntimeException('Unable to retrieve the Wipop payment attempt identifier.');
         }
 
         return $attemptId;
@@ -81,6 +90,14 @@ final class PaymentAttemptRepository
         ]);
     }
 
+    public function markRefunded(int $attemptId): void
+    {
+        $this->update($attemptId, [
+            'status' => pSQL(PaymentAttemptStatus::REFUNDED->value),
+            'date_upd' => pSQL($this->currentDateTime()),
+        ]);
+    }
+
     /**
      * @param array<string, float|int|string|null> $data
      */
@@ -89,7 +106,7 @@ final class PaymentAttemptRepository
         $condition = sprintf('id_wipop_payment_attempt = %d', $attemptId);
 
         if (!$this->db->update('wipop_payment_attempt', $data, $condition, 0, true)) {
-            throw new \RuntimeException('Unable to update Wipop payment attempt.');
+            throw new RuntimeException('Unable to update Wipop payment attempt.');
         }
     }
 
@@ -153,7 +170,15 @@ final class PaymentAttemptRepository
             return null;
         }
 
-        return $this->mapSummaryRow($row);
+        $attemptId = $this->nullableInt($row['id_wipop_payment_attempt'] ?? null);
+        if ($attemptId === null) {
+            return null;
+        }
+
+        $refundSummary = $this->paymentEventRepository()
+            ->findRefundSummaryByAttemptId($attemptId);
+
+        return $this->mapSummaryRow($row, $refundSummary);
     }
 
     public function syncFromWebhook(
@@ -162,6 +187,7 @@ final class PaymentAttemptRepository
         PaymentAttemptStatus $status,
     ): void {
         $now = $this->currentDateTime();
+        $status = $attempt->status->syncWithWebhookStatus($status);
         $data = [
             'status' => pSQL($status->value),
             'remote_status' => $transaction->status === null ? null : pSQL($transaction->status->value),
@@ -237,7 +263,7 @@ final class PaymentAttemptRepository
     /**
      * @param array<string, mixed> $row
      */
-    private function mapSummaryRow(array $row): PaymentAttemptSummary
+    private function mapSummaryRow(array $row, ?PaymentRefundSummary $refundSummary): PaymentAttemptSummary
     {
         return new PaymentAttemptSummary(
             (int) $row['id_wipop_payment_attempt'],
@@ -252,6 +278,7 @@ final class PaymentAttemptRepository
             $this->nullableString($row['remote_error_code'] ?? null),
             $this->nullableString($row['remote_error_message'] ?? null),
             $this->nullableString($row['webhook_received_at'] ?? null),
+            $refundSummary,
         );
     }
 
@@ -287,7 +314,16 @@ final class PaymentAttemptRepository
 
     private function currentDateTime(): string
     {
-        return (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        return (new DateTimeImmutable())->format('Y-m-d H:i:s');
+    }
+
+    private function paymentEventRepository(): PaymentEventRepository
+    {
+        if ($this->paymentEventRepository === null) {
+            $this->paymentEventRepository = new PaymentEventRepository($this->db);
+        }
+
+        return $this->paymentEventRepository;
     }
 
     private function dbPrefix(): string

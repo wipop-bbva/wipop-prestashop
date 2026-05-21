@@ -8,6 +8,7 @@ use PrestaShop\Module\Wipop\Exception\WebhookException;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
+use PrestaShop\Module\Wipop\Payment\TransactionType;
 use Wipop\Domain\Transaction;
 use Wipop\Domain\TransactionStatus;
 
@@ -17,6 +18,8 @@ final class WebhookTransactionHandler
         private WebhookTransactionHydrator $hydrator,
         private PaymentAttemptRepository $paymentAttemptRepository,
         private WebhookOrderSynchronizer $orderSynchronizer,
+        private WebhookRefundExtractor $refundExtractor,
+        private WebhookRefundSynchronizer $refundSynchronizer,
         private Logger $logger,
     ) {
     }
@@ -29,6 +32,42 @@ final class WebhookTransactionHandler
     public function handle(array $payload): void
     {
         $transaction = $this->hydrator->hydrate($payload);
+        $refund = $this->refundExtractor->extract($transaction, $payload);
+
+        if ($refund !== null) {
+            $attempt = $this->paymentAttemptRepository->findByRemoteIdentifiers(
+                $refund->wipopOrderId,
+                $refund->parentTransactionId
+            );
+
+            if ($attempt === null) {
+                throw new WebhookException('Could not find the local Wipop payment attempt.', 404);
+            }
+
+            $this->refundSynchronizer->sync($attempt, $refund);
+
+            $this->logger->info('Webhook refund synchronized.', [
+                'attempt_id' => $attempt->id,
+                'cart_id' => $attempt->cartId,
+                'refund_transaction_id' => $refund->remoteTransactionId,
+                'wipop_order_id' => $refund->wipopOrderId ?? '',
+                'remote_status' => $refund->status ?? '',
+            ]);
+
+            return;
+        }
+
+        if (!TransactionType::isChargeOrMissing($transaction->transactionType)) {
+            $this->logger->info('Webhook transaction ignored.', [
+                'transaction_id' => $transaction->id ?? '',
+                'wipop_order_id' => $transaction->orderId ?? '',
+                'transaction_type' => $transaction->transactionType ?? '',
+                'remote_status' => $transaction->status === null ? '' : $transaction->status->value,
+            ]);
+
+            return;
+        }
+
         $attemptStatus = $this->mapStatus($transaction);
         $attempt = $this->paymentAttemptRepository->findByRemoteIdentifiers(
             $transaction->orderId,

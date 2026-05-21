@@ -7,13 +7,13 @@ namespace PrestaShop\Module\Wipop\Webhook;
 use Cart;
 use Currency;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
+use PrestaShop\Module\Wipop\Payment\PaymentAmount;
 use PrestaShop\Module\Wipop\Payment\PaymentAttempt;
+use PrestaShop\Module\Wipop\Payment\PaymentEventData;
 use Wipop\Domain\Transaction;
 
 final class WebhookPaymentValidator
 {
-    private const EUR_MINOR_UNITS = 100;
-
     /**
      * @throws WebhookException
      */
@@ -46,6 +46,30 @@ final class WebhookPaymentValidator
     /**
      * @throws WebhookException
      */
+    public function assertRefundMatches(PaymentAttempt $attempt, PaymentEventData $refund): void
+    {
+        if ($refund->amount === null || PaymentAmount::toCents($refund->amount) <= 0) {
+            throw new WebhookException('Missing refund amount for completed refund.', 400);
+        }
+
+        $attemptCurrency = $this->normalizeCurrency($attempt->currencyIso);
+        if ($attemptCurrency === '') {
+            throw new WebhookException('Missing currency on the local Wipop payment attempt.', 400);
+        }
+
+        $refundCurrency = $this->normalizeCurrency($refund->currencyIso);
+        if ($refundCurrency === '') {
+            throw new WebhookException('Missing refund currency for completed refund.', 400);
+        }
+
+        if ($refundCurrency !== $attemptCurrency) {
+            throw new WebhookException('Refund currency does not match the local Wipop payment attempt.', 400);
+        }
+    }
+
+    /**
+     * @throws WebhookException
+     */
     public function assertCartMatches(PaymentAttempt $attempt, Cart $cart): void
     {
         $attemptCurrency = $this->normalizeCurrency($attempt->currencyIso);
@@ -66,12 +90,7 @@ final class WebhookPaymentValidator
 
     private function amountsMatch(float $expected, float $actual): bool
     {
-        return $this->toEurCents($expected) === $this->toEurCents($actual);
-    }
-
-    private function toEurCents(float $amount): int
-    {
-        return (int) round($amount * self::EUR_MINOR_UNITS);
+        return PaymentAmount::matches($expected, $actual);
     }
 
     private function cartCurrencyIso(Cart $cart): string
