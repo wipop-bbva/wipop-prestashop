@@ -1,3 +1,9 @@
+## [1.8.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.7.0...v1.8.0) (2026-05-21)
+
+### Features
+
+* **refund:** sync Wipop refund webhooks ([821ee0a](https://github.com/wipop-bbva/wipop-prestashop/commit/821ee0ae464c041e5658e3d4cd7b58f2a3129643))
+
 ## [1.7.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.6.1...v1.7.0) (2026-05-20)
 
 ### Features
