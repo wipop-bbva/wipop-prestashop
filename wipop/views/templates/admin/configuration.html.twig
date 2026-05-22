@@ -1,16 +1,49 @@
 {% extends '@PrestaShop/Admin/layout.html.twig' %}
 {% trans_default_domain 'Modules.Wipop.Admin' %}
 
+{% block stylesheets %}
+  {{ parent() }}
+  <style>
+    .wipop-settings-form .form-group,
+    .wipop-settings-form .form-group.row {
+      justify-content: flex-start;
+    }
+
+    .wipop-settings-form .form-control-label,
+    .wipop-settings-form label {
+      justify-content: flex-start;
+      text-align: left !important;
+    }
+
+    .wipop-settings-form .form-group > .form-control-label {
+      flex: 0 0 25% !important;
+      max-width: 25% !important;
+      width: 25% !important;
+    }
+
+    .wipop-settings-form .form-group > .col-sm {
+      flex: 0 0 75% !important;
+      max-width: 75% !important;
+      width: 75% !important;
+    }
+
+    .wipop-settings-form .prestashop-switch,
+    .wipop-settings-form .switch-input {
+      margin-left: 0;
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
   {{ form_start(configurationForm) }}
     <div class="row justify-content-center">
       <div class="col-xl-10">
         <div class="card">
           <h3 class="card-header">
-            <i class="material-icons">settings</i> {{ 'Wipop'|trans }}
+            <i class="material-icons">settings</i> {{ 'Payment configuration with Wipop'|trans }}
           </h3>
           <div class="card-body">
-            <div class="form-wrapper">
+            <div class="wipop-settings-form">
               {{ form_widget(configurationForm) }}
             </div>
           </div>

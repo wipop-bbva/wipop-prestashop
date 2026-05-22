@@ -7,6 +7,11 @@
         <target>Wipöp</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="3a67d3eb1784b66df72cde247e3bcea8">
+        <source>Payment configuration with Wipop</source>
+        <target>Wipöp ordainketen konfigurazioa</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="cebd5bbe0ffdecc270a8a324e5a277dd">
         <source>Live mode</source>
         <target>Produkzio modua</target>
