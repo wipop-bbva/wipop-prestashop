@@ -96,6 +96,7 @@ class Wipop extends PaymentModule
             && (new ModuleInstaller($this->settingsRepository()))->run()
             && $this->registerHook('paymentOptions')
             && $this->registerHook('moduleRoutes')
+            && $this->registerHook('displayPaymentReturn')
             && $this->registerHook('displayAdminOrderSide');
     }
 
@@ -123,6 +124,31 @@ class Wipop extends PaymentModule
         }
 
         return $this->paymentOptionFactory()->buildOptions($this, $cart);
+    }
+
+    public function hookDisplayPaymentReturn(array $params): string
+    {
+        $order = $params['order'] ?? null;
+        if (!$order instanceof Order || !Validate::isLoadedObject($order)) {
+            return '';
+        }
+
+        $summary = $this->paymentAttemptRepository()->findSummaryByOrderId((int) $order->id);
+        if ($summary === null) {
+            return '';
+        }
+
+        $transactionId = trim((string) $summary->wipopTransactionId);
+
+        $this->context->smarty->assign([
+            'wipopPaymentReturn' => [
+                'amount' => $this->formatPaymentAmount($summary->amount, $summary->currencyIso),
+                'order_reference' => (string) $order->reference,
+                'transaction_id' => $transactionId === '' ? null : $transactionId,
+            ],
+        ]);
+
+        return $this->fetch('module:wipop/views/templates/hook/payment_return.tpl');
     }
 
     public function hookModuleRoutes()
@@ -162,6 +188,11 @@ class Wipop extends PaymentModule
         $content = $this->display(__FILE__, 'views/templates/hook/admin_order_wipop.tpl');
 
         return is_string($content) ? $content : '';
+    }
+
+    private function formatPaymentAmount(float $amount, string $currencyIso): string
+    {
+        return sprintf('%s %s', number_format($amount, 2, '.', ''), strtoupper($currencyIso));
     }
 
     private function paymentOptionFactory(): PaymentOptionFactory
