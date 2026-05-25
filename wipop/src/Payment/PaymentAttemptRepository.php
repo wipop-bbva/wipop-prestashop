@@ -12,7 +12,7 @@ use PrestaShop\Module\Wipop\Configuration\Settings;
 use RuntimeException;
 use Wipop\Domain\Transaction;
 
-final class PaymentAttemptRepository
+final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterface
 {
     public function __construct(
         private Db $db,
@@ -161,7 +161,7 @@ final class PaymentAttemptRepository
             WHERE `id_order` = %d
             ORDER BY `id_wipop_payment_attempt` DESC
             LIMIT 1',
-            $this->dbPrefix(),
+            _DB_PREFIX_,
             $orderId
         );
 
@@ -170,13 +170,8 @@ final class PaymentAttemptRepository
             return null;
         }
 
-        $attemptId = $this->nullableInt($row['id_wipop_payment_attempt'] ?? null);
-        if ($attemptId === null) {
-            return null;
-        }
-
         $refundSummary = $this->paymentEventRepository()
-            ->findRefundSummaryByAttemptId($attemptId);
+            ->findRefundSummaryByAttemptId((int) $row['id_wipop_payment_attempt']);
 
         return $this->mapSummaryRow($row, $refundSummary);
     }
@@ -232,7 +227,7 @@ final class PaymentAttemptRepository
             WHERE `%s` = %s
             ORDER BY `id_wipop_payment_attempt` DESC
             LIMIT 1',
-            $this->dbPrefix(),
+            _DB_PREFIX_,
             bqSQL($column),
             $this->sqlValue($value)
         );
@@ -324,12 +319,5 @@ final class PaymentAttemptRepository
         }
 
         return $this->paymentEventRepository;
-    }
-
-    private function dbPrefix(): string
-    {
-        $dbPrefix = defined('_DB_PREFIX_') ? _DB_PREFIX_ : 'ps_';
-
-        return is_string($dbPrefix) ? $dbPrefix : 'ps_';
     }
 }

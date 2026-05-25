@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use Db;
 use RuntimeException;
 
-final class PaymentEventRepository
+final class PaymentEventRepository implements RefundEventStoreInterface
 {
     public function __construct(private Db $db)
     {
@@ -21,23 +21,47 @@ final class PaymentEventRepository
 
     public function save(PaymentAttempt $attempt, PaymentEventData $event): void
     {
-        $eventId = $this->findIdByRemoteEvent($event->remoteTransactionId, $event->transactionType);
-        $now = $this->currentDateTime();
-        $data = $this->eventData($attempt, $event, $now);
-        $data['date_upd'] = pSQL($now);
+        $this->saveEvent($attempt, $event);
+    }
 
-        if ($eventId === null) {
-            $data['date_add'] = $data['date_upd'];
-            if (!$this->db->insert('wipop_payment_event', $data, true)) {
-                throw new RuntimeException('Unable to create Wipop payment event.');
-            }
+    public function saveManualRefund(PaymentAttempt $attempt, PaymentEventData $event, int $employeeId): void
+    {
+        $this->saveEvent($attempt, $event, $employeeId);
+    }
 
-            return;
+    public function linkOrderSlip(string $remoteTransactionId, int $orderSlipId): void
+    {
+        $condition = sprintf(
+            'remote_transaction_id = %s AND transaction_type = %s',
+            $this->sqlString($remoteTransactionId),
+            $this->sqlString(PaymentEventData::TYPE_REFUND)
+        );
+
+        $updated = $this->db->update(
+            'wipop_payment_event',
+            [
+                'id_order_slip' => $orderSlipId,
+                'date_upd' => pSQL($this->currentDateTime()),
+            ],
+            $condition,
+            0,
+            true
+        );
+
+        if (!$updated) {
+            throw new RuntimeException('Unable to link Wipop payment event to the order slip.');
         }
+    }
 
-        $condition = sprintf('id_wipop_payment_event = %d', $eventId);
-        if (!$this->db->update('wipop_payment_event', $data, $condition, 0, true)) {
-            throw new RuntimeException('Unable to update Wipop payment event.');
+    private function saveEvent(PaymentAttempt $attempt, PaymentEventData $event, ?int $employeeId = null): void
+    {
+        $now = $this->currentDateTime();
+        $data = $this->eventData($attempt, $event, $now, $employeeId);
+        $data['date_add'] = $now;
+        $data['date_upd'] = $now;
+
+        if (!$this->db->execute($this->upsertEventSql($data))) {
+            throw new RuntimeException('Unable to save Wipop payment event.');
         }
     }
 
@@ -63,7 +87,7 @@ final class PaymentEventRepository
             'SELECT COALESCE(SUM(`amount`), 0)
             FROM `%swipop_payment_event`
             WHERE %s',
-            $this->dbPrefix(),
+            _DB_PREFIX_,
             implode(' AND ', $conditions)
         );
 
@@ -90,47 +114,69 @@ final class PaymentEventRepository
             $this->nullableString($latestRefund['received_at'] ?? null),
             $this->nullableString($latestRefund['remote_error_code'] ?? null),
             $this->nullableString($latestRefund['remote_error_message'] ?? null),
+            $this->positiveInt($latestRefund['id_order_slip'] ?? null),
         );
     }
 
     /**
      * @return array<string, float|int|string|null>
      */
-    private function eventData(PaymentAttempt $attempt, PaymentEventData $event, string $receivedAt): array
-    {
-        return [
+    private function eventData(
+        PaymentAttempt $attempt,
+        PaymentEventData $event,
+        string $receivedAt,
+        ?int $employeeId = null,
+    ): array {
+        $data = [
             'id_wipop_payment_attempt' => (int) $attempt->id,
             'id_order' => $attempt->orderId,
-            'remote_transaction_id' => pSQL($event->remoteTransactionId),
-            'parent_transaction_id' => $this->nullableSqlString($event->parentTransactionId),
-            'wipop_order_id' => $this->nullableSqlString($event->wipopOrderId),
-            'transaction_type' => pSQL($event->transactionType),
-            'operation_type' => $this->nullableSqlString($event->operationType),
-            'status' => $this->nullableSqlString($event->status),
+            'remote_transaction_id' => $event->remoteTransactionId,
+            'parent_transaction_id' => $this->nullableString($event->parentTransactionId),
+            'wipop_order_id' => $this->nullableString($event->wipopOrderId),
+            'transaction_type' => $event->transactionType,
+            'operation_type' => $this->nullableString($event->operationType),
+            'status' => $this->nullableString($event->status),
             'amount' => $event->amount,
-            'currency_iso' => $this->nullableSqlString($this->normalizeCurrency($event->currencyIso)),
-            'remote_error_code' => $this->nullableSqlString($event->remoteErrorCode),
-            'remote_error_message' => $this->nullableSqlString($event->remoteErrorMessage),
-            'received_at' => pSQL($receivedAt),
+            'currency_iso' => $this->nullableString($this->normalizeCurrency($event->currencyIso)),
+            'remote_error_code' => $this->nullableString($event->remoteErrorCode),
+            'remote_error_message' => $this->nullableString($event->remoteErrorMessage),
+            'received_at' => $receivedAt,
         ];
+
+        if ($employeeId !== null) {
+            $data['id_employee'] = $employeeId;
+        }
+
+        return $data;
     }
 
-    private function findIdByRemoteEvent(string $remoteTransactionId, string $transactionType): ?int
+    /**
+     * @param array<string, float|int|string|null> $data
+     */
+    private function upsertEventSql(array $data): string
     {
-        $sql = sprintf(
-            'SELECT `id_wipop_payment_event`
-            FROM `%swipop_payment_event`
-            WHERE `remote_transaction_id` = %s
-                AND `transaction_type` = %s
-            LIMIT 1',
-            $this->dbPrefix(),
-            $this->sqlString($remoteTransactionId),
-            $this->sqlString($transactionType)
+        $columns = array_keys($data);
+        $updates = array_filter(
+            $columns,
+            static fn (string $column): bool => $column !== 'date_add'
         );
 
-        $eventId = (int) $this->db->getValue($sql);
-
-        return $eventId > 0 ? $eventId : null;
+        return sprintf(
+            'INSERT INTO `%swipop_payment_event` (%s)
+            VALUES (%s)
+            ON DUPLICATE KEY UPDATE %s',
+            _DB_PREFIX_,
+            implode(', ', array_map([$this, 'sqlColumn'], $columns)),
+            implode(', ', array_map([$this, 'sqlValue'], $data)),
+            implode(', ', array_map(
+                fn (string $column): string => sprintf(
+                    '%s = VALUES(%s)',
+                    $this->sqlColumn($column),
+                    $this->sqlColumn($column)
+                ),
+                $updates
+            ))
+        );
     }
 
     /**
@@ -146,13 +192,14 @@ final class PaymentEventRepository
                 `currency_iso`,
                 `received_at`,
                 `remote_error_code`,
-                `remote_error_message`
+                `remote_error_message`,
+                `id_order_slip`
             FROM `%swipop_payment_event`
             WHERE `id_wipop_payment_attempt` = %d
                 AND `transaction_type` = %s
             ORDER BY `received_at` DESC, `id_wipop_payment_event` DESC
             LIMIT 1',
-            $this->dbPrefix(),
+            _DB_PREFIX_,
             $attemptId,
             $this->sqlString(PaymentEventData::TYPE_REFUND)
         );
@@ -177,7 +224,7 @@ final class PaymentEventRepository
                 AND `transaction_type` = %s
                 AND `status` = %s
                 AND `amount` IS NOT NULL',
-            $this->dbPrefix(),
+            _DB_PREFIX_,
             $attemptId,
             $this->sqlString(PaymentEventData::TYPE_REFUND),
             $this->sqlString('COMPLETED')
@@ -189,27 +236,22 @@ final class PaymentEventRepository
         }
 
         return [
-            'amount' => $this->nullableFloat($row['refunded_amount'] ?? null) ?? 0.0,
-            'count' => $this->nullableInt($row['refund_count'] ?? null) ?? 0,
+            'amount' => (float) ($row['refunded_amount'] ?? 0),
+            'count' => (int) ($row['refund_count'] ?? 0),
             'currency' => $this->nullableString($row['currency_iso'] ?? null),
         ];
     }
 
-    private function nullableInt(mixed $value): ?int
+    private function positiveInt(mixed $value): ?int
     {
-        return is_numeric($value) ? (int) $value : null;
+        $value = (int) $value;
+
+        return $value > 0 ? $value : null;
     }
 
     private function nullableFloat(mixed $value): ?float
     {
         return is_numeric($value) ? (float) $value : null;
-    }
-
-    private function nullableSqlString(?string $value): ?string
-    {
-        $value = $this->nullableString($value);
-
-        return $value === null ? null : pSQL($value);
     }
 
     private function nullableString(mixed $value): ?string
@@ -229,15 +271,30 @@ final class PaymentEventRepository
         return sprintf('\'%s\'', pSQL($value));
     }
 
+    private function sqlColumn(string $column): string
+    {
+        return sprintf('`%s`', $column);
+    }
+
+    private function sqlValue(float|int|string|null $value): string
+    {
+        if ($value === null) {
+            return 'NULL';
+        }
+
+        if (is_int($value)) {
+            return (string) $value;
+        }
+
+        if (is_float($value)) {
+            return number_format($value, 6, '.', '');
+        }
+
+        return $this->sqlString($value);
+    }
+
     private function currentDateTime(): string
     {
         return (new DateTimeImmutable())->format('Y-m-d H:i:s');
-    }
-
-    private function dbPrefix(): string
-    {
-        $dbPrefix = defined('_DB_PREFIX_') ? _DB_PREFIX_ : 'ps_';
-
-        return is_string($dbPrefix) ? $dbPrefix : 'ps_';
     }
 }

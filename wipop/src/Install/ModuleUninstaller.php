@@ -25,16 +25,8 @@ final class ModuleUninstaller
     private function dropTables(): bool
     {
         $db = \Db::getInstance();
-        $dbPrefix = $this->dbPrefix();
 
-        return $db->execute(sprintf('DROP TABLE IF EXISTS `%swipop_payment_event`', $dbPrefix))
-            && $db->execute(sprintf('DROP TABLE IF EXISTS `%swipop_payment_attempt`', $dbPrefix));
-    }
-
-    private function dbPrefix(): string
-    {
-        $dbPrefix = defined('_DB_PREFIX_') ? _DB_PREFIX_ : 'ps_';
-
-        return is_string($dbPrefix) ? $dbPrefix : 'ps_';
+        return $db->execute(sprintf('DROP TABLE IF EXISTS `%swipop_payment_event`', _DB_PREFIX_))
+            && $db->execute(sprintf('DROP TABLE IF EXISTS `%swipop_payment_attempt`', _DB_PREFIX_));
     }
 }

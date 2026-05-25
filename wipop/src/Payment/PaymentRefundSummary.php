@@ -17,6 +17,7 @@ final class PaymentRefundSummary
         public readonly ?string $lastRefundReceivedAt,
         public readonly ?string $lastRefundErrorCode,
         public readonly ?string $lastRefundErrorMessage,
+        public readonly ?int $lastRefundOrderSlipId = null,
     ) {
     }
 }
