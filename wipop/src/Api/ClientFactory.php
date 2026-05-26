@@ -17,6 +17,14 @@ final class ClientFactory
      */
     public function create(Settings $settings): WipopClient
     {
+        return new WipopClient($this->createConfiguration($settings));
+    }
+
+    /**
+     * @throws ClientConfigurationException
+     */
+    public function createConfiguration(Settings $settings): WipopClientConfiguration
+    {
         $merchantId = trim($settings->merchantId);
         $secretKey = trim($settings->secretKey);
 
@@ -24,12 +32,10 @@ final class ClientFactory
             throw new ClientConfigurationException('Wipop credentials are incomplete.');
         }
 
-        $configuration = new WipopClientConfiguration(
+        return new WipopClientConfiguration(
             $settings->liveMode ? Environment::PRODUCTION : Environment::SANDBOX,
             $merchantId,
             $secretKey,
         );
-
-        return new WipopClient($configuration);
     }
 }
