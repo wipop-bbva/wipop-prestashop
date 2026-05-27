@@ -40,9 +40,12 @@ use PrestaShop\Module\Wipop\Install\ModuleUninstaller;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Order\OrderWipopPaymentPresenter;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
+use PrestaShop\Module\Wipop\Refund\ManualRefundEligibilityChecker;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+use PrestaShop\PrestaShop\Core\Action\ActionsBarButton;
+use PrestaShop\PrestaShop\Core\Action\ActionsBarButtonsCollection;
 
 class Wipop extends PaymentModule
 {
@@ -97,7 +100,8 @@ class Wipop extends PaymentModule
             && $this->registerHook('paymentOptions')
             && $this->registerHook('moduleRoutes')
             && $this->registerHook('displayPaymentReturn')
-            && $this->registerHook('displayAdminOrderSide');
+            && $this->registerHook('displayAdminOrderSide')
+            && $this->registerHook('actionGetAdminOrderButtons');
     }
 
     public function uninstall()
@@ -169,12 +173,12 @@ class Wipop extends PaymentModule
 
     public function hookDisplayAdminOrderSide(array $params): string
     {
-        $orderId = $params['id_order'] ?? null;
-        if (!is_numeric($orderId) || (int) $orderId <= 0) {
+        $orderId = $this->orderIdFromHookParams($params);
+        if ($orderId === null) {
             return '';
         }
 
-        $summary = $this->paymentAttemptRepository()->findSummaryByOrderId((int) $orderId);
+        $summary = $this->paymentAttemptRepository()->findSummaryByOrderId($orderId);
         if ($summary === null) {
             return '';
         }
@@ -188,6 +192,55 @@ class Wipop extends PaymentModule
         $content = $this->display(__FILE__, 'views/templates/hook/admin_order_wipop.tpl');
 
         return is_string($content) ? $content : '';
+    }
+
+    public function hookActionGetAdminOrderButtons(array $params): void
+    {
+        $orderId = $this->orderIdFromHookParams($params);
+        $buttons = $params['actions_bar_buttons_collection'] ?? null;
+        if ($orderId === null || !$buttons instanceof ActionsBarButtonsCollection) {
+            return;
+        }
+
+        $summary = $this->paymentAttemptRepository()->findSummaryByOrderId($orderId);
+        if ($summary === null || !$this->manualRefundEligibility()->canRefund($summary)) {
+            return;
+        }
+
+        $url = SymfonyContainer::getInstance()->get('router')->generate('wipop_order_refund', [
+            'orderId' => $orderId,
+        ]);
+
+        $title = $this->translatedAdminLabel('Refund with Wipop');
+        $label = $this->translatedAdminLabel('Wipop refund');
+
+        $buttons->add(new ActionsBarButton(
+            'btn-outline-secondary',
+            [
+                'href' => $url,
+                'title' => $title,
+            ],
+            '<i class="material-icons">undo</i> ' . $label,
+        ));
+    }
+
+    private function orderIdFromHookParams(array $params): ?int
+    {
+        $orderId = $params['id_order'] ?? null;
+        if (!is_numeric($orderId)) {
+            return null;
+        }
+
+        $orderId = (int) $orderId;
+
+        return $orderId > 0 ? $orderId : null;
+    }
+
+    private function translatedAdminLabel(string $label): string
+    {
+        $translated = $this->trans($label, [], TranslationDomains::ADMIN);
+
+        return is_string($translated) ? $translated : $label;
     }
 
     private function formatPaymentAmount(float $amount, string $currencyIso): string
@@ -216,6 +269,11 @@ class Wipop extends PaymentModule
     private function orderWipopPaymentPresenter(): OrderWipopPaymentPresenter
     {
         return new OrderWipopPaymentPresenter();
+    }
+
+    private function manualRefundEligibility(): ManualRefundEligibilityChecker
+    {
+        return new ManualRefundEligibilityChecker();
     }
 
     private function merchantOperationsService(): MerchantOperationsService

@@ -1,4 +1,15 @@
 {if isset($wipopPayment)}
+  {if $wipopPayment.native_refunds_disabled}
+    <style>
+      .standard-refund-display,
+      .partial-refund-display,
+      .return-product-display,
+      .cancel-product-element {
+        display: none !important;
+      }
+    </style>
+  {/if}
+
   <div class="card">
     <h3 class="card-header">
       {l s='Wipop' d='Modules.Wipop.Admin'}
@@ -15,7 +26,7 @@
             </td>
           </tr>
           <tr>
-            <th scope="row">{l s='Remote status' d='Modules.Wipop.Admin'}</th>
+            <th scope="row">{l s='Wipop status' d='Modules.Wipop.Admin'}</th>
             <td>{$wipopPayment.remote_status|escape:'html':'UTF-8'}</td>
           </tr>
           <tr>
@@ -35,7 +46,7 @@
             <td>{$wipopPayment.wipop_transaction_id|escape:'html':'UTF-8'}</td>
           </tr>
           <tr>
-            <th scope="row">{l s='Last webhook' d='Modules.Wipop.Admin'}</th>
+            <th scope="row">{l s='Last update' d='Modules.Wipop.Admin'}</th>
             <td>{$wipopPayment.webhook_received_at|escape:'html':'UTF-8'}</td>
           </tr>
         </tbody>
@@ -44,6 +55,12 @@
       {if $wipopPayment.has_error}
         <div class="alert alert-warning mt-2 mb-0">
           {$wipopPayment.remote_error|escape:'html':'UTF-8'}
+        </div>
+      {/if}
+
+      {if $wipopPayment.native_refunds_disabled}
+        <div class="alert alert-info mt-2 mb-0">
+          {l s='Wipop manages refunds for this payment.' d='Modules.Wipop.Admin'}
         </div>
       {/if}
 
@@ -72,9 +89,15 @@
               <td>{$wipopPayment.last_refund_status|escape:'html':'UTF-8'}</td>
             </tr>
             <tr>
-              <th scope="row">{l s='Last refund webhook' d='Modules.Wipop.Admin'}</th>
+              <th scope="row">{l s='Last refund update' d='Modules.Wipop.Admin'}</th>
               <td>{$wipopPayment.last_refund_received_at|escape:'html':'UTF-8'}</td>
             </tr>
+            {if $wipopPayment.has_refund_order_slip}
+              <tr>
+                <th scope="row">{l s='Credit slip' d='Modules.Wipop.Admin'}</th>
+                <td>#{$wipopPayment.last_refund_order_slip_id|escape:'html':'UTF-8'}</td>
+              </tr>
+            {/if}
           </tbody>
         </table>
 

@@ -9,3 +9,12 @@ wipop_webhook_regenerate:
   methods: [POST]
   defaults:
     _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController::regenerateWebhookCredentialsAction
+
+wipop_order_refund:
+  path: /wipop/orders/{orderId}/refund
+  methods: [GET, POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRefundController::refundAction
+    _legacy_controller: AdminOrders
+  requirements:
+    orderId: \d+
