@@ -3,6 +3,8 @@
 agent= 'op_jenkins_mx_dev_slave_2023_php'
 init_agent = 'op_jenkins_mx_dev_slave_2023_php'
 
+is_github_repo = 'true'
+git_credentials_id = 'jenkins-github-wipop-bbva'
 
 jte {
   pipeline_template = "prestashop_module"
