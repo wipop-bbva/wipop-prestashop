@@ -1,4 +1,8 @@
-aws_account = 'espana'
+//aws_account = 'espana'
+//Agents con version de PHP instalado
+agent= 'op_jenkins_mx_dev_slave_2023_php'
+init_agent = 'op_jenkins_mx_dev_slave_2023_php'
+
 
 jte {
   pipeline_template = "prestashop_module"
