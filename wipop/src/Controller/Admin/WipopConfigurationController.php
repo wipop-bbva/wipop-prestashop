@@ -51,7 +51,10 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
             $formData = $this->emptyFormData();
         }
 
-        $form = $this->createForm(SettingsType::class, $formData);
+        $form = $this->createForm(SettingsType::class, $formData, [
+            'secret_key_configured' => $this->hasSecret($currentSettings?->secretKey),
+            'public_secret_key_configured' => $this->hasSecret($currentSettings?->publicSecretKey),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -235,6 +238,11 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
         $value = trim((string) $submittedValue);
 
         return $value !== '' ? $value : $currentValue;
+    }
+
+    private function hasSecret(?string $value): bool
+    {
+        return trim((string) $value) !== '';
     }
 
     private function terminalIdValue(mixed $submittedValue, int $currentValue): int

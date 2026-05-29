@@ -58,8 +58,8 @@ final class ModuleInstaller
                 UNIQUE KEY `wipop_payment_attempt_order_id_uidx` (`wipop_order_id`),
                 UNIQUE KEY `wipop_payment_attempt_transaction_uidx` (`wipop_transaction_id`)
             ) ENGINE=%s DEFAULT CHARSET=utf8;',
-            $this->dbPrefix(),
-            $this->mysqlEngine()
+            _DB_PREFIX_,
+            _MYSQL_ENGINE_
         );
 
         return Db::getInstance()->execute($sql);
@@ -72,6 +72,8 @@ final class ModuleInstaller
                 `id_wipop_payment_event` INT UNSIGNED NOT NULL AUTO_INCREMENT,
                 `id_wipop_payment_attempt` INT UNSIGNED NOT NULL,
                 `id_order` INT UNSIGNED DEFAULT NULL,
+                `id_order_slip` INT UNSIGNED DEFAULT NULL,
+                `id_employee` INT UNSIGNED DEFAULT NULL,
                 `remote_transaction_id` VARCHAR(64) NOT NULL,
                 `parent_transaction_id` VARCHAR(64) DEFAULT NULL,
                 `wipop_order_id` VARCHAR(12) DEFAULT NULL,
@@ -88,26 +90,13 @@ final class ModuleInstaller
                 PRIMARY KEY (`id_wipop_payment_event`),
                 KEY `wipop_payment_event_attempt_type_idx` (`id_wipop_payment_attempt`, `transaction_type`),
                 KEY `wipop_payment_event_order_idx` (`id_order`),
+                KEY `wipop_payment_event_order_slip_idx` (`id_order_slip`),
                 UNIQUE KEY `wipop_payment_event_remote_uidx` (`remote_transaction_id`, `transaction_type`)
             ) ENGINE=%s DEFAULT CHARSET=utf8;',
-            $this->dbPrefix(),
-            $this->mysqlEngine()
+            _DB_PREFIX_,
+            _MYSQL_ENGINE_
         );
 
         return Db::getInstance()->execute($sql);
-    }
-
-    private function dbPrefix(): string
-    {
-        $dbPrefix = defined('_DB_PREFIX_') ? _DB_PREFIX_ : 'ps_';
-
-        return is_string($dbPrefix) ? $dbPrefix : 'ps_';
-    }
-
-    private function mysqlEngine(): string
-    {
-        $mysqlEngine = defined('_MYSQL_ENGINE_') ? _MYSQL_ENGINE_ : 'InnoDB';
-
-        return is_string($mysqlEngine) ? $mysqlEngine : 'InnoDB';
     }
 }

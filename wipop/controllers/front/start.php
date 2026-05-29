@@ -43,6 +43,8 @@ use PrestaShop\Module\Wipop\TranslationDomains;
 
 class WipopStartModuleFrontController extends ModuleFrontController
 {
+    public $ssl = true;
+
     public function initContent()
     {
         parent::initContent();

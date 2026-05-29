@@ -27,6 +27,59 @@ services:
     arguments:
       $settingsRepository: '@PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository'
 
+  PrestaShop\Module\Wipop\Payment\PaymentEventRepository:
+    class: PrestaShop\Module\Wipop\Payment\PaymentEventRepository
+    factory: [ 'PrestaShop\Module\Wipop\Payment\PaymentEventRepository', 'createDefault' ]
+
+  PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository:
+    class: PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository
+    factory: [ 'PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository', 'createDefault' ]
+
+  PrestaShop\Module\Wipop\Refund\WipopRefundTaxIncludedAmountCalculator: ~
+
+  PrestaShop\Module\Wipop\Refund\ManualRefundValidator:
+    class: PrestaShop\Module\Wipop\Refund\ManualRefundValidator
+    arguments:
+      $taxIncludedAmountCalculator: '@PrestaShop\Module\Wipop\Refund\WipopRefundTaxIncludedAmountCalculator'
+
+  PrestaShop\Module\Wipop\Refund\ManualRefundRequestFactory: ~
+
+  PrestaShop\Module\Wipop\Refund\ManualRefundLock: ~
+
+  PrestaShop\Module\Wipop\Refund\RefundableShippingCalculator: ~
+
+  PrestaShop\Module\Wipop\Refund\ManualRefundFormDataProvider:
+    class: PrestaShop\Module\Wipop\Refund\ManualRefundFormDataProvider
+    arguments:
+      $queryBus: '@prestashop.core.query_bus'
+      $shippingCalculator: '@PrestaShop\Module\Wipop\Refund\RefundableShippingCalculator'
+
+  PrestaShop\Module\Wipop\Refund\WipopRefundResponseMapper: ~
+
+  PrestaShop\Module\Wipop\Refund\WipopRefundApiClient:
+    class: PrestaShop\Module\Wipop\Refund\WipopRefundApiClient
+    arguments:
+      $settingsRepository: '@PrestaShop\Module\Wipop\Configuration\SettingsRepository'
+      $clientFactory: '@PrestaShop\Module\Wipop\Api\ClientFactory'
+      $sdkCaller: '@PrestaShop\Module\Wipop\Api\SdkCaller'
+      $responseMapper: '@PrestaShop\Module\Wipop\Refund\WipopRefundResponseMapper'
+
+  PrestaShop\Module\Wipop\Refund\PrestaShopOrderSlipIssuer:
+    class: PrestaShop\Module\Wipop\Refund\PrestaShopOrderSlipIssuer
+    arguments:
+      $commandBus: '@prestashop.core.command_bus'
+
+  PrestaShop\Module\Wipop\Refund\ManualRefundService:
+    class: PrestaShop\Module\Wipop\Refund\ManualRefundService
+    arguments:
+      $validator: '@PrestaShop\Module\Wipop\Refund\ManualRefundValidator'
+      $taxIncludedAmountCalculator: '@PrestaShop\Module\Wipop\Refund\WipopRefundTaxIncludedAmountCalculator'
+      $wipopRefundClient: '@PrestaShop\Module\Wipop\Refund\WipopRefundApiClient'
+      $orderSlipIssuer: '@PrestaShop\Module\Wipop\Refund\PrestaShopOrderSlipIssuer'
+      $refundEventStore: '@PrestaShop\Module\Wipop\Payment\PaymentEventRepository'
+      $paymentAttemptRefundMarker: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
   PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController:
     class: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController
     arguments:
@@ -35,8 +88,25 @@ services:
       $webhookAuth: '@PrestaShop\Module\Wipop\Webhook\WebhookAuth'
       $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
+  PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRefundController:
+    class: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRefundController
+    arguments:
+      $paymentAttemptRepository: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository'
+      $formDataProvider: '@PrestaShop\Module\Wipop\Refund\ManualRefundFormDataProvider'
+      $requestFactory: '@PrestaShop\Module\Wipop\Refund\ManualRefundRequestFactory'
+      $manualRefundService: '@PrestaShop\Module\Wipop\Refund\ManualRefundService'
+      $refundLock: '@PrestaShop\Module\Wipop\Refund\ManualRefundLock'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
   PrestaShop\Module\Wipop\Form\Type\SettingsType:
     class: PrestaShop\Module\Wipop\Form\Type\SettingsType
+    parent: 'form.type.translatable.aware'
+    public: true
+    tags:
+      - { name: form.type }
+
+  PrestaShop\Module\Wipop\Form\Type\ManualRefundType:
+    class: PrestaShop\Module\Wipop\Form\Type\ManualRefundType
     parent: 'form.type.translatable.aware'
     public: true
     tags:

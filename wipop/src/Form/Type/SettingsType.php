@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Range;
 
 final class SettingsType extends TranslatorAwareType
@@ -31,11 +32,21 @@ final class SettingsType extends TranslatorAwareType
                 'label' => $this->trans('Secret key', TranslationDomains::ADMIN),
                 'required' => false,
                 'empty_data' => '',
+                'always_empty' => true,
+                'attr' => [
+                    'autocomplete' => 'new-password',
+                    'placeholder' => $options['secret_key_configured'] ? '****' : '',
+                ],
             ])
             ->add('public_secret_key', PasswordType::class, [
                 'label' => $this->trans('Public secret key', TranslationDomains::ADMIN),
                 'required' => false,
                 'empty_data' => '',
+                'always_empty' => true,
+                'attr' => [
+                    'autocomplete' => 'new-password',
+                    'placeholder' => $options['public_secret_key_configured'] ? '****' : '',
+                ],
             ])
             ->add('terminal_id', IntegerType::class, [
                 'label' => $this->trans('Terminal ID', TranslationDomains::ADMIN),
@@ -53,5 +64,15 @@ final class SettingsType extends TranslatorAwareType
                     ]),
                 ],
             ]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'secret_key_configured' => false,
+            'public_secret_key_configured' => false,
+        ]);
+        $resolver->setAllowedTypes('secret_key_configured', 'bool');
+        $resolver->setAllowedTypes('public_secret_key_configured', 'bool');
     }
 }

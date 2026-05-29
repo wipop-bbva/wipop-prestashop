@@ -35,6 +35,8 @@ use PrestaShop\Module\Wipop\TranslationDomains;
 
 class WipopReturnModuleFrontController extends ModuleFrontController
 {
+    public $ssl = true;
+
     public function initContent()
     {
         parent::initContent();

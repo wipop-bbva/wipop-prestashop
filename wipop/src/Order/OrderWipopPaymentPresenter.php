@@ -6,7 +6,6 @@ namespace PrestaShop\Module\Wipop\Order;
 
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
-use PrestaShop\Module\Wipop\Payment\PaymentRefundSummary;
 
 final class OrderWipopPaymentPresenter
 {
@@ -31,6 +30,7 @@ final class OrderWipopPaymentPresenter
             'webhook_received_at' => $this->displayValue($summary->webhookReceivedAt),
             'has_error' => $remoteError !== null,
             'remote_error' => $this->displayValue($remoteError),
+            'native_refunds_disabled' => $this->disablesNativeRefunds($summary->status),
             ...$refund,
         ];
     }
@@ -55,6 +55,15 @@ final class OrderWipopPaymentPresenter
         return $value ?? '-';
     }
 
+    private function disablesNativeRefunds(PaymentAttemptStatus $status): bool
+    {
+        return in_array($status, [
+            PaymentAttemptStatus::AUTHORIZED,
+            PaymentAttemptStatus::PAID,
+            PaymentAttemptStatus::REFUNDED,
+        ], true);
+    }
+
     private function formatAmount(float $amount, string $currencyIso): string
     {
         return sprintf('%s %s', number_format($amount, 2, '.', ''), strtoupper($currencyIso));
@@ -71,7 +80,7 @@ final class OrderWipopPaymentPresenter
     private function presentRefund(PaymentAttemptSummary $summary): array
     {
         $refund = $summary->refundSummary;
-        if (!$refund instanceof PaymentRefundSummary) {
+        if ($refund === null) {
             return [
                 'has_refund' => false,
                 'refund_status' => '-',
@@ -80,6 +89,8 @@ final class OrderWipopPaymentPresenter
                 'last_refund_amount' => '-',
                 'last_refund_status' => '-',
                 'last_refund_received_at' => '-',
+                'has_refund_order_slip' => false,
+                'last_refund_order_slip_id' => '-',
                 'has_refund_error' => false,
                 'last_refund_error' => '-',
             ];
@@ -100,6 +111,10 @@ final class OrderWipopPaymentPresenter
             ),
             'last_refund_status' => $this->displayValue($refund->lastRefundStatus),
             'last_refund_received_at' => $this->displayValue($refund->lastRefundReceivedAt),
+            'has_refund_order_slip' => $refund->lastRefundOrderSlipId !== null,
+            'last_refund_order_slip_id' => $refund->lastRefundOrderSlipId === null
+                ? '-'
+                : (string) $refund->lastRefundOrderSlipId,
             'has_refund_error' => $refundError !== null,
             'last_refund_error' => $this->displayValue($refundError),
         ];

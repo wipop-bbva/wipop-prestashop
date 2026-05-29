@@ -10,7 +10,7 @@ final class PaymentAmount
 
     public static function toCents(float $amount): int
     {
-        return (int) round($amount * self::MINOR_UNITS);
+        return (int) round($amount * self::MINOR_UNITS, 0, PHP_ROUND_HALF_UP);
     }
 
     public static function fromCents(int $amount): float
