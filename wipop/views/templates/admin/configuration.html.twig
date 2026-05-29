@@ -3,53 +3,113 @@
 
 {% block stylesheets %}
   {{ parent() }}
-  <style>
-    .wipop-settings-form .form-group,
-    .wipop-settings-form .form-group.row {
-      justify-content: flex-start;
-    }
+  <link rel="stylesheet" href="{{ asset('../modules/wipop/views/css/admin/configuration.css') }}">
+{% endblock %}
 
-    .wipop-settings-form .form-control-label,
-    .wipop-settings-form label {
-      justify-content: flex-start;
-      text-align: left !important;
-    }
-
-    .wipop-settings-form .form-group > .form-control-label {
-      flex: 0 0 25% !important;
-      max-width: 25% !important;
-      width: 25% !important;
-    }
-
-    .wipop-settings-form .form-group > .col-sm {
-      flex: 0 0 75% !important;
-      max-width: 75% !important;
-      width: 75% !important;
-    }
-
-    .wipop-settings-form .prestashop-switch,
-    .wipop-settings-form .switch-input {
-      margin-left: 0;
-    }
-  </style>
+{% block javascripts %}
+  {{ parent() }}
+  <script src="{{ asset('../modules/wipop/views/js/admin/configuration.js') }}"></script>
 {% endblock %}
 
 {% block content %}
-  {{ form_start(configurationForm) }}
+  {{ form_start(configurationForm, {'attr': {'data-wipop-settings-form': '1'}}) }}
     <div class="row justify-content-center">
       <div class="col-xl-10">
-        <div class="card">
+        <div class="card" data-wipop-section="configuration">
           <h3 class="card-header">
             <i class="material-icons">settings</i> {{ 'Payment configuration with Wipop'|trans }}
           </h3>
           <div class="card-body">
             <div class="wipop-settings-form">
-              {{ form_widget(configurationForm) }}
+              {{ form_errors(configurationForm) }}
+              {{ form_row(configurationForm.live_mode) }}
+              {{ form_row(configurationForm.merchant_id) }}
+              {{ form_row(configurationForm.secret_key) }}
+              {{ form_row(configurationForm.public_secret_key) }}
+              {{ form_row(configurationForm.terminal_id) }}
+            </div>
+            <div id="wipop-verify-credentials-result" class="alert d-none mt-3" role="alert" aria-live="polite"></div>
+          </div>
+          <div class="card-footer">
+            <div class="d-flex justify-content-end">
+              <button
+                type="button"
+                class="btn btn-outline-secondary mr-2"
+                id="wipop-verify-credentials-button"
+                data-verify-url="{{ path('wipop_verify_credentials') }}"
+                data-csrf-token="{{ csrf_token('wipop_verify_credentials') }}"
+                data-verifying-label="{{ 'Verifying...'|trans }}"
+                data-unsaved-message="{{ 'Save changes before verifying data.'|trans }}"
+                data-error-message="{{ 'Could not verify Wipop data. Check the settings and try again.'|trans }}"
+                {% if not canVerifyStoredSettings %}disabled{% endif %}
+              >
+                {{ 'Verify data'|trans }}
+              </button>
+              <button type="submit" class="btn btn-primary" data-wipop-save-button="configuration">
+                {{ 'Save'|trans({}, 'Admin.Actions') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-wipop-section="gateways">
+          <h3 class="card-header">
+            <i class="material-icons">payment</i> {{ 'Payment methods'|trans }}
+          </h3>
+          <div class="card-body">
+            {% set gatewayCards = {
+              'CARD': {
+                'icon': 'credit_card',
+                'description': 'Accept card payments through Wipop.'|trans
+              },
+              'BIZUM': {
+                'icon': 'smartphone',
+                'description': 'Let customers pay with Bizum through Wipop.'|trans
+              }
+            } %}
+
+            <div>
+              {{ form_errors(configurationForm.enabled_gateways) }}
+
+              <div class="wipop-gateway-grid">
+                {% for gateway in configurationForm.enabled_gateways %}
+                  {% set gatewayValue = gateway.vars.value %}
+                  {% set gatewayCard = gatewayCards[gatewayValue]|default({
+                    'icon': 'payment',
+                    'description': ''
+                  }) %}
+                  <div class="wipop-gateway-option">
+                    <input
+                      type="checkbox"
+                      id="{{ gateway.vars.id }}"
+                      name="{{ gateway.vars.full_name }}"
+                      value="{{ gateway.vars.value }}"
+                      class="wipop-gateway-input"
+                      {% if gateway.vars.checked %}checked="checked"{% endif %}
+                      {% if gateway.vars.disabled %}disabled="disabled"{% endif %}
+                    >
+                    {% do gateway.setRendered %}
+                    <label class="wipop-gateway-card" for="{{ gateway.vars.id }}">
+                      <span class="wipop-gateway-icon">
+                        <i class="material-icons">{{ gatewayCard.icon }}</i>
+                      </span>
+                      <span class="wipop-gateway-content">
+                        <span class="wipop-gateway-title">{{ gateway.vars.label|trans }}</span>
+                        {% if gatewayCard.description %}
+                          <span class="wipop-gateway-description">{{ gatewayCard.description }}</span>
+                        {% endif %}
+                      </span>
+                      <span class="wipop-gateway-check" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                {% endfor %}
+                {% do configurationForm.enabled_gateways.setRendered %}
+              </div>
             </div>
           </div>
           <div class="card-footer">
             <div class="d-flex justify-content-end">
-              <button class="btn btn-primary">
+              <button type="submit" class="btn btn-primary" data-wipop-save-button="gateways">
                 {{ 'Save'|trans({}, 'Admin.Actions') }}
               </button>
             </div>

@@ -42,6 +42,86 @@
         <target>Non foi posible gardar a configuración de Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="82eb5eb8fb67c266c92d378d6ce09057">
+        <source>Verify data</source>
+        <target>Verificar datos</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1384e50552b2bb71950538e7e3d672ae">
+        <source>Verifying...</source>
+        <target>Verificando...</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8c2eae002639ed3c90dac5235b3b48c3">
+        <source>Save changes before verifying data.</source>
+        <target>Garda os cambios antes de verificar os datos.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3ab0b3d04bb5296a87cdf228f88ac671">
+        <source>Wipop settings are incomplete. Save them before verifying data.</source>
+        <target>A configuración de Wipöp está incompleta. Gárdaa antes de verificar os datos.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8624da4c58498df8580d10ac3e69e1cf">
+        <source>Wipop data verified. Available methods: %methods%.</source>
+        <target>Datos de Wipop verificados. Métodos dispoñibles: %methods%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5cde20958aac01f464fa2a2d1674ff1e">
+        <source>Wipop data verified, but no supported methods were found.</source>
+        <target>Datos de Wipop verificados, pero non se atoparon métodos compatibles.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d0d320ba833664aef939388a4f632609">
+        <source>Could not verify Wipop data. Check the settings and try again.</source>
+        <target>Non se puideron verificar os datos de Wipop. Revisa a configuración e téntao de novo.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="66dff4bc6149738292b7b2737e7e2e8c">
+        <source>Invalid security token.</source>
+        <target>Token de seguridade non válido.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1d565b9e5303987bb1b1938d5d458bca">
+        <source>Card</source>
+        <target>Tarxeta</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a1d157577e5d9a5b6db315dd6b000d32">
+        <source>Bizum</source>
+        <target>Bizum</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0da8d9a75492046bea7f314521e07cae">
+        <source>Payment methods</source>
+        <target>Métodos de pagamento</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f957ac389ed573c01fdd9d6a10dcf04e">
+        <source>Choose at least one Wipop method.</source>
+        <target>Escolle polo menos un método de Wipop.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2ea93b8e2206d492ba3cec8516f6a4ec">
+        <source>Settings saved, but no Wipop methods are available at checkout.</source>
+        <target>Configuración gardada, pero non hai métodos de Wipop dispoñibles no checkout.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fda45c8b3c17b782b52261d1f7b7a619">
+        <source>Settings saved, but methods could not be verified.</source>
+        <target>Configuración gardada, pero non se puideron verificar os métodos.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="96be93fa1d30ff19e8d31435f6e36ed1">
+        <source>Accept card payments through Wipop.</source>
+        <target>Acepta pagamentos con tarxeta a través de Wipop.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3e5fc4653c19fd9d74cec17638c02c0d">
+        <source>Let customers pay with Bizum through Wipop.</source>
+        <target>Permite pagar con Bizum a través de Wipop.</target>
+        <note>Line: </note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
