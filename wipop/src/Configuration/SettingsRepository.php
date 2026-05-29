@@ -23,6 +23,7 @@ final class SettingsRepository
     private const FIELD_SECRET_KEY = 'secret_key';
     private const FIELD_PUBLIC_SECRET_KEY = 'public_secret_key';
     private const FIELD_TERMINAL_ID = 'terminal_id';
+    private const FIELD_ENABLED_GATEWAYS = 'enabled_gateways';
 
     public function installDefaults(): bool
     {
@@ -49,13 +50,15 @@ final class SettingsRepository
     public function get(): Settings
     {
         $payload = $this->readPayload();
+        $enabledGateways = $payload[self::FIELD_ENABLED_GATEWAYS];
 
         return new Settings(
             (bool) $payload[self::FIELD_LIVE_MODE],
             trim((string) $payload[self::FIELD_MERCHANT_ID]),
             trim((string) $payload[self::FIELD_SECRET_KEY]),
             trim((string) $payload[self::FIELD_PUBLIC_SECRET_KEY]),
-            (int) $payload[self::FIELD_TERMINAL_ID]
+            (int) $payload[self::FIELD_TERMINAL_ID],
+            is_array($enabledGateways) ? $enabledGateways : []
         );
     }
 
@@ -70,13 +73,14 @@ final class SettingsRepository
             self::FIELD_SECRET_KEY => $settings->secretKey,
             self::FIELD_PUBLIC_SECRET_KEY => $settings->publicSecretKey,
             self::FIELD_TERMINAL_ID => $settings->terminalId,
+            self::FIELD_ENABLED_GATEWAYS => $settings->enabledGateways,
         ]);
 
         PrestaShopConfiguration::deleteByName(ConfigKeys::AVAILABLE_GATEWAYS_CACHE);
     }
 
     /**
-     * @return array<string, bool|int|string>
+     * @return array<string, bool|int|string|string[]>
      */
     private static function defaultPayload(): array
     {
@@ -86,11 +90,12 @@ final class SettingsRepository
             self::FIELD_SECRET_KEY => '',
             self::FIELD_PUBLIC_SECRET_KEY => '',
             self::FIELD_TERMINAL_ID => Settings::DEFAULT_TERMINAL_ID,
+            self::FIELD_ENABLED_GATEWAYS => Settings::SUPPORTED_GATEWAYS,
         ];
     }
 
     /**
-     * @return array<string, bool|int|string>
+     * @return array<string, bool|int|string|string[]>
      */
     private function readPayload(): array
     {
@@ -113,7 +118,7 @@ final class SettingsRepository
     }
 
     /**
-     * @param array<string, bool|int|string> $payload
+     * @param array<string, bool|int|string|string[]> $payload
      *
      * @throws SettingsWriteException
      */
@@ -133,11 +138,14 @@ final class SettingsRepository
     /**
      * @param array<string, mixed> $payload
      *
-     * @return array<string, bool|int|string>
+     * @return array<string, bool|int|string|string[]>
      */
     private static function normalizePayload(array $payload): array
     {
         $payload = array_replace(self::defaultPayload(), $payload);
+        $enabledGateways = is_array($payload[self::FIELD_ENABLED_GATEWAYS])
+            ? Settings::normalizeGateways($payload[self::FIELD_ENABLED_GATEWAYS])
+            : [];
 
         return [
             self::FIELD_LIVE_MODE => (bool) $payload[self::FIELD_LIVE_MODE],
@@ -145,6 +153,7 @@ final class SettingsRepository
             self::FIELD_SECRET_KEY => trim((string) $payload[self::FIELD_SECRET_KEY]),
             self::FIELD_PUBLIC_SECRET_KEY => trim((string) $payload[self::FIELD_PUBLIC_SECRET_KEY]),
             self::FIELD_TERMINAL_ID => (int) $payload[self::FIELD_TERMINAL_ID],
+            self::FIELD_ENABLED_GATEWAYS => $enabledGateways,
         ];
     }
 }

@@ -102,7 +102,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
         $merchantOperationsService = $this->merchantOperationsService();
 
         try {
-            if (!$merchantOperationsService->isGatewayAvailable($paymentMethod)) {
+            if (!in_array($paymentMethod, $merchantOperationsService->getCheckoutGatewaysFor($settings), true)) {
                 $logger->warning('Unavailable payment method received on start controller.', [
                     'payment_method' => $paymentMethod,
                 ]);
@@ -110,7 +110,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
 
                 return;
             }
-        } catch (SettingsReadException | ClientConfigurationException | ApiCallException) {
+        } catch (ClientConfigurationException | ApiCallException) {
             $logger->warning('Wipop start controller could not verify available payment methods.', [
                 'payment_method' => $paymentMethod,
             ]);
