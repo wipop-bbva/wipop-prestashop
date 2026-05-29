@@ -1,3 +1,18 @@
+## [1.9.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.8.0...v1.9.0) (2026-05-29)
+
+### Features
+
+* **admin:** add Wipop manual refund order action ([4d7b805](https://github.com/wipop-bbva/wipop-prestashop/commit/4d7b805268677ba4312146aaeb7621cbd370d38b))
+* **admin:** improve configuration secret handling ([3b9f154](https://github.com/wipop-bbva/wipop-prestashop/commit/3b9f15486a964ea840fac27e5c1f9c2699bd57e4))
+* **checkout:** show Wipop payment return details ([1ac19e7](https://github.com/wipop-bbva/wipop-prestashop/commit/1ac19e7d4c0d1502d4ee267610ff8d2ce8cc5db6))
+* **refund:** add manual refund validation model ([47c0f30](https://github.com/wipop-bbva/wipop-prestashop/commit/47c0f3051a7e9903166b05d58b4459837f32f8ac))
+* **refund:** extend payment events for manual refunds ([ff45493](https://github.com/wipop-bbva/wipop-prestashop/commit/ff45493fabe61026e1934bd1531ee080e3d0e030))
+* **refund:** process Wipop refunds and credit slips ([0572979](https://github.com/wipop-bbva/wipop-prestashop/commit/05729797c1915e6c75dd4c3db45cc7be492f09b5))
+
+### Bug Fixes
+
+* **payment:** round amounts using explicit cent precision ([01dbbd6](https://github.com/wipop-bbva/wipop-prestashop/commit/01dbbd6d58dfd337a936877e9d01b9e27ea3fc6a))
+
 ## [1.8.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.7.0...v1.8.0) (2026-05-21)
 
 ### Features
