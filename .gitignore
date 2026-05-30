@@ -4,6 +4,7 @@
 vendor/
 composer.lock
 wipop/vendor/
+wipop/vendor-dev/
 wipop/composer.lock
 
 # QA tools
