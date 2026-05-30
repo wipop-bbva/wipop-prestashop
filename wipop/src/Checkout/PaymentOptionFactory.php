@@ -38,7 +38,7 @@ final class PaymentOptionFactory
         }
 
         try {
-            $availableGateways = $this->merchantOperationsService->getAvailableGateways();
+            $availableGateways = $this->merchantOperationsService->getCheckoutGateways();
         } catch (SettingsReadException | ClientConfigurationException | ApiCallException) {
             return [];
         }

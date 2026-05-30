@@ -4,6 +4,13 @@ wipop_configuration:
   defaults:
     _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController::configurationAction
 
+wipop_verify_credentials:
+  path: /wipop/verify-credentials
+  methods: [POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController::verifyCredentialsAction
+    _legacy_controller: AdminModules
+
 wipop_webhook_regenerate:
   path: /wipop/webhook/regenerate
   methods: [POST]

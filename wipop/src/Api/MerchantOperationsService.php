@@ -8,26 +8,18 @@ use Configuration;
 use PrestaShop\Module\Wipop\Configuration\ConfigKeys;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
-use Wipop\Domain\ChargeMethod;
 use Wipop\Domain\ProductType;
 use Wipop\Domain\Value\Terminal;
 
-use function array_intersect;
-use function array_map;
-use function array_values;
-use function in_array;
 use function is_array;
 use function is_string;
 use function json_decode;
 use function json_encode;
-use function strtoupper;
 use function time;
-use function trim;
 
 final class MerchantOperationsService
 {
     private const CACHE_TTL_IN_SECONDS = 1 * 60 * 60;
-    private const SUPPORTED_GATEWAYS = [ChargeMethod::CARD, ChargeMethod::BIZUM]; // TODO add GOOGLE_PAY when available
 
     public function __construct(
         private SettingsRepository $settingsRepository,
@@ -41,8 +33,14 @@ final class MerchantOperationsService
      */
     public function getAvailableGateways(bool $forceRefresh = false): array
     {
-        $settings = $this->settingsRepository->get();
+        return $this->getAvailableGatewaysFor($this->settingsRepository->get(), $forceRefresh);
+    }
 
+    /**
+     * @return string[]
+     */
+    public function getAvailableGatewaysFor(Settings $settings, bool $forceRefresh = false): array
+    {
         if (!$settings->isConfigured()) {
             return [];
         }
@@ -64,43 +62,31 @@ final class MerchantOperationsService
                 ->listPaymentMethods(ProductType::PAYMENT_GATEWAY, $terminal)
         );
 
-        $normalized = self::normalizeGateways($gateways);
+        $normalized = Settings::normalizeGateways($gateways);
         $this->writeCachedGateways($settings, $normalized);
 
         return $normalized;
     }
 
-    public static function supportsGateway(string $method): bool
+    /**
+     * @return string[]
+     */
+    public function getCheckoutGateways(bool $forceRefresh = false): array
     {
-        return in_array(self::normalizeGateway($method), self::SUPPORTED_GATEWAYS, true);
-    }
-
-    public function isGatewayAvailable(string $method, bool $forceRefresh = false): bool
-    {
-        $method = self::normalizeGateway($method);
-
-        if (!self::supportsGateway($method)) {
-            return false;
-        }
-
-        return in_array($method, $this->getAvailableGateways($forceRefresh), true);
+        return $this->getCheckoutGatewaysFor($this->settingsRepository->get(), $forceRefresh);
     }
 
     /**
-     * @param array<int, string> $gateways
-     *
      * @return string[]
      */
-    private static function normalizeGateways(array $gateways): array
+    public function getCheckoutGatewaysFor(Settings $settings, bool $forceRefresh = false): array
     {
-        $normalized = array_map(static fn ($gateway): string => self::normalizeGateway((string) $gateway), $gateways);
-
-        return array_values(array_intersect($normalized, self::SUPPORTED_GATEWAYS));
+        return $settings->filterGateways($this->getAvailableGatewaysFor($settings, $forceRefresh));
     }
 
-    private static function normalizeGateway(string $gateway): string
+    public static function supportsGateway(string $method): bool
     {
-        return strtoupper(trim($gateway));
+        return Settings::normalizeGateways([$method]) !== [];
     }
 
     /**
@@ -133,7 +119,7 @@ final class MerchantOperationsService
             return null;
         }
 
-        return self::normalizeGateways($methods);
+        return Settings::normalizeGateways($methods);
     }
 
     /**
