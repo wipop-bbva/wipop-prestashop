@@ -1,3 +1,10 @@
+## [1.10.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.9.0...v1.10.0) (2026-05-30)
+
+### Features
+
+* **admin:** configure and verify Wipop payment settings ([7d189a0](https://github.com/wipop-bbva/wipop-prestashop/commit/7d189a09978e699f44cb3e1544997f8e65c3253a))
+* **checkout:** respect configured Wipop payment methods ([b3acb01](https://github.com/wipop-bbva/wipop-prestashop/commit/b3acb01f649e317e7ddcf3b032a004eddaba778b))
+
 ## [1.9.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.8.0...v1.9.0) (2026-05-29)
 
 ### Features
