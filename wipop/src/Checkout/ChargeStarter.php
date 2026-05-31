@@ -45,6 +45,7 @@ final class ChargeStarter
                 $returnUrl,
                 $settings,
                 $wipopOrderId,
+                $settings->shouldCaptureImmediately($method),
             );
 
             $charge = $this->sdkCaller->call(

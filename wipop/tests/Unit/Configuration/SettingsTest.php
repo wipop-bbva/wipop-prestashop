@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Tests\Unit\Configuration;
 
 use PHPUnit\Framework\TestCase;
+use PrestaShop\Module\Wipop\Configuration\CaptureMode;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use Wipop\Domain\ChargeMethod;
 
@@ -52,10 +53,26 @@ final class SettingsTest extends TestCase
         );
     }
 
+    public function testImmediateModeCapturesCardAndBizumAtCheckout(): void
+    {
+        $settings = $this->settings(captureMode: CaptureMode::IMMEDIATE);
+
+        self::assertTrue($settings->shouldCaptureImmediately(ChargeMethod::CARD));
+        self::assertTrue($settings->shouldCaptureImmediately(ChargeMethod::BIZUM));
+    }
+
+    public function testManualModeOnlyPreauthorizesCardPayments(): void
+    {
+        $settings = $this->settings(captureMode: CaptureMode::MANUAL);
+
+        self::assertFalse($settings->shouldCaptureImmediately(ChargeMethod::CARD));
+        self::assertTrue($settings->shouldCaptureImmediately(ChargeMethod::BIZUM));
+    }
+
     /**
      * @param string[] $enabledGateways
      */
-    private function settings(array $enabledGateways = []): Settings
+    private function settings(array $enabledGateways = [], CaptureMode $captureMode = CaptureMode::IMMEDIATE): Settings
     {
         return new Settings(
             liveMode: false,
@@ -64,6 +81,7 @@ final class SettingsTest extends TestCase
             publicSecretKey: 'public',
             terminalId: Settings::DEFAULT_TERMINAL_ID,
             enabledGateways: $enabledGateways,
+            captureMode: $captureMode,
         );
     }
 }
