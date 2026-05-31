@@ -15,4 +15,6 @@ interface RefundEventStoreInterface
         string $currencyIso,
         ?string $excludedRemoteTransactionId = null,
     ): int;
+
+    public function findLatestCompletedCaptureTransactionId(int $attemptId): ?string;
 }

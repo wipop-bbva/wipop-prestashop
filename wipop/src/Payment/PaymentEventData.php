@@ -7,6 +7,8 @@ namespace PrestaShop\Module\Wipop\Payment;
 final class PaymentEventData
 {
     public const TYPE_REFUND = TransactionType::REFUND;
+    public const TYPE_CAPTURE = 'CAPTURE';
+    public const TYPE_REVERSAL = 'REVERSAL';
 
     public function __construct(
         public readonly string $remoteTransactionId,
