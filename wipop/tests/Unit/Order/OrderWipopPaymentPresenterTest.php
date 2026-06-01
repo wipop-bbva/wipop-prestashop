@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use PrestaShop\Module\Wipop\Order\OrderWipopPaymentPresenter;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
+use PrestaShop\Module\Wipop\Payment\PaymentEventData;
 use PrestaShop\Module\Wipop\Payment\PaymentRefundSummary;
 
 final class OrderWipopPaymentPresenterTest extends TestCase
@@ -30,6 +31,7 @@ final class OrderWipopPaymentPresenterTest extends TestCase
         self::assertSame('-', $payment['remote_error']);
         self::assertFalse($payment['has_refund']);
         self::assertTrue($payment['native_refunds_disabled']);
+        self::assertFalse($payment['can_manage_preauthorization']);
     }
 
     public function testItShowsRemoteErrorsOnlyWhenPresent(): void
@@ -65,6 +67,41 @@ final class OrderWipopPaymentPresenterTest extends TestCase
 
         self::assertTrue($authorizedPayment['native_refunds_disabled']);
         self::assertTrue($refundedPayment['native_refunds_disabled']);
+    }
+
+    public function testItShowsPreauthorizationActionsForAuthorizedCardPayments(): void
+    {
+        $payment = (new OrderWipopPaymentPresenter())->present(
+            $this->summary(status: PaymentAttemptStatus::AUTHORIZED)
+        );
+
+        self::assertSame('primary', $payment['status_badge_class']);
+        self::assertTrue($payment['can_manage_preauthorization']);
+    }
+
+    public function testItHidesPreauthorizationActionsAfterCompletedCaptureEvent(): void
+    {
+        $payment = (new OrderWipopPaymentPresenter())->present(
+            $this->summary(status: PaymentAttemptStatus::AUTHORIZED),
+            [$this->preauthorizationEvent(PaymentEventData::TYPE_CAPTURE)]
+        );
+
+        self::assertFalse($payment['can_manage_preauthorization']);
+        self::assertTrue($payment['has_preauthorization_events']);
+        self::assertSame('Capture', $payment['preauthorization_events'][0]['type']);
+        self::assertSame('COMPLETED', $payment['preauthorization_events'][0]['status']);
+    }
+
+    public function testItHidesPreauthorizationActionsAfterSuccessfulReversalEvent(): void
+    {
+        $payment = (new OrderWipopPaymentPresenter())->present(
+            $this->summary(status: PaymentAttemptStatus::AUTHORIZED),
+            [$this->preauthorizationEvent(PaymentEventData::TYPE_REVERSAL)]
+        );
+
+        self::assertFalse($payment['can_manage_preauthorization']);
+        self::assertSame('Reversal', $payment['preauthorization_events'][0]['type']);
+        self::assertSame('COMPLETED', $payment['preauthorization_events'][0]['status']);
     }
 
     public function testItBuildsARefundSummary(): void
@@ -130,5 +167,24 @@ final class OrderWipopPaymentPresenterTest extends TestCase
             lastRefundErrorMessage: null,
             lastRefundOrderSlipId: 77,
         );
+    }
+
+    /**
+     * @return array<string, float|int|string|null>
+     */
+    private function preauthorizationEvent(string $type, string $status = 'COMPLETED'): array
+    {
+        return [
+            'remote_transaction_id' => 'tx_capture',
+            'parent_transaction_id' => 'tx_charge',
+            'transaction_type' => $type,
+            'operation_type' => strtolower($type),
+            'status' => $status,
+            'amount' => 49.9,
+            'currency_iso' => 'EUR',
+            'remote_error_code' => null,
+            'remote_error_message' => null,
+            'received_at' => '2026-05-31 10:11:12',
+        ];
     }
 }

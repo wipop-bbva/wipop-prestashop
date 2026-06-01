@@ -25,3 +25,21 @@ wipop_order_refund:
     _legacy_controller: AdminOrders
   requirements:
     orderId: \d+
+
+wipop_order_preauthorization_capture:
+  path: /wipop/orders/{orderId}/preauthorization/capture
+  methods: [POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderPreauthorizationController::captureAction
+    _legacy_controller: AdminOrders
+  requirements:
+    orderId: \d+
+
+wipop_order_preauthorization_reverse:
+  path: /wipop/orders/{orderId}/preauthorization/reverse
+  methods: [POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderPreauthorizationController::reverseAction
+    _legacy_controller: AdminOrders
+  requirements:
+    orderId: \d+

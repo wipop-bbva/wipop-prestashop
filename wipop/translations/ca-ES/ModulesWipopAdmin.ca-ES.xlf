@@ -122,6 +122,101 @@
         <target>Permet pagar amb Bizum a través de Wipop.</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="543783fd364dda81351144e095857c37">
+        <source>Preauthorizations</source>
+        <target>Preautoritzacions</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="23e832cfa826851df86e90b0a22d8261">
+        <source>Charge at checkout</source>
+        <target>Cobrar en el moment de la compra</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a30419975b2034cec42512964532e923">
+        <source>Reserve the amount to charge it later</source>
+        <target>Reservar l'import per cobrar-lo després</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0b7146e4525a5fe48078876907f6e8e4">
+        <source>If you choose to reserve the amount, you will need to confirm or cancel the charge manually from the order details. Only applies to card payments.</source>
+        <target>Si tries reservar l'import, hauràs de confirmar o anul·lar el cobrament manualment des del detall de la comanda. Només s'aplica a pagaments amb targeta.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7ed9fc675598ed1a2fa6e382b60b2a7c">
+        <source>Capture preauthorization with Wipop</source>
+        <target>Capturar preautorització amb Wipop</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1e06417458a176f0bc94d70a45c23d5f">
+        <source>Void preauthorization with Wipop</source>
+        <target>Anul·lar preautorització amb Wipop</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f1e8aa23d096700901fade453654d5eb">
+        <source>You do not have permission to capture this Wipop preauthorization.</source>
+        <target>No tens permís per capturar aquesta preautorització de Wipop.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2df42449dd7a822e5e5356b5129a959c">
+        <source>Wipop: Preauthorization of %amount% captured.</source>
+        <target>Wipop: Capturada preautorització de %amount%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c972e15cea0a409c7a9516175789709b">
+        <source>We could not capture the preauthorization in Wipop</source>
+        <target>No hem pogut capturar la preautorització a Wipop</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c25818c139886c4f8da487ed91b29374">
+        <source>You do not have permission to void this Wipop preauthorization.</source>
+        <target>No tens permís per anul·lar aquesta preautorització de Wipop.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="27a362392fb19f9859f3e78ae8589773">
+        <source>Preauthorization manually voided in Wipop.</source>
+        <target>Preautorització anul·lada manualment a Wipop.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="08bdf2050a3e8bbec3bf199fa131af8a">
+        <source>We could not void the preauthorization in Wipop.</source>
+        <target>No hem pogut cancel·lar la preautorització a Wipop.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f092fe84c09610b3462cf21bdc27f53e">
+        <source>This Wipop preauthorization has already been voided.</source>
+        <target>Aquesta preautorització de Wipop ja ha estat anul·lada.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="304111ee3f8e75ca3615ab30467eeb06">
+        <source>Captured Wipop preauthorizations cannot be voided.</source>
+        <target>Les preautoritzacions de Wipop capturades no es poden anul·lar.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="bc524cd4ff59edceeea3fc1229478125">
+        <source>Only authorized Wipop payments can be captured or voided.</source>
+        <target>Només els pagaments autoritzats de Wipop es poden capturar o anul·lar.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a8e9d01a7af283707c37a9ad2c5e32ea">
+        <source>Only Wipop card preauthorizations can be captured or voided.</source>
+        <target>Només les preautoritzacions amb targeta de Wipop es poden capturar o anul·lar.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="57a5add08b432cb9ac20f62467cdbe6b">
+        <source>Wipop voided the preauthorization, but the local attempt could not be marked as cancelled.</source>
+        <target>Wipop ha anul·lat la preautorització, però l'intent local no s'ha pogut marcar com a cancel·lat.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b224948d2f84e6b58e8fcb8ec843df24">
+        <source>Wipop voided the preauthorization, but the PrestaShop order could not be marked as cancelled.</source>
+        <target>Wipop ha anul·lat la preautorització, però la comanda de PrestaShop no s'ha pogut marcar com a cancel·lada.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5ebb8c549850591cb13ec22c97843a45">
+        <source>Wipop authorized</source>
+        <target>Wipop autoritzat</target>
+        <note>Line: </note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
