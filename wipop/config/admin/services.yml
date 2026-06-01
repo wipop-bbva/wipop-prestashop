@@ -44,7 +44,7 @@ services:
 
   PrestaShop\Module\Wipop\Refund\ManualRefundRequestFactory: ~
 
-  PrestaShop\Module\Wipop\Refund\ManualRefundLock: ~
+  PrestaShop\Module\Wipop\Payment\PaymentAttemptLock: ~
 
   PrestaShop\Module\Wipop\Refund\RefundableShippingCalculator: ~
 
@@ -80,6 +80,30 @@ services:
       $paymentAttemptRefundMarker: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository'
       $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
+  PrestaShop\Module\Wipop\Preauthorization\WipopPreauthorizationResponseMapper: ~
+
+  PrestaShop\Module\Wipop\Preauthorization\WipopPreauthorizationApiClient:
+    class: PrestaShop\Module\Wipop\Preauthorization\WipopPreauthorizationApiClient
+    arguments:
+      $settingsRepository: '@PrestaShop\Module\Wipop\Configuration\SettingsRepository'
+      $clientFactory: '@PrestaShop\Module\Wipop\Api\ClientFactory'
+      $sdkCaller: '@PrestaShop\Module\Wipop\Api\SdkCaller'
+      $responseMapper: '@PrestaShop\Module\Wipop\Preauthorization\WipopPreauthorizationResponseMapper'
+
+  PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater:
+    class: PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater
+    arguments:
+      $commandBus: '@prestashop.core.command_bus'
+
+  PrestaShop\Module\Wipop\Preauthorization\PreauthorizationService:
+    class: PrestaShop\Module\Wipop\Preauthorization\PreauthorizationService
+    arguments:
+      $wipopClient: '@PrestaShop\Module\Wipop\Preauthorization\WipopPreauthorizationApiClient'
+      $eventStore: '@PrestaShop\Module\Wipop\Payment\PaymentEventRepository'
+      $attemptMarker: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository'
+      $orderUpdater: '@PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
   PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController:
     class: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController
     arguments:
@@ -95,7 +119,15 @@ services:
       $formDataProvider: '@PrestaShop\Module\Wipop\Refund\ManualRefundFormDataProvider'
       $requestFactory: '@PrestaShop\Module\Wipop\Refund\ManualRefundRequestFactory'
       $manualRefundService: '@PrestaShop\Module\Wipop\Refund\ManualRefundService'
-      $refundLock: '@PrestaShop\Module\Wipop\Refund\ManualRefundLock'
+      $paymentAttemptLock: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptLock'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
+  PrestaShop\Module\Wipop\Controller\Admin\WipopOrderPreauthorizationController:
+    class: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderPreauthorizationController
+    arguments:
+      $paymentAttemptRepository: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository'
+      $preauthorizationService: '@PrestaShop\Module\Wipop\Preauthorization\PreauthorizationService'
+      $paymentAttemptLock: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptLock'
       $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
   PrestaShop\Module\Wipop\Form\Type\SettingsType:
