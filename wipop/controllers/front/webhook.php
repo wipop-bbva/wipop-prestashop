@@ -8,15 +8,18 @@ use PrestaShop\Module\Wipop\Exception\WebhookException;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentEventRepository;
+use PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuth;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuthStatus;
 use PrestaShop\Module\Wipop\Webhook\WebhookOrderSynchronizer;
 use PrestaShop\Module\Wipop\Webhook\WebhookPaymentValidator;
+use PrestaShop\Module\Wipop\Webhook\WebhookPreauthorizationOperationSynchronizer;
 use PrestaShop\Module\Wipop\Webhook\WebhookRefundExtractor;
 use PrestaShop\Module\Wipop\Webhook\WebhookRefundSynchronizer;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShop\Module\Wipop\Webhook\WebhookTransactionHandler;
 use PrestaShop\Module\Wipop\Webhook\WebhookTransactionHydrator;
+use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 
 class WipopWebhookModuleFrontController extends ModuleFrontController
 {
@@ -173,6 +176,9 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
         $paymentAttemptRepository = PaymentAttemptRepository::createDefault();
         $paymentEventRepository = PaymentEventRepository::createDefault();
         $paymentValidator = new WebhookPaymentValidator();
+        $orderUpdater = new PrestaShopPreauthorizationOrderUpdater(
+            SymfonyContainer::getInstance()->get('prestashop.core.command_bus')
+        );
 
         return new WebhookTransactionHandler(
             new WebhookTransactionHydrator(),
@@ -187,6 +193,11 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
                 $paymentAttemptRepository,
                 $paymentEventRepository,
                 $paymentValidator
+            ),
+            new WebhookPreauthorizationOperationSynchronizer(
+                $paymentEventRepository,
+                $paymentValidator,
+                $orderUpdater
             ),
             $logger
         );
