@@ -40,12 +40,14 @@ use PrestaShop\Module\Wipop\Install\ModuleUninstaller;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Order\OrderWipopPaymentPresenter;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
+use PrestaShop\Module\Wipop\Payment\PaymentEventRepository;
 use PrestaShop\Module\Wipop\Refund\ManualRefundEligibilityChecker;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use PrestaShop\PrestaShop\Core\Action\ActionsBarButton;
 use PrestaShop\PrestaShop\Core\Action\ActionsBarButtonsCollection;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class Wipop extends PaymentModule
 {
@@ -119,9 +121,9 @@ class Wipop extends PaymentModule
         return '';
     }
 
-    public function hookPaymentOptions($params)
+    public function hookPaymentOptions(array $params): array
     {
-        $cart = is_array($params) ? ($params['cart'] ?? null) : null;
+        $cart = $params['cart'] ?? null;
 
         if (!$cart instanceof Cart) {
             return [];
@@ -183,15 +185,17 @@ class Wipop extends PaymentModule
             return '';
         }
 
-        $payment = $this->orderWipopPaymentPresenter()->present($summary);
+        $payment = $this->orderWipopPaymentPresenter()->present(
+            $summary,
+            $this->paymentEventRepository()->findPreauthorizationEventsByAttemptId($summary->id)
+        );
+        $payment = $this->withPreauthorizationActions($orderId, $payment);
 
         $this->context->smarty->assign([
             'wipopPayment' => $payment,
         ]);
 
-        $content = $this->display(__FILE__, 'views/templates/hook/admin_order_wipop.tpl');
-
-        return is_string($content) ? $content : '';
+        return $this->display(__FILE__, 'views/templates/hook/admin_order_wipop.tpl');
     }
 
     public function hookActionGetAdminOrderButtons(array $params): void
@@ -238,9 +242,7 @@ class Wipop extends PaymentModule
 
     private function translatedAdminLabel(string $label): string
     {
-        $translated = $this->trans($label, [], TranslationDomains::ADMIN);
-
-        return is_string($translated) ? $translated : $label;
+        return $this->trans($label, [], TranslationDomains::ADMIN);
     }
 
     private function formatPaymentAmount(float $amount, string $currencyIso): string
@@ -266,6 +268,11 @@ class Wipop extends PaymentModule
         return PaymentAttemptRepository::createDefault();
     }
 
+    private function paymentEventRepository(): PaymentEventRepository
+    {
+        return PaymentEventRepository::createDefault();
+    }
+
     private function orderWipopPaymentPresenter(): OrderWipopPaymentPresenter
     {
         return new OrderWipopPaymentPresenter();
@@ -283,5 +290,33 @@ class Wipop extends PaymentModule
             new ClientFactory(),
             new SdkCaller(new Logger()),
         );
+    }
+
+    /**
+     * @param array<string, bool|string|array<int, array<string, string|bool>>> $payment
+     *
+     * @return array<string, bool|string|array<int, array<string, string|bool>>>
+     */
+    private function withPreauthorizationActions(int $orderId, array $payment): array
+    {
+        if (!$payment['can_manage_preauthorization']) {
+            return $payment;
+        }
+
+        $router = SymfonyContainer::getInstance()->get('router');
+        /** @var CsrfTokenManagerInterface $tokenManager */
+        $tokenManager = SymfonyContainer::getInstance()->get('security.csrf.token_manager');
+
+        $payment['preauthorization_capture_url'] = $router->generate('wipop_order_preauthorization_capture', [
+            'orderId' => $orderId,
+        ]);
+        $payment['preauthorization_reverse_url'] = $router->generate('wipop_order_preauthorization_reverse', [
+            'orderId' => $orderId,
+        ]);
+        $payment['preauthorization_csrf_token'] = (string) $tokenManager->getToken(
+            sprintf('wipop_order_preauthorization_%d', $orderId)
+        );
+
+        return $payment;
     }
 }

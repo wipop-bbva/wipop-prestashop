@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PrestaShop\Module\Wipop\Refund;
+namespace PrestaShop\Module\Wipop\Payment;
 
 use Db;
 
-final class ManualRefundLock
+final class PaymentAttemptLock
 {
     private const LOCK_TIMEOUT_SECONDS = 5;
 
@@ -18,19 +18,21 @@ final class ManualRefundLock
     }
 
     /**
+     * Shared per attempt across refunds, captures and reversals to avoid concurrent remote money operations.
+     *
      * @template T
      *
      * @param callable(): T $callback
      *
      * @return T
      *
-     * @throws ManualRefundException
+     * @throws PaymentAttemptLockException
      */
     public function run(int $attemptId, callable $callback): mixed
     {
         $lockName = $this->lockName($attemptId);
         if (!$this->acquire($lockName)) {
-            throw new ManualRefundException('A Wipop refund is already being processed for this order.');
+            throw new PaymentAttemptLockException();
         }
 
         try {
@@ -58,7 +60,7 @@ final class ManualRefundLock
 
     private function lockName(int $attemptId): string
     {
-        return sprintf('wipop_manual_refund_%d', $attemptId);
+        return sprintf('wipop_payment_attempt_%d', $attemptId);
     }
 
     private function sqlString(string $value): string

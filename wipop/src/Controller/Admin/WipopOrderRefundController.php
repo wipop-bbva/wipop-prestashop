@@ -8,11 +8,12 @@ use Exception;
 use PrestaShop\Module\Wipop\Form\Type\ManualRefundType;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Payment\PaymentAmount;
+use PrestaShop\Module\Wipop\Payment\PaymentAttemptLock;
+use PrestaShop\Module\Wipop\Payment\PaymentAttemptLockException;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
 use PrestaShop\Module\Wipop\Refund\ManualRefundException;
 use PrestaShop\Module\Wipop\Refund\ManualRefundFormDataProvider;
-use PrestaShop\Module\Wipop\Refund\ManualRefundLock;
 use PrestaShop\Module\Wipop\Refund\ManualRefundOutcome;
 use PrestaShop\Module\Wipop\Refund\ManualRefundRequestFactory;
 use PrestaShop\Module\Wipop\Refund\ManualRefundService;
@@ -30,7 +31,7 @@ final class WipopOrderRefundController extends FrameworkBundleAdminController
         private ManualRefundFormDataProvider $formDataProvider,
         private ManualRefundRequestFactory $requestFactory,
         private ManualRefundService $manualRefundService,
-        private ManualRefundLock $refundLock,
+        private PaymentAttemptLock $paymentAttemptLock,
         private Logger $logger,
     ) {
     }
@@ -90,6 +91,11 @@ final class WipopOrderRefundController extends FrameworkBundleAdminController
                 $this->flashOutcome($outcome);
 
                 return $this->redirectToOrder($orderId);
+            } catch (PaymentAttemptLockException) {
+                $this->addFlash(
+                    'error',
+                    $this->trans('A Wipop refund is already being processed for this order.', TranslationDomains::ADMIN)
+                );
             } catch (ManualRefundException $exception) {
                 $this->addFlash('error', $this->trans($exception->getMessage(), TranslationDomains::ADMIN));
             } catch (Exception $exception) {
@@ -118,7 +124,7 @@ final class WipopOrderRefundController extends FrameworkBundleAdminController
      */
     private function processSubmittedRefund(int $orderId, int $attemptId, array $submittedData): ManualRefundOutcome
     {
-        return $this->refundLock->run($attemptId, function () use ($orderId, $submittedData) {
+        return $this->paymentAttemptLock->run($attemptId, function () use ($orderId, $submittedData) {
             $summary = $this->paymentAttemptRepository->findSummaryByOrderId($orderId);
             if ($summary === null) {
                 throw new ManualRefundException('This order does not have a Wipop payment.');

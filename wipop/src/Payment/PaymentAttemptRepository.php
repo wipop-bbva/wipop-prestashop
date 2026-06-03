@@ -8,11 +8,14 @@ use Cart;
 use Currency;
 use DateTimeImmutable;
 use Db;
+use PrestaShop\Module\Wipop\Configuration\CaptureMode;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use RuntimeException;
 use Wipop\Domain\Transaction;
 
-final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterface
+final class PaymentAttemptRepository implements
+    PaymentAttemptRefundMarkerInterface,
+    PaymentAttemptPreauthorizationMarkerInterface
 {
     public function __construct(
         private Db $db,
@@ -39,6 +42,7 @@ final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterf
             'id_cart' => (int) $cart->id,
             'id_shop' => (int) $cart->id_shop,
             'payment_method' => pSQL($paymentMethod),
+            'capture_mode' => pSQL($settings->captureMode->value),
             'status' => pSQL(PaymentAttemptStatus::INITIALIZED->value),
             'amount' => round((float) $cart->getOrderTotal(true, Cart::BOTH), 2),
             'currency_iso' => pSQL((string) $currency->iso_code),
@@ -90,6 +94,22 @@ final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterf
         ]);
     }
 
+    public function markPaid(int $attemptId): void
+    {
+        $this->update($attemptId, [
+            'status' => pSQL(PaymentAttemptStatus::PAID->value),
+            'date_upd' => pSQL($this->currentDateTime()),
+        ]);
+    }
+
+    public function markCancelled(int $attemptId): void
+    {
+        $this->update($attemptId, [
+            'status' => pSQL(PaymentAttemptStatus::CANCELLED->value),
+            'date_upd' => pSQL($this->currentDateTime()),
+        ]);
+    }
+
     public function markRefunded(int $attemptId): void
     {
         $this->update($attemptId, [
@@ -122,7 +142,15 @@ final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterf
 
         $transactionId = $this->nullableString($transactionId);
         if ($transactionId !== null) {
-            return $this->findOneByColumn('wipop_transaction_id', $transactionId);
+            $attempt = $this->findOneByColumn('wipop_transaction_id', $transactionId);
+            if ($attempt !== null) {
+                return $attempt;
+            }
+
+            $attemptId = $this->paymentEventRepository()->findAttemptIdByRemoteTransactionId($transactionId);
+            if ($attemptId !== null) {
+                return $this->findOneByColumn('id_wipop_payment_attempt', $attemptId);
+            }
         }
 
         return null;
@@ -170,8 +198,10 @@ final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterf
             return null;
         }
 
+        /** @var array{id_wipop_payment_attempt: int|string} $summaryRow */
+        $summaryRow = $row;
         $refundSummary = $this->paymentEventRepository()
-            ->findRefundSummaryByAttemptId((int) $row['id_wipop_payment_attempt']);
+            ->findRefundSummaryByAttemptId((int) $summaryRow['id_wipop_payment_attempt']);
 
         return $this->mapSummaryRow($row, $refundSummary);
     }
@@ -193,7 +223,7 @@ final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterf
         ];
 
         $transactionId = $this->nullableString($transaction->id);
-        if ($transactionId !== null) {
+        if ($transactionId !== null && $this->shouldStoreTransactionId($attempt, $transactionId)) {
             $data['wipop_transaction_id'] = pSQL($transactionId);
         }
 
@@ -220,6 +250,9 @@ final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterf
                 `id_wipop_payment_attempt`,
                 `id_cart`,
                 `id_order`,
+                `wipop_transaction_id`,
+                `payment_method`,
+                `capture_mode`,
                 `status`,
                 `amount`,
                 `currency_iso`
@@ -248,10 +281,13 @@ final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterf
         return new PaymentAttempt(
             (int) $row['id_wipop_payment_attempt'],
             (int) $row['id_cart'],
-            $this->nullableInt($row['id_order'] ?? null),
+            $this->nullableInt($row['id_order']),
             PaymentAttemptStatus::from((string) $row['status']),
             (float) $row['amount'],
             (string) $row['currency_iso'],
+            $this->nullableString($row['payment_method']),
+            CaptureMode::fromValue($row['capture_mode']),
+            $this->nullableString($row['wipop_transaction_id']),
         );
     }
 
@@ -263,16 +299,16 @@ final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterf
         return new PaymentAttemptSummary(
             (int) $row['id_wipop_payment_attempt'],
             (int) $row['id_cart'],
-            $this->nullableString($row['payment_method'] ?? null),
+            $this->nullableString($row['payment_method']),
             PaymentAttemptStatus::from((string) $row['status']),
             (float) $row['amount'],
             (string) $row['currency_iso'],
-            $this->nullableString($row['wipop_order_id'] ?? null),
-            $this->nullableString($row['wipop_transaction_id'] ?? null),
-            $this->nullableString($row['remote_status'] ?? null),
-            $this->nullableString($row['remote_error_code'] ?? null),
-            $this->nullableString($row['remote_error_message'] ?? null),
-            $this->nullableString($row['webhook_received_at'] ?? null),
+            $this->nullableString($row['wipop_order_id']),
+            $this->nullableString($row['wipop_transaction_id']),
+            $this->nullableString($row['remote_status']),
+            $this->nullableString($row['remote_error_code']),
+            $this->nullableString($row['remote_error_message']),
+            $this->nullableString($row['webhook_received_at']),
             $refundSummary,
         );
     }
@@ -305,6 +341,12 @@ final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterf
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    private function shouldStoreTransactionId(PaymentAttempt $attempt, string $transactionId): bool
+    {
+        return $attempt->wipopTransactionId === null
+            || $attempt->wipopTransactionId === $transactionId;
     }
 
     private function currentDateTime(): string

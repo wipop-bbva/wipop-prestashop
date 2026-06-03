@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Webhook;
 
 use Cart;
-use Configuration;
 use Order;
 use PaymentModule;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
@@ -15,7 +14,6 @@ use PrestaShop\Module\Wipop\Payment\TransactionType;
 use RuntimeException;
 use Validate;
 use Wipop\Domain\Transaction;
-use Wipop\Domain\TransactionStatus;
 
 final class WebhookOrderSynchronizer
 {
@@ -29,9 +27,9 @@ final class WebhookOrderSynchronizer
     /**
      * @throws WebhookException
      */
-    public function sync(PaymentAttempt $attempt, Transaction $transaction): void
+    public function sync(PaymentAttempt $attempt, Transaction $transaction, int $orderStateId): void
     {
-        if (!$this->shouldCreateOrLinkOrder($transaction)) {
+        if (!TransactionType::isCharge($transaction->transactionType)) {
             return;
         }
 
@@ -41,6 +39,7 @@ final class WebhookOrderSynchronizer
             return;
         }
 
+        /* Webhook retries may arrive after PrestaShop created the order but before the attempt was linked. */
         $existingOrderId = $this->existingOrderId($attempt->cartId);
         if ($existingOrderId !== null) {
             $this->paymentAttemptRepository->assignOrderId($attempt->id, $existingOrderId);
@@ -51,13 +50,7 @@ final class WebhookOrderSynchronizer
         $cart = $this->loadCart($attempt->cartId);
         $this->paymentValidator->assertCartMatches($attempt, $cart);
 
-        $this->createOrder($attempt, $transaction, $cart);
-    }
-
-    private function shouldCreateOrLinkOrder(Transaction $transaction): bool
-    {
-        return $transaction->status === TransactionStatus::COMPLETED
-            && TransactionType::isCharge($transaction->transactionType);
+        $this->createOrder($attempt, $transaction, $cart, $orderStateId);
     }
 
     private function existingOrderId(int $cartId): ?int
@@ -83,11 +76,11 @@ final class WebhookOrderSynchronizer
     /**
      * @throws WebhookException
      */
-    private function createOrder(PaymentAttempt $attempt, Transaction $transaction, Cart $cart): void
+    private function createOrder(PaymentAttempt $attempt, Transaction $transaction, Cart $cart, int $orderStateId): void
     {
         $transactionId = trim((string) $transaction->id);
         if ($transactionId === '') {
-            throw new WebhookException('Missing transaction id for completed payment.', 400);
+            throw new WebhookException('Missing transaction id for the Wipop payment.', 400);
         }
 
         $secureKey = trim((string) $cart->secure_key);
@@ -95,14 +88,13 @@ final class WebhookOrderSynchronizer
             throw new WebhookException('Missing cart secure key for the Wipop payment attempt.', 400);
         }
 
-        $paymentStatusId = (int) Configuration::get('PS_OS_PAYMENT');
-        if ($paymentStatusId <= 0) {
-            throw new RuntimeException('Unable to resolve the paid order status.');
+        if ($orderStateId <= 0) {
+            throw new RuntimeException('Unable to resolve the target order status.');
         }
 
         $created = $this->module->validateOrder(
             (int) $cart->id,
-            $paymentStatusId,
+            $orderStateId,
             $attempt->amount,
             (string) $this->module->displayName,
             null,

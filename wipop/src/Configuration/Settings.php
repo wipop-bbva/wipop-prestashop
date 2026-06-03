@@ -31,6 +31,7 @@ final class Settings
         public string $publicSecretKey,
         public int $terminalId,
         public array $enabledGateways = [],
+        public CaptureMode $captureMode = CaptureMode::IMMEDIATE,
     ) {
         $this->enabledGateways = self::normalizeGateways($enabledGateways);
 
@@ -58,6 +59,12 @@ final class Settings
         $availableGateways = self::normalizeGateways($availableGateways);
 
         return array_values(array_intersect($availableGateways, $this->enabledGateways));
+    }
+
+    public function shouldCaptureImmediately(string $method): bool
+    {
+        return $this->captureMode !== CaptureMode::MANUAL
+            || self::normalizeGateway($method) !== ChargeMethod::CARD;
     }
 
     /**

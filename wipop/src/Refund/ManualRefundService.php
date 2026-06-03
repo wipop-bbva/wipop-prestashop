@@ -39,7 +39,7 @@ final class ManualRefundService
         $this->validator->assertRefundable($summary, $request, $formData);
         $this->orderSlipIssuer->assertCanIssueOrderSlip($orderId, $request);
 
-        $chargeTransactionId = trim((string) $summary->wipopTransactionId);
+        $chargeTransactionId = $this->chargeTransactionIdForRefund($summary);
         $wipopAmount = $this->taxIncludedAmountCalculator->amountForWipop($request, $formData);
         $refundResult = $this->refundInWipop($chargeTransactionId, $wipopAmount);
         $this->assertCompletedRefundResult($summary, $wipopAmount, $refundResult);
@@ -51,6 +51,18 @@ final class ManualRefundService
         $this->markAttemptRefundedIfFullyRefunded($summary);
 
         return $this->issueOrderSlip($orderId, $request, $refundResult, $event);
+    }
+
+    private function chargeTransactionIdForRefund(PaymentAttemptSummary $summary): string
+    {
+        /*
+         * Manual-capture refunds must target the capture transaction; immediate
+         * captures fall back to the original charge.
+         */
+        return trim((string) (
+            $this->refundEventStore->findLatestCompletedCaptureTransactionId($summary->id)
+            ?? $summary->wipopTransactionId
+        ));
     }
 
     /**

@@ -6,6 +6,7 @@ namespace PrestaShop\Module\Wipop\Controller\Admin;
 
 use Context;
 use PrestaShop\Module\Wipop\Api\MerchantOperationsService;
+use PrestaShop\Module\Wipop\Configuration\CaptureMode;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Exception\ApiCallException;
@@ -218,6 +219,7 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
             'secret_key' => '',
             'public_secret_key' => '',
             'terminal_id' => $settings->terminalId,
+            'capture_mode' => $settings->captureMode->value,
             'enabled_gateways' => $settings->enabledGateways,
         ];
     }
@@ -235,17 +237,16 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
      */
     private function buildSettings(array $data, Settings $currentSettings): Settings
     {
-        $enabledGateways = Settings::normalizeGateways(is_array($data['enabled_gateways'] ?? null)
-            ? $data['enabled_gateways']
-            : []);
+        $enabledGateways = Settings::normalizeGateways($data['enabled_gateways']);
 
         return new Settings(
-            (bool) ($data['live_mode'] ?? false),
-            trim((string) ($data['merchant_id'] ?? '')),
-            $this->secretValue($data['secret_key'] ?? null, $currentSettings->secretKey),
-            $this->secretValue($data['public_secret_key'] ?? null, $currentSettings->publicSecretKey),
-            $this->terminalIdValue($data['terminal_id'] ?? null, $currentSettings->terminalId),
-            $enabledGateways
+            (bool) $data['live_mode'],
+            trim((string) $data['merchant_id']),
+            $this->secretValue($data['secret_key'], $currentSettings->secretKey),
+            $this->secretValue($data['public_secret_key'], $currentSettings->publicSecretKey),
+            $this->terminalIdValue($data['terminal_id'], $currentSettings->terminalId),
+            $enabledGateways,
+            CaptureMode::fromValue($data['capture_mode'])
         );
     }
 

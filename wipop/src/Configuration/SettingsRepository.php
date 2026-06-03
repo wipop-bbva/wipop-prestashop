@@ -24,6 +24,7 @@ final class SettingsRepository
     private const FIELD_PUBLIC_SECRET_KEY = 'public_secret_key';
     private const FIELD_TERMINAL_ID = 'terminal_id';
     private const FIELD_ENABLED_GATEWAYS = 'enabled_gateways';
+    private const FIELD_CAPTURE_MODE = 'capture_mode';
 
     public function installDefaults(): bool
     {
@@ -58,7 +59,8 @@ final class SettingsRepository
             trim((string) $payload[self::FIELD_SECRET_KEY]),
             trim((string) $payload[self::FIELD_PUBLIC_SECRET_KEY]),
             (int) $payload[self::FIELD_TERMINAL_ID],
-            is_array($enabledGateways) ? $enabledGateways : []
+            is_array($enabledGateways) ? $enabledGateways : [],
+            CaptureMode::fromValue($payload[self::FIELD_CAPTURE_MODE] ?? null)
         );
     }
 
@@ -74,6 +76,7 @@ final class SettingsRepository
             self::FIELD_PUBLIC_SECRET_KEY => $settings->publicSecretKey,
             self::FIELD_TERMINAL_ID => $settings->terminalId,
             self::FIELD_ENABLED_GATEWAYS => $settings->enabledGateways,
+            self::FIELD_CAPTURE_MODE => $settings->captureMode->value,
         ]);
 
         PrestaShopConfiguration::deleteByName(ConfigKeys::AVAILABLE_GATEWAYS_CACHE);
@@ -91,6 +94,7 @@ final class SettingsRepository
             self::FIELD_PUBLIC_SECRET_KEY => '',
             self::FIELD_TERMINAL_ID => Settings::DEFAULT_TERMINAL_ID,
             self::FIELD_ENABLED_GATEWAYS => Settings::SUPPORTED_GATEWAYS,
+            self::FIELD_CAPTURE_MODE => CaptureMode::IMMEDIATE->value,
         ];
     }
 
@@ -154,6 +158,7 @@ final class SettingsRepository
             self::FIELD_PUBLIC_SECRET_KEY => trim((string) $payload[self::FIELD_PUBLIC_SECRET_KEY]),
             self::FIELD_TERMINAL_ID => (int) $payload[self::FIELD_TERMINAL_ID],
             self::FIELD_ENABLED_GATEWAYS => $enabledGateways,
+            self::FIELD_CAPTURE_MODE => CaptureMode::fromValue($payload[self::FIELD_CAPTURE_MODE] ?? null)->value,
         ];
     }
 }

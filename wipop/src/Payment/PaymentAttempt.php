@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Payment;
 
+use PrestaShop\Module\Wipop\Configuration\CaptureMode;
+
 final class PaymentAttempt
 {
     public function __construct(
@@ -13,6 +15,9 @@ final class PaymentAttempt
         public readonly PaymentAttemptStatus $status,
         public readonly float $amount,
         public readonly string $currencyIso,
+        public readonly ?string $paymentMethod = null,
+        public readonly CaptureMode $captureMode = CaptureMode::IMMEDIATE,
+        public readonly ?string $wipopTransactionId = null,
     ) {
     }
 }

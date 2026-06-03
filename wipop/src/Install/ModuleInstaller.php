@@ -4,11 +4,21 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Install;
 
+use Configuration;
+use Context;
 use Db;
+use Language;
+use OrderState;
+use PrestaShop\Module\Wipop\Configuration\ConfigKeys;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
+use PrestaShop\Module\Wipop\TranslationDomains;
+use Validate;
 
 final class ModuleInstaller
 {
+    private const MODULE_NAME = 'wipop';
+    private const AUTHORIZED_ORDER_STATE_LABEL = 'Wipop authorized';
+
     public function __construct(private SettingsRepository $settingsRepository)
     {
     }
@@ -16,7 +26,8 @@ final class ModuleInstaller
     public function run(): bool
     {
         return $this->installSettings()
-            && $this->installTables();
+            && $this->installTables()
+            && $this->installAuthorizedOrderState();
     }
 
     public function installSettings(): bool
@@ -41,6 +52,7 @@ final class ModuleInstaller
                 `wipop_order_id` VARCHAR(12) DEFAULT NULL,
                 `wipop_transaction_id` VARCHAR(64) DEFAULT NULL,
                 `payment_method` VARCHAR(32) DEFAULT NULL,
+                `capture_mode` VARCHAR(16) NOT NULL DEFAULT \'immediate\',
                 `status` VARCHAR(32) NOT NULL,
                 `amount` DECIMAL(20, 6) NOT NULL,
                 `currency_iso` CHAR(3) NOT NULL,
@@ -98,5 +110,58 @@ final class ModuleInstaller
         );
 
         return Db::getInstance()->execute($sql);
+    }
+
+    private function installAuthorizedOrderState(): bool
+    {
+        $configuredStateId = (int) Configuration::get(ConfigKeys::AUTHORIZED_ORDER_STATE_ID);
+        if ($configuredStateId > 0) {
+            $configuredState = new OrderState($configuredStateId);
+            if (Validate::isLoadedObject($configuredState) && $configuredState->module_name === self::MODULE_NAME) {
+                return true;
+            }
+        }
+
+        $orderState = new OrderState();
+        $orderState->module_name = self::MODULE_NAME;
+        $orderState->name = $this->authorizedOrderStateNames();
+        $orderState->color = '#ffc107';
+        $orderState->logable = false;
+        /* Authorization is not payment; the order becomes paid only after capture. */
+        $orderState->paid = false;
+        $orderState->invoice = false;
+        $orderState->send_email = false;
+        $orderState->hidden = false;
+        $orderState->unremovable = true;
+        $orderState->delivery = false;
+        $orderState->shipped = false;
+        $orderState->pdf_delivery = false;
+        $orderState->pdf_invoice = false;
+        $orderState->deleted = false;
+
+        return (bool) $orderState->add()
+            && Configuration::updateValue(ConfigKeys::AUTHORIZED_ORDER_STATE_ID, (int) $orderState->id);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function authorizedOrderStateNames(): array
+    {
+        $translator = Context::getContext()->getTranslator();
+        $names = [];
+        /** @var array<int, array{id_lang: int|string, locale: string}> $languages */
+        $languages = Language::getLanguages(false);
+
+        foreach ($languages as $language) {
+            $names[(int) $language['id_lang']] = $translator->trans(
+                self::AUTHORIZED_ORDER_STATE_LABEL,
+                [],
+                TranslationDomains::ADMIN,
+                $language['locale']
+            );
+        }
+
+        return $names;
     }
 }

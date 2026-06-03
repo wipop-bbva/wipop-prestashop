@@ -169,6 +169,37 @@ final class ManualRefundServiceTest extends TestCase
         self::assertSame(12.1, $savedEvent?->amount);
     }
 
+    public function testItRefundsCapturedTransactionWhenManualCaptureEventExists(): void
+    {
+        $savedEvent = null;
+        $employeeId = null;
+        $linkedOrderSlips = [];
+        $orderSlipCalls = [];
+        $lastTransactionId = null;
+        $refunded = false;
+        $eventStore = $this->eventStore(
+            0,
+            $savedEvent,
+            $employeeId,
+            $linkedOrderSlips,
+            captureTransactionId: 'tx_capture'
+        );
+        $wipopRefundClient = $this->wipopRefundClient(
+            $this->refundResult(parentTransactionId: 'tx_capture'),
+            lastTransactionId: $lastTransactionId,
+        );
+
+        $this->service(
+            $wipopRefundClient,
+            $this->orderSlipIssuer(77, null, $orderSlipCalls),
+            $eventStore,
+            $this->refundMarker($refunded),
+        )->refund(56, $this->summary(), $this->request(), $this->formData(), 7);
+
+        self::assertSame('tx_capture', $lastTransactionId);
+        self::assertSame('tx_capture', $savedEvent?->parentTransactionId);
+    }
+
     public function testItRejectsNonCompletedWipopRefundResultsBeforeCreatingOrderSlip(): void
     {
         $this->assertWipopResultIsRejectedBeforeLocalChanges(
@@ -348,6 +379,7 @@ final class ManualRefundServiceTest extends TestCase
         ?WipopRefundResult $result = null,
         ?RuntimeException $exception = null,
         ?float &$lastAmount = null,
+        ?string &$lastTransactionId = null,
     ): WipopRefundClientInterface {
         /** @var WipopRefundClientInterface&MockObject $client */
         $client = $this->createMock(WipopRefundClientInterface::class);
@@ -358,9 +390,11 @@ final class ManualRefundServiceTest extends TestCase
             ) use (
                 $result,
                 $exception,
-                &$lastAmount
+                &$lastAmount,
+                &$lastTransactionId
             ): WipopRefundResult {
                 $lastAmount = $amount;
+                $lastTransactionId = $transactionId;
 
                 if ($exception instanceof RuntimeException) {
                     throw $exception;
@@ -412,6 +446,7 @@ final class ManualRefundServiceTest extends TestCase
         ?int &$employeeId,
         array &$linkedOrderSlips,
         ?RuntimeException $linkException = null,
+        ?string $captureTransactionId = null,
     ): RefundEventStoreInterface {
         /** @var RefundEventStoreInterface&MockObject $eventStore */
         $eventStore = $this->createMock(RefundEventStoreInterface::class);
@@ -444,6 +479,7 @@ final class ManualRefundServiceTest extends TestCase
             }
         );
         $eventStore->method('completedRefundedCentsForAttempt')->willReturn($refundedCents);
+        $eventStore->method('findLatestCompletedCaptureTransactionId')->willReturn($captureTransactionId);
 
         return $eventStore;
     }

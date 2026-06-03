@@ -7,8 +7,9 @@ namespace PrestaShop\Module\Wipop\Payment;
 use DateTimeImmutable;
 use Db;
 use RuntimeException;
+use Wipop\Domain\TransactionStatus;
 
-final class PaymentEventRepository implements RefundEventStoreInterface
+final class PaymentEventRepository implements RefundEventStoreInterface, PreauthorizationEventStoreInterface
 {
     public function __construct(private Db $db)
     {
@@ -26,6 +27,14 @@ final class PaymentEventRepository implements RefundEventStoreInterface
 
     public function saveManualRefund(PaymentAttempt $attempt, PaymentEventData $event, int $employeeId): void
     {
+        $this->saveEvent($attempt, $event, $employeeId);
+    }
+
+    public function savePreauthorizationOperation(
+        PaymentAttempt $attempt,
+        PaymentEventData $event,
+        ?int $employeeId,
+    ): void {
         $this->saveEvent($attempt, $event, $employeeId);
     }
 
@@ -94,6 +103,98 @@ final class PaymentEventRepository implements RefundEventStoreInterface
         return PaymentAmount::toCents((float) $this->db->getValue($sql));
     }
 
+    public function hasSuccessfulPreauthorizationEvent(int $attemptId, string $eventType): bool
+    {
+        $sql = sprintf(
+            'SELECT 1
+            FROM `%swipop_payment_event`
+            WHERE `id_wipop_payment_attempt` = %d
+                AND `transaction_type` = %s
+                AND `status` = %s
+            LIMIT 1',
+            _DB_PREFIX_,
+            $attemptId,
+            $this->sqlString($eventType),
+            $this->sqlString(TransactionStatus::COMPLETED->value)
+        );
+
+        return (bool) $this->db->getValue($sql);
+    }
+
+    public function findLatestCompletedCaptureTransactionId(int $attemptId): ?string
+    {
+        $sql = sprintf(
+            'SELECT `remote_transaction_id`
+            FROM `%swipop_payment_event`
+            WHERE `id_wipop_payment_attempt` = %d
+                AND `transaction_type` = %s
+                AND `status` = %s
+            ORDER BY `received_at` DESC, `id_wipop_payment_event` DESC
+            LIMIT 1',
+            _DB_PREFIX_,
+            $attemptId,
+            $this->sqlString(PaymentEventData::TYPE_CAPTURE),
+            $this->sqlString('COMPLETED')
+        );
+
+        return $this->nullableString($this->db->getValue($sql));
+    }
+
+    public function findAttemptIdByRemoteTransactionId(string $remoteTransactionId): ?int
+    {
+        $remoteTransactionId = $this->nullableString($remoteTransactionId);
+        if ($remoteTransactionId === null) {
+            return null;
+        }
+
+        $sql = sprintf(
+            'SELECT `id_wipop_payment_attempt`
+            FROM `%swipop_payment_event`
+            WHERE `remote_transaction_id` = %s
+            ORDER BY `id_wipop_payment_event` DESC
+            LIMIT 1',
+            _DB_PREFIX_,
+            $this->sqlString($remoteTransactionId)
+        );
+
+        $attemptId = (int) $this->db->getValue($sql);
+
+        return $attemptId > 0 ? $attemptId : null;
+    }
+
+    /**
+     * @return array<int, array<string, float|int|string|null>>
+     */
+    public function findPreauthorizationEventsByAttemptId(int $attemptId): array
+    {
+        $sql = sprintf(
+            'SELECT
+                `remote_transaction_id`,
+                `parent_transaction_id`,
+                `transaction_type`,
+                `operation_type`,
+                `status`,
+                `amount`,
+                `currency_iso`,
+                `remote_error_code`,
+                `remote_error_message`,
+                `received_at`
+            FROM `%swipop_payment_event`
+            WHERE `id_wipop_payment_attempt` = %d
+                AND `transaction_type` IN (%s, %s)
+            ORDER BY `received_at` DESC, `id_wipop_payment_event` DESC
+            LIMIT 10',
+            _DB_PREFIX_,
+            $attemptId,
+            $this->sqlString(PaymentEventData::TYPE_CAPTURE),
+            $this->sqlString(PaymentEventData::TYPE_REVERSAL)
+        );
+
+        $rows = $this->db->executeS($sql);
+
+        return is_array($rows) ? $rows : [];
+    }
+
     public function findRefundSummaryByAttemptId(int $attemptId): ?PaymentRefundSummary
     {
         $latestRefund = $this->findLatestRefundRow($attemptId);
@@ -105,16 +206,16 @@ final class PaymentEventRepository implements RefundEventStoreInterface
 
         return new PaymentRefundSummary(
             $totals['amount'],
-            $this->normalizeCurrency($totals['currency'] ?? $latestRefund['currency_iso'] ?? ''),
+            $this->normalizeCurrency($totals['currency'] ?? $latestRefund['currency_iso']),
             $totals['count'],
-            $this->nullableString($latestRefund['remote_transaction_id'] ?? null),
-            $this->nullableString($latestRefund['status'] ?? null),
-            $this->nullableFloat($latestRefund['amount'] ?? null),
-            $this->nullableString($latestRefund['currency_iso'] ?? null),
-            $this->nullableString($latestRefund['received_at'] ?? null),
-            $this->nullableString($latestRefund['remote_error_code'] ?? null),
-            $this->nullableString($latestRefund['remote_error_message'] ?? null),
-            $this->positiveInt($latestRefund['id_order_slip'] ?? null),
+            $this->nullableString($latestRefund['remote_transaction_id']),
+            $this->nullableString($latestRefund['status']),
+            $this->nullableFloat($latestRefund['amount']),
+            $this->nullableString($latestRefund['currency_iso']),
+            $this->nullableString($latestRefund['received_at']),
+            $this->nullableString($latestRefund['remote_error_code']),
+            $this->nullableString($latestRefund['remote_error_message']),
+            $this->positiveInt($latestRefund['id_order_slip']),
         );
     }
 
@@ -235,10 +336,13 @@ final class PaymentEventRepository implements RefundEventStoreInterface
             return ['amount' => 0.0, 'count' => 0, 'currency' => null];
         }
 
+        /** @var array{refunded_amount: int|float|string, refund_count: int|string, currency_iso: string|null} $totalsRow */
+        $totalsRow = $row;
+
         return [
-            'amount' => (float) ($row['refunded_amount'] ?? 0),
-            'count' => (int) ($row['refund_count'] ?? 0),
-            'currency' => $this->nullableString($row['currency_iso'] ?? null),
+            'amount' => (float) $totalsRow['refunded_amount'],
+            'count' => (int) $totalsRow['refund_count'],
+            'currency' => $this->nullableString($totalsRow['currency_iso']),
         ];
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Form\Type;
 
+use PrestaShop\Module\Wipop\Configuration\CaptureMode;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShopBundle\Form\Admin\Type\SwitchType;
@@ -19,8 +20,6 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Range;
 use Wipop\Domain\ChargeMethod;
-
-use function is_array;
 
 final class SettingsType extends TranslatorAwareType
 {
@@ -71,6 +70,22 @@ final class SettingsType extends TranslatorAwareType
                     ]),
                 ],
             ])
+            ->add('capture_mode', ChoiceType::class, [
+                'label' => $this->trans('Preauthorizations', TranslationDomains::ADMIN),
+                'required' => true,
+                'expanded' => true,
+                'multiple' => false,
+                'choice_translation_domain' => TranslationDomains::ADMIN,
+                'help' => $this->trans(
+                    'If you choose to reserve the amount, you will need to confirm or cancel the charge manually'
+                    . ' from the order details. Only applies to card payments.',
+                    TranslationDomains::ADMIN
+                ),
+                'choices' => [
+                    'Charge at checkout' => CaptureMode::IMMEDIATE->value,
+                    'Reserve the amount to charge it later' => CaptureMode::MANUAL->value,
+                ],
+            ])
             ->add('enabled_gateways', ChoiceType::class, [
                 'label' => $this->trans('Payment methods', TranslationDomains::ADMIN),
                 'required' => false,
@@ -84,13 +99,8 @@ final class SettingsType extends TranslatorAwareType
             ]);
 
         $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event): void {
-            $data = $event->getData();
-            if (!is_array($data)) {
-                return;
-            }
-
-            $enabledGateways = $data['enabled_gateways'] ?? [];
-            if (is_array($enabledGateways) && $enabledGateways !== []) {
+            $enabledGateways = $event->getData()['enabled_gateways'];
+            if ($enabledGateways !== []) {
                 return;
             }
 

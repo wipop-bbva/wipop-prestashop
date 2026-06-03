@@ -64,6 +64,59 @@
         </div>
       {/if}
 
+      {if $wipopPayment.can_manage_preauthorization}
+        <hr>
+        <div class="d-flex flex-column">
+          <form method="post" action="{$wipopPayment.preauthorization_capture_url|escape:'html':'UTF-8'}" class="mb-2">
+            <input type="hidden" name="_csrf_token" value="{$wipopPayment.preauthorization_csrf_token|escape:'html':'UTF-8'}">
+            <button type="submit" class="btn btn-primary btn-sm btn-block">
+              {l s='Capture preauthorization with Wipop' d='Modules.Wipop.Admin'}
+            </button>
+          </form>
+          <form method="post" action="{$wipopPayment.preauthorization_reverse_url|escape:'html':'UTF-8'}">
+            <input type="hidden" name="_csrf_token" value="{$wipopPayment.preauthorization_csrf_token|escape:'html':'UTF-8'}">
+            <button type="submit" class="btn btn-outline-danger btn-sm btn-block">
+              {l s='Void preauthorization with Wipop' d='Modules.Wipop.Admin'}
+            </button>
+          </form>
+        </div>
+      {/if}
+
+      {if $wipopPayment.has_preauthorization_events}
+        <hr>
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>{l s='Event' d='Modules.Wipop.Admin'}</th>
+              <th>{l s='Status' d='Modules.Wipop.Admin'}</th>
+              <th>{l s='Amount' d='Modules.Wipop.Admin'}</th>
+              <th>{l s='Transaction' d='Modules.Wipop.Admin'}</th>
+              <th>{l s='Date' d='Modules.Wipop.Admin'}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {foreach from=$wipopPayment.preauthorization_events item=event}
+              <tr>
+                <td>{$event.type|escape:'html':'UTF-8'}</td>
+                <td>{$event.status|escape:'html':'UTF-8'}</td>
+                <td>{$event.amount|escape:'html':'UTF-8'}</td>
+                <td>{$event.transaction_id|escape:'html':'UTF-8'}</td>
+                <td>{$event.received_at|escape:'html':'UTF-8'}</td>
+              </tr>
+              {if $event.has_error}
+                <tr>
+                  <td colspan="5">
+                    <div class="alert alert-warning mb-0">
+                      {$event.error|escape:'html':'UTF-8'}
+                    </div>
+                  </td>
+                </tr>
+              {/if}
+            {/foreach}
+          </tbody>
+        </table>
+      {/if}
+
       {if $wipopPayment.has_refund}
         <hr>
         <table class="table table-sm mb-0">

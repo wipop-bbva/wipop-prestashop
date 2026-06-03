@@ -16,8 +16,12 @@ enum PaymentAttemptStatus: string
 
     public function syncWithWebhookStatus(self $webhookStatus): self
     {
-        if ($this === self::REFUNDED) {
-            return self::REFUNDED;
+        if (in_array($this, [self::PAID, self::FAILED, self::CANCELLED, self::REFUNDED], true)) {
+            return $this;
+        }
+
+        if ($this === self::AUTHORIZED && in_array($webhookStatus, [self::CHECKOUT_PENDING, self::FAILED], true)) {
+            return self::AUTHORIZED;
         }
 
         return $webhookStatus;
