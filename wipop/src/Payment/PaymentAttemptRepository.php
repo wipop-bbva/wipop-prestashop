@@ -13,7 +13,9 @@ use PrestaShop\Module\Wipop\Configuration\Settings;
 use RuntimeException;
 use Wipop\Domain\Transaction;
 
-final class PaymentAttemptRepository implements PaymentAttemptRefundMarkerInterface, PaymentAttemptPreauthorizationMarkerInterface
+final class PaymentAttemptRepository implements
+    PaymentAttemptRefundMarkerInterface,
+    PaymentAttemptPreauthorizationMarkerInterface
 {
     public function __construct(
         private Db $db,
