@@ -34,7 +34,8 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
         $order = $this->loadOrder($orderId);
         $currency = new Currency((int) $order->id_currency);
 
-        if (!Validate::isLoadedObject($currency)
+        if (
+            !Validate::isLoadedObject($currency)
             || strtoupper((string) $currency->iso_code) !== strtoupper($currencyIso)
         ) {
             throw new PreauthorizationException('The order currency does not match the Wipop capture currency.');

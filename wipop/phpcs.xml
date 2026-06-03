@@ -9,7 +9,6 @@
   <file>src</file>
   <file>wipop.php</file>
   <file>controllers</file>
-  <file>upgrade</file>
   <file>tests</file>
 
   <exclude-pattern>dist/*</exclude-pattern>
@@ -21,14 +20,12 @@
   <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
     <exclude-pattern>wipop.php</exclude-pattern>
     <exclude-pattern>controllers/*</exclude-pattern>
-    <exclude-pattern>upgrade/*</exclude-pattern>
   </rule>
 
   <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
     <exclude-pattern>autoload.php</exclude-pattern>
     <exclude-pattern>controllers/*</exclude-pattern>
     <exclude-pattern>wipop.php</exclude-pattern>
-    <exclude-pattern>upgrade/*</exclude-pattern>
     <exclude-pattern>tests/phpstan/bootstrap.php</exclude-pattern>
   </rule>
 
@@ -36,6 +33,5 @@
     <exclude-pattern>autoload.php</exclude-pattern>
     <exclude-pattern>controllers/*</exclude-pattern>
     <exclude-pattern>wipop.php</exclude-pattern>
-    <exclude-pattern>upgrade/*</exclude-pattern>
   </rule>
 </ruleset>
