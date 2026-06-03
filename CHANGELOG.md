@@ -1,3 +1,17 @@
+## [1.11.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.10.0...v1.11.0) (2026-06-03)
+
+### Features
+
+* **admin:** expose preauthorization order actions ([9cc7d6c](https://github.com/wipop-bbva/wipop-prestashop/commit/9cc7d6c7fb93aca50a8ed5521656fdd99755c93f))
+* **config:** add manual card capture mode ([f6fd116](https://github.com/wipop-bbva/wipop-prestashop/commit/f6fd1161ee38ccd832ab0cdf82c483037f2aee5f))
+* **payment:** persist preauthorization attempts ([825d892](https://github.com/wipop-bbva/wipop-prestashop/commit/825d89284b46fc7218caaf2fc8b997458db3ab79))
+* **preauthorization:** capture and void authorized Wipop payments ([3add318](https://github.com/wipop-bbva/wipop-prestashop/commit/3add31800946dc0bd55bb979e26ee0f477abb849))
+* **webhook:** synchronize preauthorization operation webhooks ([bcf51dd](https://github.com/wipop-bbva/wipop-prestashop/commit/bcf51ddbf0d23a797fb43e1abfc2a6c0038a0283))
+
+### Bug Fixes
+
+* **refund:** refund captured transaction after manual capture ([ea14ac0](https://github.com/wipop-bbva/wipop-prestashop/commit/ea14ac033b0eab7b91c572d5c102f8690841146c))
+
 ## [1.10.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.9.0...v1.10.0) (2026-05-30)
 
 ### Features
