@@ -2,7 +2,7 @@
 
 $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__)
-    ->exclude(['vendor', 'var']);
+    ->exclude(['vendor', 'vendor-dev', 'var']);
 
 $baseRules = class_exists(\PrestaShop\CodingStandards\CsFixer\Config::class)
     ? (new \PrestaShop\CodingStandards\CsFixer\Config())->getRules()
@@ -12,6 +12,11 @@ $config = (new PhpCsFixer\Config('PrestaShop coding standard'))
     ->setRiskyAllowed(true);
 
 $config->setRules(array_replace($baseRules, [
+    'class_definition' => [
+        'multi_line_extends_each_single_line' => true,
+        'single_line' => false,
+        'single_item_single_line' => false,
+    ],
     'fully_qualified_strict_types' => false,
     'global_namespace_import' => false,
     'types_spaces' => [
