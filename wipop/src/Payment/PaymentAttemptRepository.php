@@ -187,8 +187,7 @@ final class PaymentAttemptRepository implements
                 `webhook_received_at`
             FROM `%swipop_payment_attempt`
             WHERE `id_order` = %d
-            ORDER BY `id_wipop_payment_attempt` DESC
-            LIMIT 1',
+            ORDER BY `id_wipop_payment_attempt` DESC',
             _DB_PREFIX_,
             $orderId
         );
@@ -258,8 +257,7 @@ final class PaymentAttemptRepository implements
                 `currency_iso`
             FROM `%swipop_payment_attempt`
             WHERE `%s` = %s
-            ORDER BY `id_wipop_payment_attempt` DESC
-            LIMIT 1',
+            ORDER BY `id_wipop_payment_attempt` DESC',
             _DB_PREFIX_,
             bqSQL($column),
             $this->sqlValue($value)

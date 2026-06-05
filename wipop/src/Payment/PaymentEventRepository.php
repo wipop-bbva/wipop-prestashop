@@ -110,8 +110,7 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
             FROM `%swipop_payment_event`
             WHERE `id_wipop_payment_attempt` = %d
                 AND `transaction_type` = %s
-                AND `status` = %s
-            LIMIT 1',
+                AND `status` = %s',
             _DB_PREFIX_,
             $attemptId,
             $this->sqlString($eventType),
@@ -129,8 +128,7 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
             WHERE `id_wipop_payment_attempt` = %d
                 AND `transaction_type` = %s
                 AND `status` = %s
-            ORDER BY `received_at` DESC, `id_wipop_payment_event` DESC
-            LIMIT 1',
+            ORDER BY `received_at` DESC, `id_wipop_payment_event` DESC',
             _DB_PREFIX_,
             $attemptId,
             $this->sqlString(PaymentEventData::TYPE_CAPTURE),
@@ -151,8 +149,7 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
             'SELECT `id_wipop_payment_attempt`
             FROM `%swipop_payment_event`
             WHERE `remote_transaction_id` = %s
-            ORDER BY `id_wipop_payment_event` DESC
-            LIMIT 1',
+            ORDER BY `id_wipop_payment_event` DESC',
             _DB_PREFIX_,
             $this->sqlString($remoteTransactionId)
         );
@@ -298,8 +295,7 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
             FROM `%swipop_payment_event`
             WHERE `id_wipop_payment_attempt` = %d
                 AND `transaction_type` = %s
-            ORDER BY `received_at` DESC, `id_wipop_payment_event` DESC
-            LIMIT 1',
+            ORDER BY `received_at` DESC, `id_wipop_payment_event` DESC',
             _DB_PREFIX_,
             $attemptId,
             $this->sqlString(PaymentEventData::TYPE_REFUND)
