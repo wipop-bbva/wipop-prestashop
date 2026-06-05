@@ -1,3 +1,9 @@
+## [1.11.1](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.11.0...v1.11.1) (2026-06-05)
+
+### Bug Fixes
+
+* **sql:** remove LIMIT clauses from SQL queries ([1a9226c](https://github.com/wipop-bbva/wipop-prestashop/commit/1a9226c6a9d82865a9d60db0fe31033a2ecf110d))
+
 ## [1.11.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.10.0...v1.11.0) (2026-06-03)
 
 ### Features
