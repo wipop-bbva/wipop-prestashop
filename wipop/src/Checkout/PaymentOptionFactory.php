@@ -7,6 +7,11 @@ namespace PrestaShop\Module\Wipop\Checkout;
 use Cart;
 use Context;
 use PrestaShop\Module\Wipop\Api\MerchantOperationsService;
+use PrestaShop\Module\Wipop\Card\StoredCardPresenter;
+use PrestaShop\Module\Wipop\Card\StoredCardRepository;
+use PrestaShop\Module\Wipop\Configuration\Settings;
+use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
+use PrestaShop\Module\Wipop\Customer\LoggedCartCustomerResolver;
 use PrestaShop\Module\Wipop\Exception\ApiCallException;
 use PrestaShop\Module\Wipop\Exception\ClientConfigurationException;
 use PrestaShop\Module\Wipop\Exception\SettingsReadException;
@@ -20,6 +25,8 @@ final class PaymentOptionFactory
 {
     public function __construct(
         private MerchantOperationsService $merchantOperationsService,
+        private SettingsRepository $settingsRepository,
+        private StoredCardRepository $storedCardRepository,
         private TranslatorInterface $translator,
     ) {
     }
@@ -38,36 +45,77 @@ final class PaymentOptionFactory
         }
 
         try {
-            $availableGateways = $this->merchantOperationsService->getCheckoutGateways();
+            $settings = $this->settingsRepository->get();
+            $availableGateways = $this->merchantOperationsService->getCheckoutGatewaysFor($settings);
         } catch (SettingsReadException | ClientConfigurationException | ApiCallException) {
             return [];
         }
 
         return array_map(
-            fn (string $method): PaymentOption => $this->buildOption($module, $method),
+            fn (string $method): PaymentOption => $this->buildOption($module, $cart, $method, $settings),
             $availableGateways,
         );
     }
 
-    private function buildOption(\Wipop $module, string $method): PaymentOption
+    private function buildOption(\Wipop $module, Cart $cart, string $method, Settings $settings): PaymentOption
     {
+        $actionUrl = Context::getContext()->link->getModuleLink(
+            $module->name,
+            'start',
+            ['method' => $method],
+            true
+        );
         $option = new PaymentOption();
         $option->setCallToActionText($this->label($method))
-            ->setAction(Context::getContext()->link->getModuleLink(
-                $module->name,
-                'start',
-                ['method' => $method],
-                true
-            ))
-            ->setInputs([
-                [
-                    'name' => 'token',
-                    'type' => 'hidden',
-                    'value' => Tools::getToken(false),
-                ],
-            ]);
+            ->setAction($actionUrl);
+
+        if ($method === ChargeMethod::CARD) {
+            $option->setForm($this->cardForm($module, $cart, $settings, $actionUrl));
+
+            return $option;
+        }
+
+        $option->setInputs([
+            [
+                'name' => 'token',
+                'type' => 'hidden',
+                'value' => Tools::getToken(false),
+            ],
+        ]);
 
         return $option;
+    }
+
+    private function cardForm(\Wipop $module, Cart $cart, Settings $settings, string $actionUrl): string
+    {
+        $customerId = (new LoggedCartCustomerResolver())->resolveIdForCart($cart);
+        $cards = [];
+
+        if ($customerId !== null) {
+            $presenter = new StoredCardPresenter();
+            $storedCards = $this->storedCardRepository->findActiveByCustomer(
+                $customerId,
+                (int) $cart->id_shop,
+                $settings->merchantId,
+                $settings->liveMode,
+                $settings->terminalId
+            );
+
+            foreach ($storedCards as $card) {
+                $cards[] = $presenter->present($card);
+            }
+        }
+
+        Context::getContext()->smarty->assign([
+            'wipopCardForm' => [
+                'action' => $actionUrl,
+                'token' => Tools::getToken(false),
+                'is_logged' => $customerId !== null,
+                'saved_cards' => $cards,
+            ],
+        ]);
+
+        return $module->fetch('module:wipop/views/templates/front/checkout_card_form.tpl');
     }
 
     private function label(string $method): string

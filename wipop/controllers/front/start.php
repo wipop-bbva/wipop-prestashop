@@ -30,10 +30,14 @@ require_once dirname(__DIR__, 2) . '/autoload.php';
 use PrestaShop\Module\Wipop\Api\ClientFactory;
 use PrestaShop\Module\Wipop\Api\MerchantOperationsService;
 use PrestaShop\Module\Wipop\Api\SdkCaller;
+use PrestaShop\Module\Wipop\Card\CardCofException;
+use PrestaShop\Module\Wipop\Card\CardCofSelectionResolver;
+use PrestaShop\Module\Wipop\Card\StoredCardRepository;
 use PrestaShop\Module\Wipop\Checkout\CartOrderIdFactory;
 use PrestaShop\Module\Wipop\Checkout\ChargeRequestFactory;
 use PrestaShop\Module\Wipop\Checkout\ChargeStarter;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
+use PrestaShop\Module\Wipop\Customer\LoggedCartCustomerResolver;
 use PrestaShop\Module\Wipop\Exception\ApiCallException;
 use PrestaShop\Module\Wipop\Exception\ClientConfigurationException;
 use PrestaShop\Module\Wipop\Exception\SettingsReadException;
@@ -120,11 +124,22 @@ class WipopStartModuleFrontController extends ModuleFrontController
         }
 
         try {
+            $cofSelection = $this->cardCofSelectionResolver()->resolve(
+                $paymentMethod,
+                (new LoggedCartCustomerResolver())->resolveIdForCart($cart),
+                (int) $cart->id_shop,
+                $settings->merchantId,
+                $settings->liveMode,
+                $settings->terminalId,
+                $this->selectedStoredCardId(),
+                (bool) Tools::getValue('wipop_save_card')
+            );
             $paymentAttemptRepository = $this->paymentAttemptRepository();
             $attemptId = $paymentAttemptRepository->createForCart(
                 $cart,
                 $paymentMethod,
                 $settings,
+                $cofSelection,
             );
             $wipopOrderId = (new CartOrderIdFactory())->fromCartAttempt($cart, $attemptId);
             $paymentAttemptRepository->assignWipopOrderId($attemptId, $wipopOrderId);
@@ -143,12 +158,13 @@ class WipopStartModuleFrontController extends ModuleFrontController
                 $settings,
                 $wipopOrderId,
                 $attemptId,
+                $cofSelection,
             );
 
             Tools::redirect($redirectUrl);
 
             return;
-        } catch (ClientConfigurationException | ApiCallException $exception) {
+        } catch (CardCofException | ClientConfigurationException | ApiCallException $exception) {
             $logger->error('Wipop checkout start failed.', [
                 'payment_method' => $paymentMethod,
                 'error_class' => $exception::class,
@@ -204,6 +220,11 @@ class WipopStartModuleFrontController extends ModuleFrontController
         );
     }
 
+    private function cardCofSelectionResolver(): CardCofSelectionResolver
+    {
+        return new CardCofSelectionResolver(StoredCardRepository::createDefault());
+    }
+
     private function merchantOperationsService(): MerchantOperationsService
     {
         return new MerchantOperationsService(
@@ -216,6 +237,13 @@ class WipopStartModuleFrontController extends ModuleFrontController
     private function returnUrl(): string
     {
         return $this->context->link->getModuleLink($this->module->name, 'return', [], true);
+    }
+
+    private function selectedStoredCardId(): ?int
+    {
+        $selectedCardId = (int) Tools::getValue('wipop_saved_card_id');
+
+        return $selectedCardId > 0 ? $selectedCardId : null;
     }
 
     private function translateMessage(string $message, array $parameters = []): string

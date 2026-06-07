@@ -33,6 +33,7 @@ require_once __DIR__ . '/autoload.php';
 use PrestaShop\Module\Wipop\Api\ClientFactory;
 use PrestaShop\Module\Wipop\Api\MerchantOperationsService;
 use PrestaShop\Module\Wipop\Api\SdkCaller;
+use PrestaShop\Module\Wipop\Card\StoredCardRepository;
 use PrestaShop\Module\Wipop\Checkout\PaymentOptionFactory;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Install\ModuleInstaller;
@@ -254,6 +255,8 @@ class Wipop extends PaymentModule
     {
         return new PaymentOptionFactory(
             $this->merchantOperationsService(),
+            $this->settingsRepository(),
+            StoredCardRepository::createDefault(),
             $this->getTranslator(),
         );
     }
