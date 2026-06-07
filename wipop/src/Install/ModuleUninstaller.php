@@ -27,6 +27,7 @@ final class ModuleUninstaller
         $db = \Db::getInstance();
 
         return $db->execute(sprintf('DROP TABLE IF EXISTS `%swipop_payment_event`', _DB_PREFIX_))
-            && $db->execute(sprintf('DROP TABLE IF EXISTS `%swipop_payment_attempt`', _DB_PREFIX_));
+            && $db->execute(sprintf('DROP TABLE IF EXISTS `%swipop_payment_attempt`', _DB_PREFIX_))
+            && $db->execute(sprintf('DROP TABLE IF EXISTS `%swipop_stored_card`', _DB_PREFIX_));
     }
 }

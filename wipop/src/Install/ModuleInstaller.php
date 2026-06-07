@@ -38,7 +38,8 @@ final class ModuleInstaller
     public function installTables(): bool
     {
         return $this->installPaymentAttemptTable()
-            && $this->installPaymentEventTable();
+            && $this->installPaymentEventTable()
+            && $this->installStoredCardTable();
     }
 
     private function installPaymentAttemptTable(): bool
@@ -47,12 +48,16 @@ final class ModuleInstaller
             'CREATE TABLE IF NOT EXISTS `%swipop_payment_attempt` (
                 `id_wipop_payment_attempt` INT UNSIGNED NOT NULL AUTO_INCREMENT,
                 `id_cart` INT UNSIGNED NOT NULL,
+                `id_customer` INT UNSIGNED NOT NULL DEFAULT 0,
                 `id_order` INT UNSIGNED DEFAULT NULL,
                 `id_shop` INT UNSIGNED NOT NULL,
+                `merchant_id` VARCHAR(64) NOT NULL,
                 `wipop_order_id` VARCHAR(12) DEFAULT NULL,
                 `wipop_transaction_id` VARCHAR(64) DEFAULT NULL,
                 `payment_method` VARCHAR(32) DEFAULT NULL,
                 `capture_mode` VARCHAR(16) NOT NULL DEFAULT \'immediate\',
+                `cof_intent` VARCHAR(16) NOT NULL DEFAULT \'none\',
+                `id_wipop_stored_card` INT UNSIGNED DEFAULT NULL,
                 `status` VARCHAR(32) NOT NULL,
                 `amount` DECIMAL(20, 6) NOT NULL,
                 `currency_iso` CHAR(3) NOT NULL,
@@ -66,9 +71,59 @@ final class ModuleInstaller
                 `date_upd` DATETIME NOT NULL,
                 PRIMARY KEY (`id_wipop_payment_attempt`),
                 KEY `wipop_payment_attempt_cart_idx` (`id_cart`),
+                KEY `wipop_payment_attempt_customer_idx` (`id_customer`),
                 KEY `wipop_payment_attempt_order_idx` (`id_order`),
+                KEY `wipop_payment_attempt_stored_card_idx` (`id_wipop_stored_card`),
                 UNIQUE KEY `wipop_payment_attempt_order_id_uidx` (`wipop_order_id`),
                 UNIQUE KEY `wipop_payment_attempt_transaction_uidx` (`wipop_transaction_id`)
+            ) ENGINE=%s DEFAULT CHARSET=utf8;',
+            _DB_PREFIX_,
+            _MYSQL_ENGINE_
+        );
+
+        return Db::getInstance()->execute($sql);
+    }
+
+    private function installStoredCardTable(): bool
+    {
+        $sql = sprintf(
+            'CREATE TABLE IF NOT EXISTS `%swipop_stored_card` (
+                `id_wipop_stored_card` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `id_customer` INT UNSIGNED NOT NULL,
+                `id_shop` INT UNSIGNED NOT NULL,
+                `merchant_id` VARCHAR(64) NOT NULL,
+                `is_live` TINYINT(1) NOT NULL DEFAULT 0,
+                `terminal_id` INT UNSIGNED NOT NULL,
+                `source_id_encrypted` TEXT NOT NULL,
+                `source_id_hash` CHAR(64) NOT NULL,
+                `wipop_customer_id` VARCHAR(64) DEFAULT NULL,
+                `brand` VARCHAR(32) DEFAULT NULL,
+                `last4` CHAR(4) DEFAULT NULL,
+                `expiration_month` CHAR(2) DEFAULT NULL,
+                `expiration_year` CHAR(4) DEFAULT NULL,
+                `active` TINYINT(1) NOT NULL DEFAULT 1,
+                `last_save_attempt_id` INT UNSIGNED NOT NULL,
+                `forgotten_after_attempt_id` INT UNSIGNED NOT NULL DEFAULT 0,
+                `last_used_at` DATETIME DEFAULT NULL,
+                `date_add` DATETIME NOT NULL,
+                `date_upd` DATETIME NOT NULL,
+                PRIMARY KEY (`id_wipop_stored_card`),
+                KEY `wipop_stored_card_customer_idx` (
+                    `id_customer`,
+                    `id_shop`,
+                    `merchant_id`,
+                    `is_live`,
+                    `terminal_id`,
+                    `active`
+                ),
+                UNIQUE KEY `wipop_stored_card_source_uidx` (
+                    `id_customer`,
+                    `id_shop`,
+                    `merchant_id`,
+                    `is_live`,
+                    `terminal_id`,
+                    `source_id_hash`
+                )
             ) ENGINE=%s DEFAULT CHARSET=utf8;',
             _DB_PREFIX_,
             _MYSQL_ENGINE_
