@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Webhook;
 
 use Configuration;
+use PrestaShop\Module\Wipop\Card\StoredCardSynchronizer;
 use PrestaShop\Module\Wipop\Configuration\CaptureMode;
 use PrestaShop\Module\Wipop\Configuration\ConfigKeys;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
@@ -13,6 +14,7 @@ use PrestaShop\Module\Wipop\Payment\PaymentAttempt;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\TransactionType;
+use Throwable;
 use Wipop\Domain\ChargeMethod;
 use Wipop\Domain\Transaction;
 use Wipop\Domain\TransactionStatus;
@@ -26,6 +28,7 @@ final class WebhookTransactionHandler
         private WebhookRefundExtractor $refundExtractor,
         private WebhookRefundSynchronizer $refundSynchronizer,
         private WebhookPreauthorizationOperationSynchronizer $preauthorizationOperationSynchronizer,
+        private StoredCardSynchronizer $storedCardSynchronizer,
         private Logger $logger,
     ) {
     }
@@ -103,6 +106,7 @@ final class WebhookTransactionHandler
         $attemptStatus = $this->mapStatus($attempt, $transaction);
         $effectiveAttemptStatus = $attempt->status->syncWithWebhookStatus($attemptStatus);
         $this->syncOrderIfNeeded($attempt, $transaction, $effectiveAttemptStatus);
+        $this->syncStoredCard($attempt, $transaction, $effectiveAttemptStatus);
         $this->paymentAttemptRepository->syncFromWebhook($attempt, $transaction, $effectiveAttemptStatus);
 
         $this->logger->info('Webhook transaction synchronized.', [
@@ -167,5 +171,21 @@ final class WebhookTransactionHandler
                 PaymentAttemptStatus::CHECKOUT_PENDING,
                 PaymentAttemptStatus::AUTHORIZED,
             ], true);
+    }
+
+    private function syncStoredCard(
+        PaymentAttempt $attempt,
+        Transaction $transaction,
+        PaymentAttemptStatus $attemptStatus,
+    ): void {
+        try {
+            $this->storedCardSynchronizer->sync($attempt, $transaction, $attemptStatus);
+        } catch (Throwable $throwable) {
+            $this->logger->error('Unable to synchronize Wipop stored card.', [
+                'attempt_id' => $attempt->id,
+                'cart_id' => $attempt->cartId,
+                'error_class' => $throwable::class,
+            ]);
+        }
     }
 }
