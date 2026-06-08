@@ -103,6 +103,7 @@ class Wipop extends PaymentModule
             && $this->registerHook('paymentOptions')
             && $this->registerHook('moduleRoutes')
             && $this->registerHook('displayPaymentReturn')
+            && $this->registerHook('displayCustomerAccount')
             && $this->registerHook('displayAdminOrderSide')
             && $this->registerHook('actionGetAdminOrderButtons');
     }
@@ -156,6 +157,15 @@ class Wipop extends PaymentModule
         ]);
 
         return $this->fetch('module:wipop/views/templates/hook/payment_return.tpl');
+    }
+
+    public function hookDisplayCustomerAccount(array $params): string
+    {
+        $this->context->smarty->assign([
+            'wipopSavedCardsUrl' => $this->context->link->getModuleLink($this->name, 'cards', [], true),
+        ]);
+
+        return $this->fetch('module:wipop/views/templates/hook/customer_account_cards.tpl');
     }
 
     public function hookModuleRoutes()
