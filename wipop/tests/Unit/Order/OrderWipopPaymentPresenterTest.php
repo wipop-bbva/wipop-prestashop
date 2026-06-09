@@ -10,6 +10,7 @@ use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
 use PrestaShop\Module\Wipop\Payment\PaymentEventData;
 use PrestaShop\Module\Wipop\Payment\PaymentRefundSummary;
+use Wipop\Domain\TransactionStatus;
 
 final class OrderWipopPaymentPresenterTest extends TestCase
 {
@@ -96,12 +97,15 @@ final class OrderWipopPaymentPresenterTest extends TestCase
     {
         $payment = (new OrderWipopPaymentPresenter())->present(
             $this->summary(status: PaymentAttemptStatus::AUTHORIZED),
-            [$this->preauthorizationEvent(PaymentEventData::TYPE_REVERSAL)]
+            [$this->preauthorizationEvent(
+                PaymentEventData::TYPE_REVERSAL,
+                TransactionStatus::CANCELLED->value
+            )]
         );
 
         self::assertFalse($payment['can_manage_preauthorization']);
         self::assertSame('Reversal', $payment['preauthorization_events'][0]['type']);
-        self::assertSame('COMPLETED', $payment['preauthorization_events'][0]['status']);
+        self::assertSame('CANCELLED', $payment['preauthorization_events'][0]['status']);
     }
 
     public function testItBuildsARefundSummary(): void

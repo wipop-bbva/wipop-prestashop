@@ -62,7 +62,7 @@ final class PreauthorizationServiceTest extends TestCase
         $outcome = $this->service(
             $this->client(reverseResult: $this->preauthorizationResult(
                 remoteTransactionId: 'tx_reversal',
-                status: TransactionStatus::COMPLETED->value
+                status: TransactionStatus::CANCELLED->value
             )),
             $this->eventStore($savedEvent, $employeeId),
             $this->marker(cancelledAttemptId: $cancelledAttemptId),
@@ -70,7 +70,7 @@ final class PreauthorizationServiceTest extends TestCase
         )->reverse(56, $this->summary(), 7);
 
         self::assertSame(PaymentEventData::TYPE_REVERSAL, $savedEvent?->transactionType);
-        self::assertSame(TransactionStatus::COMPLETED->value, $savedEvent?->status);
+        self::assertSame(TransactionStatus::CANCELLED->value, $savedEvent?->status);
         self::assertSame('tx_auth', $savedEvent?->parentTransactionId);
         self::assertSame(12, $cancelledAttemptId);
         self::assertSame(56, $cancelledOrderId);
@@ -88,7 +88,7 @@ final class PreauthorizationServiceTest extends TestCase
             $this->service(
                 $this->client(reverseResult: $this->preauthorizationResult(
                     remoteTransactionId: 'tx_reversal_failed',
-                    status: TransactionStatus::FAILED->value
+                    status: 'FAILED'
                 )),
                 $this->eventStore($savedEvent),
                 $this->marker(cancelledAttemptId: $cancelledAttemptId),
@@ -96,7 +96,7 @@ final class PreauthorizationServiceTest extends TestCase
             )->reverse(56, $this->summary(), 7);
         } finally {
             self::assertSame(PaymentEventData::TYPE_REVERSAL, $savedEvent?->transactionType);
-            self::assertSame(TransactionStatus::FAILED->value, $savedEvent?->status);
+            self::assertSame('FAILED', $savedEvent?->status);
             self::assertNull($cancelledAttemptId);
             self::assertNull($cancelledOrderId);
         }

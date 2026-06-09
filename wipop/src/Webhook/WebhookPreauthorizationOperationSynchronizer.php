@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Webhook;
 
 use PrestaShop\Module\Wipop\Configuration\CaptureMode;
+use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
 use PrestaShop\Module\Wipop\Payment\PaymentAttempt;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentEventData;
 use PrestaShop\Module\Wipop\Payment\PreauthorizationEventStoreInterface;
+use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOperationStatus;
 use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOrderUpdaterInterface;
-use Wipop\Domain\ChargeMethod;
 use Wipop\Domain\Transaction;
 use Wipop\Domain\TransactionStatus;
 
@@ -86,7 +87,8 @@ final class WebhookPreauthorizationOperationSynchronizer
         Transaction $transaction,
         string $eventType,
     ): ?PaymentAttemptStatus {
-        if ($transaction->status !== TransactionStatus::COMPLETED) {
+        $remoteStatus = $transaction->status?->value;
+        if (!PreauthorizationOperationStatus::isSuccessful($eventType, $remoteStatus)) {
             return null;
         }
 
@@ -111,12 +113,13 @@ final class WebhookPreauthorizationOperationSynchronizer
             return null;
         }
 
-        return $this->eventTypeFromOperation($transaction);
+        return $this->eventTypeFromOperation($transaction)
+            ?? $this->eventTypeFromOriginalAuthorizationStatus($attempt, $transaction);
     }
 
     private function isManualCardAttempt(PaymentAttempt $attempt): bool
     {
-        return strtoupper(trim((string) $attempt->paymentMethod)) === ChargeMethod::CARD
+        return Settings::isCardMethod((string) $attempt->paymentMethod)
             && $attempt->captureMode === CaptureMode::MANUAL;
     }
 
@@ -133,6 +136,41 @@ final class WebhookPreauthorizationOperationSynchronizer
         }
 
         return null;
+    }
+
+    private function eventTypeFromOriginalAuthorizationStatus(
+        PaymentAttempt $attempt,
+        Transaction $transaction,
+    ): ?string {
+        if (!$this->sameTransaction($attempt, $transaction)) {
+            return null;
+        }
+
+        $remoteStatus = $transaction->status?->value;
+
+        if (
+            $remoteStatus === TransactionStatus::COMPLETED->value
+            && in_array($attempt->status, [PaymentAttemptStatus::AUTHORIZED, PaymentAttemptStatus::PAID], true)
+        ) {
+            return PaymentEventData::TYPE_CAPTURE;
+        }
+
+        if (
+            PreauthorizationOperationStatus::isCancelled($remoteStatus)
+            && in_array($attempt->status, [PaymentAttemptStatus::AUTHORIZED, PaymentAttemptStatus::CANCELLED], true)
+        ) {
+            return PaymentEventData::TYPE_REVERSAL;
+        }
+
+        return null;
+    }
+
+    private function sameTransaction(PaymentAttempt $attempt, Transaction $transaction): bool
+    {
+        $attemptTransactionId = trim((string) $attempt->wipopTransactionId);
+        $transactionId = trim((string) $transaction->id);
+
+        return $attemptTransactionId !== '' && $attemptTransactionId === $transactionId;
     }
 
     /**

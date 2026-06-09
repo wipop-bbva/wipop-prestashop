@@ -26,11 +26,9 @@ final class WebhookTransactionHydrator
     public function hydrate(array $payload): Transaction
     {
         try {
-            $transaction = $this->hydrator->hydrate(Transaction::class, $payload);
+            return $this->hydrator->hydrate(Transaction::class, $payload);
         } catch (Throwable $throwable) {
             throw new WebhookException('Payload does not match the expected transaction model.', 400, $throwable);
         }
-
-        return $transaction;
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Preauthorization;
 
+use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Log\LoggerInterface;
 use PrestaShop\Module\Wipop\Payment\PaymentAmount;
 use PrestaShop\Module\Wipop\Payment\PaymentAttempt;
@@ -13,8 +14,6 @@ use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
 use PrestaShop\Module\Wipop\Payment\PaymentEventData;
 use PrestaShop\Module\Wipop\Payment\PreauthorizationEventStoreInterface;
 use Throwable;
-use Wipop\Domain\ChargeMethod;
-use Wipop\Domain\TransactionStatus;
 
 final class PreauthorizationService
 {
@@ -52,9 +51,10 @@ final class PreauthorizationService
             $event,
             $employeeId
         );
-        $this->assertCompletedResult(
+        $this->assertSuccessfulResult(
             $summary,
             $result,
+            PaymentEventData::TYPE_CAPTURE,
             'We could not capture the preauthorization in Wipop'
         );
 
@@ -92,9 +92,10 @@ final class PreauthorizationService
             $event,
             $employeeId
         );
-        $this->assertCompletedResult(
+        $this->assertSuccessfulResult(
             $summary,
             $result,
+            PaymentEventData::TYPE_REVERSAL,
             'We could not void the preauthorization in Wipop.'
         );
 
@@ -116,7 +117,7 @@ final class PreauthorizationService
             throw new PreauthorizationException('Only authorized Wipop payments can be captured or voided.');
         }
 
-        if (strtoupper(trim((string) $summary->paymentMethod)) !== ChargeMethod::CARD) {
+        if (!Settings::isCardMethod((string) $summary->paymentMethod)) {
             throw new PreauthorizationException('Only Wipop card preauthorizations can be captured or voided.');
         }
 
@@ -177,12 +178,13 @@ final class PreauthorizationService
     /**
      * @throws PreauthorizationException
      */
-    private function assertCompletedResult(
+    private function assertSuccessfulResult(
         PaymentAttemptSummary $summary,
         PreauthorizationResult $result,
+        string $eventType,
         string $message,
     ): void {
-        if (strtoupper(trim($result->status)) !== TransactionStatus::COMPLETED->value) {
+        if (!PreauthorizationOperationStatus::isSuccessful($eventType, $result->status)) {
             throw new PreauthorizationException($message);
         }
 

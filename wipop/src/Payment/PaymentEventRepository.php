@@ -6,8 +6,8 @@ namespace PrestaShop\Module\Wipop\Payment;
 
 use DateTimeImmutable;
 use Db;
+use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOperationStatus;
 use RuntimeException;
-use Wipop\Domain\TransactionStatus;
 
 final class PaymentEventRepository implements RefundEventStoreInterface, PreauthorizationEventStoreInterface
 {
@@ -105,16 +105,24 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
 
     public function hasSuccessfulPreauthorizationEvent(int $attemptId, string $eventType): bool
     {
+        $successfulStatuses = PreauthorizationOperationStatus::successfulStatuses($eventType);
+        if ($successfulStatuses === []) {
+            return false;
+        }
+
         $sql = sprintf(
             'SELECT 1
             FROM `%swipop_payment_event`
             WHERE `id_wipop_payment_attempt` = %d
                 AND `transaction_type` = %s
-                AND `status` = %s',
+                AND `status` IN (%s)',
             _DB_PREFIX_,
             $attemptId,
             $this->sqlString($eventType),
-            $this->sqlString(TransactionStatus::COMPLETED->value)
+            implode(', ', array_map(
+                fn (string $status): string => $this->sqlString($status),
+                $successfulStatuses
+            ))
         );
 
         return (bool) $this->db->getValue($sql);
@@ -254,10 +262,7 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
     private function upsertEventSql(array $data): string
     {
         $columns = array_keys($data);
-        $updates = array_filter(
-            $columns,
-            static fn (string $column): bool => $column !== 'date_add'
-        );
+        $updates = array_values(array_diff($columns, ['date_add']));
 
         return sprintf(
             'INSERT INTO `%swipop_payment_event` (%s)

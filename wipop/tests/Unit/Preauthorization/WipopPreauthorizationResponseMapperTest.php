@@ -42,4 +42,23 @@ final class WipopPreauthorizationResponseMapperTest extends TestCase
 
         (new WipopPreauthorizationResponseMapper())->map('tx_auth', $charge);
     }
+
+    public function testItMapsCancelledReversalChargeResponse(): void
+    {
+        $charge = new Charge();
+        $charge->id = 'tx_auth';
+        $charge->orderId = 'WP1234567890';
+        $charge->status = TransactionStatus::CANCELLED;
+        $charge->amount = 49.9;
+        $charge->currency = 'EUR';
+        $charge->operationType = 'IN';
+
+        $result = (new WipopPreauthorizationResponseMapper())->map('tx_auth', $charge);
+
+        self::assertSame('tx_auth', $result->remoteTransactionId);
+        self::assertSame('tx_auth', $result->parentTransactionId);
+        self::assertSame(TransactionStatus::CANCELLED->value, $result->status);
+        self::assertSame(49.9, $result->amount);
+        self::assertSame('EUR', $result->currencyIso);
+    }
 }

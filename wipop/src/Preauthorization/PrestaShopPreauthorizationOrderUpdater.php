@@ -7,6 +7,7 @@ namespace PrestaShop\Module\Wipop\Preauthorization;
 use Configuration;
 use Currency;
 use Order;
+use OrderHistory;
 use PrestaShop\PrestaShop\Core\CommandBus\CommandBusInterface;
 use PrestaShop\PrestaShop\Core\Domain\Order\Command\UpdateOrderStatusCommand;
 use PrestaShop\PrestaShop\Core\Domain\Order\Payment\Command\AddPaymentCommand;
@@ -17,7 +18,7 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
     private const PAYMENT_METHOD = 'Wipop';
 
     public function __construct(
-        private CommandBusInterface $commandBus,
+        private ?CommandBusInterface $commandBus = null,
     ) {
     }
 
@@ -42,16 +43,7 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
         }
 
         if (!$this->orderPaymentExists($order, $transactionId)) {
-            $this->commandBus->handle(new AddPaymentCommand(
-                $orderId,
-                date('Y-m-d H:i:s'),
-                self::PAYMENT_METHOD,
-                number_format($amount, 6, '.', ''),
-                (int) $order->id_currency,
-                $employeeId,
-                null,
-                $transactionId
-            ));
+            $this->addOrderPayment($order, $currency, $amount, $transactionId, $employeeId);
         }
 
         $paidStateId = (int) Configuration::get('PS_OS_PAYMENT');
@@ -60,7 +52,7 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
         }
 
         if ((int) $order->current_state !== $paidStateId) {
-            $this->commandBus->handle(new UpdateOrderStatusCommand($orderId, $paidStateId));
+            $this->updateOrderStatus($orderId, $paidStateId);
         }
     }
 
@@ -76,7 +68,67 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
         }
 
         if ((int) $order->current_state !== $cancelledStateId) {
-            $this->commandBus->handle(new UpdateOrderStatusCommand($orderId, $cancelledStateId));
+            $this->updateOrderStatus($orderId, $cancelledStateId);
+        }
+    }
+
+    /**
+     * @throws PreauthorizationException
+     */
+    private function addOrderPayment(
+        Order $order,
+        Currency $currency,
+        float $amount,
+        string $transactionId,
+        int $employeeId,
+    ): void {
+        if ($this->commandBus !== null) {
+            $this->commandBus->handle(new AddPaymentCommand(
+                (int) $order->id,
+                date('Y-m-d H:i:s'),
+                self::PAYMENT_METHOD,
+                number_format($amount, 6, '.', ''),
+                (int) $order->id_currency,
+                $employeeId,
+                null,
+                $transactionId
+            ));
+
+            return;
+        }
+
+        if (
+            !$order->addOrderPayment(
+                $amount,
+                self::PAYMENT_METHOD,
+                $transactionId,
+                $currency,
+                date('Y-m-d H:i:s'),
+                null,
+                $employeeId
+            )
+        ) {
+            throw new PreauthorizationException('Unable to add the Wipop capture payment to the order.');
+        }
+    }
+
+    /**
+     * @throws PreauthorizationException
+     */
+    private function updateOrderStatus(int $orderId, int $stateId): void
+    {
+        if ($this->commandBus !== null) {
+            $this->commandBus->handle(new UpdateOrderStatusCommand($orderId, $stateId));
+
+            return;
+        }
+
+        $history = new OrderHistory();
+        $history->id_order = $orderId;
+        $history->changeIdOrderState($stateId, $orderId);
+
+        if (!$history->add(false)) {
+            throw new PreauthorizationException('Unable to update the Wipop preauthorization order status.');
         }
     }
 
