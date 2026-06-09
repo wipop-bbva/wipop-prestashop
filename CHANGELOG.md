@@ -1,3 +1,12 @@
+## [1.12.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.11.1...v1.12.0) (2026-06-09)
+
+### Features
+
+* **account:** let customers manage saved cards ([069cb7d](https://github.com/wipop-bbva/wipop-prestashop/commit/069cb7d6d934bfebab7d26d226d96bc1317a6e6e))
+* **card:** add scoped stored-card persistence ([c95b359](https://github.com/wipop-bbva/wipop-prestashop/commit/c95b359657df45c7b9e6ad9cfea025be9d7795a3))
+* **checkout:** support card COF selection ([f313a37](https://github.com/wipop-bbva/wipop-prestashop/commit/f313a37dc294debbbe5df4c2adf5bf8dc6a0a007))
+* **webhook:** sync saved cards from confirmations ([81a928a](https://github.com/wipop-bbva/wipop-prestashop/commit/81a928a882d969d1aced44ca0b741791bb7ee8e2))
+
 ## [1.11.1](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.11.0...v1.11.1) (2026-06-05)
 
 ### Bug Fixes
