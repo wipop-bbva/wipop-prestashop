@@ -8,6 +8,8 @@ use Cart;
 use Currency;
 use DateTimeImmutable;
 use Db;
+use PrestaShop\Module\Wipop\Card\CardCofIntent;
+use PrestaShop\Module\Wipop\Card\CardCofSelection;
 use PrestaShop\Module\Wipop\Configuration\CaptureMode;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use RuntimeException;
@@ -34,15 +36,20 @@ final class PaymentAttemptRepository implements
         Cart $cart,
         string $paymentMethod,
         Settings $settings,
+        ?CardCofSelection $cofSelection = null,
     ): int {
         $currency = new Currency((int) $cart->id_currency);
         $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
+        $cofSelection ??= CardCofSelection::none();
 
         $data = [
             'id_cart' => (int) $cart->id,
+            'id_customer' => (int) $cart->id_customer,
             'id_shop' => (int) $cart->id_shop,
+            'merchant_id' => pSQL($settings->merchantId),
             'payment_method' => pSQL($paymentMethod),
             'capture_mode' => pSQL($settings->captureMode->value),
+            'cof_intent' => pSQL($cofSelection->intent->value),
             'status' => pSQL(PaymentAttemptStatus::INITIALIZED->value),
             'amount' => round((float) $cart->getOrderTotal(true, Cart::BOTH), 2),
             'currency_iso' => pSQL((string) $currency->iso_code),
@@ -51,6 +58,9 @@ final class PaymentAttemptRepository implements
             'date_add' => pSQL($now),
             'date_upd' => pSQL($now),
         ];
+        if ($cofSelection->storedCardId() !== null) {
+            $data['id_wipop_stored_card'] = $cofSelection->storedCardId();
+        }
 
         if (!$this->db->insert('wipop_payment_attempt', $data)) {
             throw new RuntimeException('Unable to create Wipop payment attempt.');
@@ -86,12 +96,19 @@ final class PaymentAttemptRepository implements
         $this->update($attemptId, $data);
     }
 
-    public function markFailed(int $attemptId): void
+    public function markFailed(int $attemptId, ?string $transactionId = null): void
     {
-        $this->update($attemptId, [
+        $data = [
             'status' => pSQL(PaymentAttemptStatus::FAILED->value),
             'date_upd' => pSQL($this->currentDateTime()),
-        ]);
+        ];
+
+        $transactionId = $this->nullableString($transactionId);
+        if ($transactionId !== null) {
+            $data['wipop_transaction_id'] = pSQL($transactionId);
+        }
+
+        $this->update($attemptId, $data);
     }
 
     public function markPaid(int $attemptId): void
@@ -248,13 +265,20 @@ final class PaymentAttemptRepository implements
             'SELECT
                 `id_wipop_payment_attempt`,
                 `id_cart`,
+                `id_customer`,
                 `id_order`,
+                `id_shop`,
+                `merchant_id`,
                 `wipop_transaction_id`,
                 `payment_method`,
                 `capture_mode`,
+                `cof_intent`,
+                `id_wipop_stored_card`,
                 `status`,
                 `amount`,
-                `currency_iso`
+                `currency_iso`,
+                `is_live`,
+                `terminal_id`
             FROM `%swipop_payment_attempt`
             WHERE `%s` = %s
             ORDER BY `id_wipop_payment_attempt` DESC',
@@ -286,6 +310,13 @@ final class PaymentAttemptRepository implements
             $this->nullableString($row['payment_method']),
             CaptureMode::fromValue($row['capture_mode']),
             $this->nullableString($row['wipop_transaction_id']),
+            (int) $row['id_shop'],
+            (bool) $row['is_live'],
+            (int) $row['terminal_id'],
+            CardCofIntent::fromValue($row['cof_intent'] ?? null),
+            $this->nullableInt($row['id_wipop_stored_card'] ?? null),
+            (int) $row['id_customer'],
+            (string) $row['merchant_id'],
         );
     }
 

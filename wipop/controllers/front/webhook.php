@@ -2,6 +2,8 @@
 
 require_once dirname(__DIR__, 2) . '/autoload.php';
 
+use PrestaShop\Module\Wipop\Card\StoredCardRepository;
+use PrestaShop\Module\Wipop\Card\StoredCardSynchronizer;
 use PrestaShop\Module\Wipop\Exception\SettingsStorageException;
 use PrestaShop\Module\Wipop\Exception\WebhookCredentialsException;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
@@ -199,6 +201,7 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
                 $paymentValidator,
                 $orderUpdater
             ),
+            new StoredCardSynchronizer(StoredCardRepository::createDefault()),
             $logger
         );
     }

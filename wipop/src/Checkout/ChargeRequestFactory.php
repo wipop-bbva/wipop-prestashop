@@ -9,6 +9,8 @@ use Cart;
 use Context;
 use Currency;
 use Customer;
+use PrestaShop\Module\Wipop\Card\CardCofChargeConfigurator;
+use PrestaShop\Module\Wipop\Card\CardCofSelection;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use Validate;
 use Wipop\Domain\Input\Customer as WipopCustomer;
@@ -27,6 +29,7 @@ final class ChargeRequestFactory
         Settings $settings,
         string $wipopOrderId,
         bool $captureImmediately = true,
+        ?CardCofSelection $cofSelection = null,
     ): CreateChargeParams {
         $currency = new Currency((int) $cart->id_currency);
         $params = (new CreateChargeParams())
@@ -45,6 +48,10 @@ final class ChargeRequestFactory
         $customer = $this->buildCustomer($cart);
         if ($customer !== null) {
             $params->customer($customer);
+        }
+
+        if ($cofSelection !== null) {
+            (new CardCofChargeConfigurator())->apply($params, $cofSelection);
         }
 
         return $params;
