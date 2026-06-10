@@ -64,7 +64,12 @@ final class Settings
     public function shouldCaptureImmediately(string $method): bool
     {
         return $this->captureMode !== CaptureMode::MANUAL
-            || self::normalizeGateway($method) !== ChargeMethod::CARD;
+            || !self::isCardMethod($method);
+    }
+
+    public static function isCardMethod(string $method): bool
+    {
+        return self::normalizeGateway($method) === ChargeMethod::CARD;
     }
 
     /**

@@ -222,6 +222,27 @@ final class StoredCardRepository implements StoredCardProviderInterface
         }
     }
 
+    public function findActiveBySaveAttemptId(int $attemptId): ?StoredCard
+    {
+        if ($attemptId <= 0) {
+            return null;
+        }
+
+        $sql = sprintf(
+            'SELECT *
+            FROM `%swipop_stored_card`
+            WHERE `last_save_attempt_id` = %d
+              AND `active` = 1
+            ORDER BY `id_wipop_stored_card` DESC',
+            _DB_PREFIX_,
+            $attemptId
+        );
+
+        $row = $this->db->getRow($sql);
+
+        return is_array($row) ? $this->mapRow($row) : null;
+    }
+
     public function deactivate(int $cardId, int $customerId, int $shopId): void
     {
         if ($cardId <= 0 || $customerId <= 0) {

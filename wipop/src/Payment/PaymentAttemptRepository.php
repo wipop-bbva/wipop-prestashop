@@ -37,6 +37,7 @@ final class PaymentAttemptRepository implements
         string $paymentMethod,
         Settings $settings,
         ?CardCofSelection $cofSelection = null,
+        ?CaptureMode $captureMode = null,
     ): int {
         $currency = new Currency((int) $cart->id_currency);
         $now = (new DateTimeImmutable())->format('Y-m-d H:i:s');
@@ -48,7 +49,7 @@ final class PaymentAttemptRepository implements
             'id_shop' => (int) $cart->id_shop,
             'merchant_id' => pSQL($settings->merchantId),
             'payment_method' => pSQL($paymentMethod),
-            'capture_mode' => pSQL($settings->captureMode->value),
+            'capture_mode' => pSQL(($captureMode ?? $settings->captureMode)->value),
             'cof_intent' => pSQL($cofSelection->intent->value),
             'status' => pSQL(PaymentAttemptStatus::INITIALIZED->value),
             'amount' => round((float) $cart->getOrderTotal(true, Cart::BOTH), 2),
@@ -182,6 +183,15 @@ final class PaymentAttemptRepository implements
         return $this->findOneByColumn('id_cart', $cartId);
     }
 
+    public function findById(int $attemptId): ?PaymentAttempt
+    {
+        if ($attemptId <= 0) {
+            return null;
+        }
+
+        return $this->findOneByColumn('id_wipop_payment_attempt', $attemptId);
+    }
+
     public function findSummaryByOrderId(int $orderId): ?PaymentAttemptSummary
     {
         if ($orderId <= 0) {
@@ -231,7 +241,7 @@ final class PaymentAttemptRepository implements
         $status = $attempt->status->syncWithWebhookStatus($status);
         $data = [
             'status' => pSQL($status->value),
-            'remote_status' => $transaction->status === null ? null : pSQL($transaction->status->value),
+            'remote_status' => $this->nullableSqlString($transaction->status?->value),
             'remote_error_code' => $this->nullableSqlString($transaction->errorCode),
             'remote_error_message' => $this->nullableSqlString($transaction->errorMessage),
             'webhook_received_at' => pSQL($now),
@@ -313,8 +323,8 @@ final class PaymentAttemptRepository implements
             (int) $row['id_shop'],
             (bool) $row['is_live'],
             (int) $row['terminal_id'],
-            CardCofIntent::fromValue($row['cof_intent'] ?? null),
-            $this->nullableInt($row['id_wipop_stored_card'] ?? null),
+            CardCofIntent::fromValue($row['cof_intent']),
+            $this->nullableInt($row['id_wipop_stored_card']),
             (int) $row['id_customer'],
             (string) $row['merchant_id'],
         );

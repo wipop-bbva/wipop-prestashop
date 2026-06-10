@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Card;
 
-use Wipop\Domain\ChargeMethod;
+use PrestaShop\Module\Wipop\Configuration\Settings;
 
 final class CardCofSelectionResolver
 {
@@ -24,8 +24,21 @@ final class CardCofSelectionResolver
         int $terminalId,
         ?int $selectedCardId,
         bool $saveCard,
+        bool $requiresReusableCard = false,
     ): CardCofSelection {
-        if (strtoupper(trim($paymentMethod)) !== ChargeMethod::CARD || $customerId === null || $customerId <= 0) {
+        if (!Settings::isCardMethod($paymentMethod)) {
+            if ($requiresReusableCard) {
+                throw new CardCofException('Recurring payments require card payment.');
+            }
+
+            return CardCofSelection::none();
+        }
+
+        if ($customerId === null || $customerId <= 0) {
+            if ($requiresReusableCard) {
+                throw new CardCofException('Log in to pay for recurring products with Wipop.');
+            }
+
             return CardCofSelection::none();
         }
 
@@ -46,6 +59,6 @@ final class CardCofSelectionResolver
             return CardCofSelection::useExisting($storedCard);
         }
 
-        return $saveCard ? CardCofSelection::save() : CardCofSelection::none();
+        return ($saveCard || $requiresReusableCard) ? CardCofSelection::save() : CardCofSelection::none();
     }
 }

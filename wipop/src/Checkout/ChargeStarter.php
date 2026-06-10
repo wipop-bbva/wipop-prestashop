@@ -15,6 +15,8 @@ use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use Throwable;
 use Wipop\Domain\Charge;
+use Wipop\Domain\PostType;
+use Wipop\Domain\PostTypeMode;
 
 final class ChargeStarter
 {
@@ -38,9 +40,12 @@ final class ChargeStarter
         string $wipopOrderId,
         int $attemptId,
         ?CardCofSelection $cofSelection = null,
+        bool $captureImmediately = true,
+        bool $useRecurringPostType = false,
     ): string {
+        $cofSelection ??= CardCofSelection::none();
+
         try {
-            $cofSelection ??= CardCofSelection::none();
             $client = $this->clientFactory->create($settings);
             $params = $this->chargeRequestFactory->build(
                 $cart,
@@ -48,33 +53,17 @@ final class ChargeStarter
                 $returnUrl,
                 $settings,
                 $wipopOrderId,
-                $settings->shouldCaptureImmediately($method),
+                $captureImmediately,
                 $cofSelection,
             );
+            if ($useRecurringPostType) {
+                $params->postType(new PostType(PostTypeMode::RECURRENT));
+            }
 
             $charge = $this->sdkCaller->call(
                 'checkout creation',
                 static fn () => $client->chargeOperation()->create($params, $cofSelection->wipopCustomerId()),
             );
-
-            $redirectUrl = $this->extractRedirectUrl($charge);
-            $transactionId = $this->extractTransactionId($charge);
-            if ($redirectUrl === null && $cofSelection->requiresRedirectUrl()) {
-                $this->markAttemptAsFailed($attemptId, $transactionId);
-
-                throw new ApiCallException('Wipop did not return a checkout redirect URL.');
-            }
-
-            $this->paymentAttemptRepository->markCheckoutPending($attemptId, $transactionId);
-            $this->logger->info('Wipop checkout started.', [
-                'attempt_id' => $attemptId,
-                'cart_id' => (int) $cart->id,
-                'payment_method' => $method,
-                'status' => PaymentAttemptStatus::CHECKOUT_PENDING->value,
-                'transaction_id' => $transactionId ?? '',
-            ]);
-
-            return $redirectUrl ?? $returnUrl;
         } catch (Throwable $throwable) {
             $this->markAttemptAsFailed($attemptId);
 
@@ -84,6 +73,25 @@ final class ChargeStarter
 
             throw new ApiCallException('Unable to start the Wipop checkout.', 0, $throwable);
         }
+
+        $redirectUrl = $this->extractRedirectUrl($charge);
+        $transactionId = $this->extractTransactionId($charge);
+        if ($redirectUrl === null && $cofSelection->requiresRedirectUrl()) {
+            $this->markAttemptAsFailed($attemptId, $transactionId);
+
+            throw new ApiCallException('Wipop did not return a checkout redirect URL.');
+        }
+
+        $this->paymentAttemptRepository->markCheckoutPending($attemptId, $transactionId);
+        $this->logger->info('Wipop checkout started.', [
+            'attempt_id' => $attemptId,
+            'cart_id' => (int) $cart->id,
+            'payment_method' => $method,
+            'status' => PaymentAttemptStatus::CHECKOUT_PENDING->value,
+            'transaction_id' => $transactionId ?? '',
+        ]);
+
+        return $redirectUrl ?? $returnUrl;
     }
 
     private function extractRedirectUrl(Charge $charge): ?string
@@ -96,7 +104,7 @@ final class ChargeStarter
 
     private function extractTransactionId(Charge $charge): ?string
     {
-        $transactionId = trim((string) ($charge->id ?? ''));
+        $transactionId = trim((string) $charge->id);
 
         return $transactionId === '' ? null : $transactionId;
     }

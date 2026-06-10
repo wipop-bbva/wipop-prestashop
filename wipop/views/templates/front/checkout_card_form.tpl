@@ -26,6 +26,16 @@
 <form method="POST" action="{$wipopCardForm.action nofilter}">
   <input type="hidden" name="token" value="{$wipopCardForm.token|escape:'html':'UTF-8'}">
 
+  {if $wipopCardForm.is_recurring}
+    {if $wipopCardForm.requires_login}
+      <div class="alert alert-warning mb-2">
+        {l s='Log in to pay for recurring products with Wipop.' d='Modules.Wipop.Shop'}
+      </div>
+    {else}
+      <input type="hidden" name="wipop_save_card" value="1">
+    {/if}
+  {/if}
+
   {if $wipopCardForm.is_logged}
     {if !empty($wipopCardForm.saved_cards)}
       <div class="wipop-saved-cards">
@@ -48,9 +58,11 @@
       </div>
     {/if}
 
-    <label class="d-block mt-2">
-      <input type="checkbox" name="wipop_save_card" value="1">
-      {l s='Remember this card for future payments' d='Modules.Wipop.Shop'}
-    </label>
+    {if !$wipopCardForm.is_recurring}
+      <label class="d-block mt-2">
+        <input type="checkbox" name="wipop_save_card" value="1">
+        {l s='Remember this card for future payments' d='Modules.Wipop.Shop'}
+      </label>
+    {/if}
   {/if}
 </form>

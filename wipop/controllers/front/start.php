@@ -43,6 +43,10 @@ use PrestaShop\Module\Wipop\Exception\ClientConfigurationException;
 use PrestaShop\Module\Wipop\Exception\SettingsReadException;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
+use PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository;
+use PrestaShop\Module\Wipop\Recurring\RecurringCartInspector;
+use PrestaShop\Module\Wipop\Recurring\RecurringCheckoutPolicy;
+use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository;
 use PrestaShop\Module\Wipop\TranslationDomains;
 
 class WipopStartModuleFrontController extends ModuleFrontController
@@ -53,7 +57,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
     {
         parent::initContent();
 
-        $logger = $this->logger();
+        $logger = new Logger();
         $paymentMethod = strtoupper(trim((string) Tools::getValue('method')));
 
         if (!$this->isTokenValid()) {
@@ -72,8 +76,9 @@ class WipopStartModuleFrontController extends ModuleFrontController
             return;
         }
 
+        $settingsRepository = new SettingsRepository();
         try {
-            $settings = $this->settingsRepository()->get();
+            $settings = $settingsRepository->get();
         } catch (SettingsReadException $exception) {
             $logger->error('Wipop settings storage error: ' . $exception->getMessage(), [
                 'payment_method' => $paymentMethod,
@@ -103,7 +108,23 @@ class WipopStartModuleFrontController extends ModuleFrontController
             return;
         }
 
-        $merchantOperationsService = $this->merchantOperationsService();
+        $recurringCart = (new RecurringCartInspector(
+            ProductRecurringSettingsRepository::createDefault()
+        ))->inspect($cart);
+        $recurringPolicy = new RecurringCheckoutPolicy();
+        $startError = $recurringPolicy->startError($recurringCart, $paymentMethod);
+
+        if ($startError !== null) {
+            $this->renderUnavailable($this->translateMessage($startError));
+
+            return;
+        }
+
+        $merchantOperationsService = new MerchantOperationsService(
+            $settingsRepository,
+            new ClientFactory(),
+            new SdkCaller($logger)
+        );
 
         try {
             if (!in_array($paymentMethod, $merchantOperationsService->getCheckoutGatewaysFor($settings), true)) {
@@ -124,7 +145,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
         }
 
         try {
-            $cofSelection = $this->cardCofSelectionResolver()->resolve(
+            $cofSelection = (new CardCofSelectionResolver(StoredCardRepository::createDefault()))->resolve(
                 $paymentMethod,
                 (new LoggedCartCustomerResolver())->resolveIdForCart($cart),
                 (int) $cart->id_shop,
@@ -132,17 +153,28 @@ class WipopStartModuleFrontController extends ModuleFrontController
                 $settings->liveMode,
                 $settings->terminalId,
                 $this->selectedStoredCardId(),
-                (bool) Tools::getValue('wipop_save_card')
+                (bool) Tools::getValue('wipop_save_card'),
+                $recurringPolicy->requiresReusableCard($recurringCart)
             );
-            $paymentAttemptRepository = $this->paymentAttemptRepository();
+            $paymentAttemptRepository = PaymentAttemptRepository::createDefault();
             $attemptId = $paymentAttemptRepository->createForCart(
                 $cart,
                 $paymentMethod,
                 $settings,
                 $cofSelection,
+                $recurringPolicy->captureModeOverride($recurringCart),
             );
             $wipopOrderId = (new CartOrderIdFactory())->fromCartAttempt($cart, $attemptId);
             $paymentAttemptRepository->assignWipopOrderId($attemptId, $wipopOrderId);
+            if ($recurringPolicy->requiresReusableCard($recurringCart)) {
+                RecurringSubscriptionRepository::createDefault()->createPendingFromCart(
+                    $attemptId,
+                    $cart,
+                    $settings,
+                    $cofSelection->storedCardId(),
+                    $recurringCart->groups
+                );
+            }
 
             $logger->info('Wipop payment attempt init.', [
                 'attempt_id' => $attemptId,
@@ -151,7 +183,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
                 'wipop_order_id' => $wipopOrderId,
             ]);
 
-            $redirectUrl = $this->chargeStarter()->start(
+            $redirectUrl = $this->chargeStarter($logger, $paymentAttemptRepository)->start(
                 $cart,
                 $paymentMethod,
                 $this->returnUrl(),
@@ -159,6 +191,8 @@ class WipopStartModuleFrontController extends ModuleFrontController
                 $wipopOrderId,
                 $attemptId,
                 $cofSelection,
+                $recurringPolicy->shouldCaptureImmediately($recurringCart, $settings, $paymentMethod),
+                $recurringPolicy->usesRecurringPostType($recurringCart),
             );
 
             Tools::redirect($redirectUrl);
@@ -192,45 +226,14 @@ class WipopStartModuleFrontController extends ModuleFrontController
         $this->setTemplate('module:wipop/views/templates/front/unavailable.tpl');
     }
 
-    private function logger(): Logger
+    private function chargeStarter(Logger $logger, PaymentAttemptRepository $paymentAttemptRepository): ChargeStarter
     {
-        return new Logger();
-    }
-
-    private function settingsRepository(): SettingsRepository
-    {
-        return new SettingsRepository();
-    }
-
-    private function paymentAttemptRepository(): PaymentAttemptRepository
-    {
-        return PaymentAttemptRepository::createDefault();
-    }
-
-    private function chargeStarter(): ChargeStarter
-    {
-        $logger = $this->logger();
-
         return new ChargeStarter(
             new ClientFactory(),
             new SdkCaller($logger),
             new ChargeRequestFactory(),
-            $this->paymentAttemptRepository(),
+            $paymentAttemptRepository,
             $logger,
-        );
-    }
-
-    private function cardCofSelectionResolver(): CardCofSelectionResolver
-    {
-        return new CardCofSelectionResolver(StoredCardRepository::createDefault());
-    }
-
-    private function merchantOperationsService(): MerchantOperationsService
-    {
-        return new MerchantOperationsService(
-            $this->settingsRepository(),
-            new ClientFactory(),
-            new SdkCaller($this->logger()),
         );
     }
 

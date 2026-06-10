@@ -51,7 +51,6 @@ final class SettingsRepository
     public function get(): Settings
     {
         $payload = $this->readPayload();
-        $enabledGateways = $payload[self::FIELD_ENABLED_GATEWAYS];
 
         return new Settings(
             (bool) $payload[self::FIELD_LIVE_MODE],
@@ -59,8 +58,8 @@ final class SettingsRepository
             trim((string) $payload[self::FIELD_SECRET_KEY]),
             trim((string) $payload[self::FIELD_PUBLIC_SECRET_KEY]),
             (int) $payload[self::FIELD_TERMINAL_ID],
-            is_array($enabledGateways) ? $enabledGateways : [],
-            CaptureMode::fromValue($payload[self::FIELD_CAPTURE_MODE] ?? null)
+            $payload[self::FIELD_ENABLED_GATEWAYS],
+            CaptureMode::fromValue($payload[self::FIELD_CAPTURE_MODE])
         );
     }
 
@@ -83,7 +82,15 @@ final class SettingsRepository
     }
 
     /**
-     * @return array<string, bool|int|string|string[]>
+     * @return array{
+     *     live_mode: bool,
+     *     merchant_id: string,
+     *     secret_key: string,
+     *     public_secret_key: string,
+     *     terminal_id: int,
+     *     enabled_gateways: string[],
+     *     capture_mode: string
+     * }
      */
     private static function defaultPayload(): array
     {
@@ -99,7 +106,15 @@ final class SettingsRepository
     }
 
     /**
-     * @return array<string, bool|int|string|string[]>
+     * @return array{
+     *     live_mode: bool,
+     *     merchant_id: string,
+     *     secret_key: string,
+     *     public_secret_key: string,
+     *     terminal_id: int,
+     *     enabled_gateways: string[],
+     *     capture_mode: string
+     * }
      */
     private function readPayload(): array
     {
@@ -142,7 +157,15 @@ final class SettingsRepository
     /**
      * @param array<string, mixed> $payload
      *
-     * @return array<string, bool|int|string|string[]>
+     * @return array{
+     *     live_mode: bool,
+     *     merchant_id: string,
+     *     secret_key: string,
+     *     public_secret_key: string,
+     *     terminal_id: int,
+     *     enabled_gateways: string[],
+     *     capture_mode: string
+     * }
      */
     private static function normalizePayload(array $payload): array
     {
@@ -158,7 +181,7 @@ final class SettingsRepository
             self::FIELD_PUBLIC_SECRET_KEY => trim((string) $payload[self::FIELD_PUBLIC_SECRET_KEY]),
             self::FIELD_TERMINAL_ID => (int) $payload[self::FIELD_TERMINAL_ID],
             self::FIELD_ENABLED_GATEWAYS => $enabledGateways,
-            self::FIELD_CAPTURE_MODE => CaptureMode::fromValue($payload[self::FIELD_CAPTURE_MODE] ?? null)->value,
+            self::FIELD_CAPTURE_MODE => CaptureMode::fromValue($payload[self::FIELD_CAPTURE_MODE])->value,
         ];
     }
 }

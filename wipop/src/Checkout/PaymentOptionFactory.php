@@ -15,6 +15,9 @@ use PrestaShop\Module\Wipop\Customer\LoggedCartCustomerResolver;
 use PrestaShop\Module\Wipop\Exception\ApiCallException;
 use PrestaShop\Module\Wipop\Exception\ClientConfigurationException;
 use PrestaShop\Module\Wipop\Exception\SettingsReadException;
+use PrestaShop\Module\Wipop\Recurring\RecurringCartInspector;
+use PrestaShop\Module\Wipop\Recurring\RecurringCartSummary;
+use PrestaShop\Module\Wipop\Recurring\RecurringCheckoutPolicy;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -27,6 +30,8 @@ final class PaymentOptionFactory
         private MerchantOperationsService $merchantOperationsService,
         private SettingsRepository $settingsRepository,
         private StoredCardRepository $storedCardRepository,
+        private RecurringCartInspector $recurringCartInspector,
+        private RecurringCheckoutPolicy $recurringCheckoutPolicy,
         private TranslatorInterface $translator,
     ) {
     }
@@ -47,18 +52,35 @@ final class PaymentOptionFactory
         try {
             $settings = $this->settingsRepository->get();
             $availableGateways = $this->merchantOperationsService->getCheckoutGatewaysFor($settings);
+            $recurringCart = $this->recurringCartInspector->inspect($cart);
         } catch (SettingsReadException | ClientConfigurationException | ApiCallException) {
             return [];
         }
 
+        $customerId = (new LoggedCartCustomerResolver())->resolveIdForCart($cart);
+        $availableGateways = $this->recurringCheckoutPolicy->availableGateways($recurringCart, $availableGateways);
+
         return array_map(
-            fn (string $method): PaymentOption => $this->buildOption($module, $cart, $method, $settings),
+            fn (string $method): PaymentOption => $this->buildOption(
+                $module,
+                $cart,
+                $method,
+                $settings,
+                $recurringCart,
+                $customerId
+            ),
             $availableGateways,
         );
     }
 
-    private function buildOption(\Wipop $module, Cart $cart, string $method, Settings $settings): PaymentOption
-    {
+    private function buildOption(
+        \Wipop $module,
+        Cart $cart,
+        string $method,
+        Settings $settings,
+        RecurringCartSummary $recurringCart,
+        ?int $customerId,
+    ): PaymentOption {
         $actionUrl = Context::getContext()->link->getModuleLink(
             $module->name,
             'start',
@@ -70,7 +92,7 @@ final class PaymentOptionFactory
             ->setAction($actionUrl);
 
         if ($method === ChargeMethod::CARD) {
-            $option->setForm($this->cardForm($module, $cart, $settings, $actionUrl));
+            $option->setForm($this->cardForm($module, $cart, $settings, $actionUrl, $recurringCart, $customerId));
 
             return $option;
         }
@@ -86,10 +108,16 @@ final class PaymentOptionFactory
         return $option;
     }
 
-    private function cardForm(\Wipop $module, Cart $cart, Settings $settings, string $actionUrl): string
-    {
-        $customerId = (new LoggedCartCustomerResolver())->resolveIdForCart($cart);
+    private function cardForm(
+        \Wipop $module,
+        Cart $cart,
+        Settings $settings,
+        string $actionUrl,
+        RecurringCartSummary $recurringCart,
+        ?int $customerId,
+    ): string {
         $cards = [];
+        $isRecurring = $this->recurringCheckoutPolicy->requiresReusableCard($recurringCart);
 
         if ($customerId !== null) {
             $presenter = new StoredCardPresenter();
@@ -112,6 +140,8 @@ final class PaymentOptionFactory
                 'token' => Tools::getToken(false),
                 'is_logged' => $customerId !== null,
                 'saved_cards' => $cards,
+                'is_recurring' => $isRecurring,
+                'requires_login' => $isRecurring && $customerId === null,
             ],
         ]);
 

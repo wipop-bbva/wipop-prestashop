@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Card;
 
+use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Payment\PaymentAttempt;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
-use Wipop\Domain\ChargeMethod;
 use Wipop\Domain\Transaction;
-
-use function strtoupper;
-use function trim;
 
 final class StoredCardSynchronizer
 {
@@ -64,7 +61,7 @@ final class StoredCardSynchronizer
 
     private function isSuccessfulCardPayment(PaymentAttempt $attempt, PaymentAttemptStatus $status): bool
     {
-        return strtoupper(trim((string) $attempt->paymentMethod)) === ChargeMethod::CARD
+        return Settings::isCardMethod((string) $attempt->paymentMethod)
             && in_array($status, [PaymentAttemptStatus::PAID, PaymentAttemptStatus::AUTHORIZED], true);
     }
 }
