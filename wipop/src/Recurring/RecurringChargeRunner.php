@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Recurring;
 
+use GuzzleHttp\Exception\RequestException;
 use PrestaShop\Module\Wipop\Card\CardCofSelection;
 use PrestaShop\Module\Wipop\Card\StoredCard;
 use PrestaShop\Module\Wipop\Card\StoredCardRepository;
@@ -144,7 +145,7 @@ final class RecurringChargeRunner
             $response = $this->wipopClient->create($cart, $settings, $wipopOrderId, $storedCard);
         } catch (Throwable $throwable) {
             if ($charge !== null && $attemptId !== null) {
-                if ($this->isRecoverableSubmissionFailure($throwable)) {
+                if ($this->submissionMayHaveReachedWipop($throwable)) {
                     $this->paymentAttempts->markCheckoutPending($attemptId, null);
                     $this->charges->markSubmitted($charge->id, null);
                 } else {
@@ -273,21 +274,30 @@ final class RecurringChargeRunner
         }
     }
 
-    private function isRecoverableSubmissionFailure(Throwable $throwable): bool
+    private function submissionMayHaveReachedWipop(Throwable $throwable): bool
     {
         if (!$throwable instanceof ApiCallException) {
             return false;
         }
 
         $previous = $throwable->getPrevious();
+        $mayHaveReachedWipop = false;
         while ($previous !== null) {
-            if ($previous instanceof HttpTransportException || $previous instanceof WipopApiTimeoutException) {
-                return true;
+            if ($previous instanceof RequestException && $previous->hasResponse()) {
+                $statusCode = $previous->getResponse()->getStatusCode();
+                if ($statusCode >= 400 && $statusCode < 500) {
+                    return false;
+                }
             }
+
+            if ($previous instanceof HttpTransportException || $previous instanceof WipopApiTimeoutException) {
+                $mayHaveReachedWipop = true;
+            }
+
             $previous = $previous->getPrevious();
         }
 
-        return false;
+        return $mayHaveReachedWipop;
     }
 
     private function stopSubscription(RecurringSubscription $subscription, string $message): void

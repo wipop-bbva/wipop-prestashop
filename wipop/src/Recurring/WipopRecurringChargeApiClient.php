@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Recurring;
 
 use Cart;
+use Context;
 use PrestaShop\Module\Wipop\Api\ClientFactory;
 use PrestaShop\Module\Wipop\Api\SdkCaller;
 use PrestaShop\Module\Wipop\Card\CardCofSelection;
@@ -29,10 +30,11 @@ final class WipopRecurringChargeApiClient implements WipopRecurringChargeClientI
     public function create(Cart $cart, Settings $settings, string $wipopOrderId, StoredCard $storedCard): Charge
     {
         $client = $this->clientFactory->create($settings);
+        $redirectUrl = Context::getContext()->link->getModuleLink('wipop', 'return', [], true);
         $params = $this->chargeRequestFactory->build(
             $cart,
             ChargeMethod::CARD,
-            '',
+            $redirectUrl,
             $settings,
             $wipopOrderId,
             true,
