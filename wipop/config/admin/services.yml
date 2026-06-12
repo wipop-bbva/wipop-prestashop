@@ -1,19 +1,11 @@
+imports:
+  - { resource: ../common.yml }
+
 services:
   _defaults:
     public: true
 
-  PrestaShop\Module\Wipop\Configuration\SettingsRepository: ~
-
   PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository: ~
-
-  PrestaShop\Module\Wipop\Log\Logger: ~
-
-  PrestaShop\Module\Wipop\Api\ClientFactory: ~
-
-  PrestaShop\Module\Wipop\Api\SdkCaller:
-    class: PrestaShop\Module\Wipop\Api\SdkCaller
-    arguments:
-      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
   PrestaShop\Module\Wipop\Api\MerchantOperationsService:
     class: PrestaShop\Module\Wipop\Api\MerchantOperationsService
@@ -31,9 +23,15 @@ services:
     class: PrestaShop\Module\Wipop\Payment\PaymentEventRepository
     factory: [ 'PrestaShop\Module\Wipop\Payment\PaymentEventRepository', 'createDefault' ]
 
-  PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository:
-    class: PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository
-    factory: [ 'PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository', 'createDefault' ]
+  PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository:
+    class: PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository
+    factory: [ 'PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository', 'createDefault' ]
+
+  PrestaShop\Module\Wipop\Form\Modifier\ProductRecurringFormModifier:
+    class: PrestaShop\Module\Wipop\Form\Modifier\ProductRecurringFormModifier
+    arguments:
+      $settingsRepository: '@PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository'
+      $formBuilderModifier: '@form.form_builder_modifier'
 
   PrestaShop\Module\Wipop\Refund\WipopRefundTaxIncludedAmountCalculator: ~
 
@@ -130,6 +128,14 @@ services:
       $paymentAttemptLock: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptLock'
       $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
+  PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRecurringController:
+    class: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRecurringController
+    arguments:
+      $subscriptions: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository'
+      $charges: '@PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository'
+      $subscriptionLock: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
   PrestaShop\Module\Wipop\Form\Type\SettingsType:
     class: PrestaShop\Module\Wipop\Form\Type\SettingsType
     parent: 'form.type.translatable.aware'
@@ -139,6 +145,13 @@ services:
 
   PrestaShop\Module\Wipop\Form\Type\ManualRefundType:
     class: PrestaShop\Module\Wipop\Form\Type\ManualRefundType
+    parent: 'form.type.translatable.aware'
+    public: true
+    tags:
+      - { name: form.type }
+
+  PrestaShop\Module\Wipop\Form\Type\ProductRecurringSettingsType:
+    class: PrestaShop\Module\Wipop\Form\Type\ProductRecurringSettingsType
     parent: 'form.type.translatable.aware'
     public: true
     tags:
