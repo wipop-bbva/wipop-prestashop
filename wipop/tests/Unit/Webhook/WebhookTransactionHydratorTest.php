@@ -60,6 +60,18 @@ final class WebhookTransactionHydratorTest extends TestCase
         self::assertSame(TransactionStatus::CANCELLED, $transaction->status);
     }
 
+    public function testItHydratesNestedCustomerId(): void
+    {
+        $transaction = (new WebhookTransactionHydrator())->hydrate([
+            'id' => 'tx_customer',
+            'customer' => [
+                'id' => 'customer_nested',
+            ],
+        ]);
+
+        self::assertSame('customer_nested', $transaction->customerId);
+    }
+
     public function testItRejectsUnknownTransactionStatus(): void
     {
         $this->expectException(WebhookException::class);
