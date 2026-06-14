@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="admin" source-language="en-US" target-language="en-US" datatype="plaintext">
     <body>
-      <trans-unit id="e6ef20d1b254c6b9681ff8e117482f63">
+      <trans-unit id="b03984491713713e001d79265e113820">
         <source>Wipop</source>
         <target>Wipöp</target>
         <note>Line: </note>
@@ -37,9 +37,14 @@
         <target>Terminal ID</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="80964a30587af49027407cc4a6840bcf">
+      <trans-unit id="d06f12476a233750984ad8595f2f48bc">
         <source>Unable to save the Wipop settings.</source>
         <target>Unable to save the Wipöp settings.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5f21616bae29fb31281a367bd890e1c4">
+        <source>Stored Wipop settings could not be read.</source>
+        <target>Stored Wipöp settings could not be read.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="82eb5eb8fb67c266c92d378d6ce09057">
@@ -77,6 +82,21 @@
         <target>Could not verify Wipöp data. Check the settings and try again.</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="2ea93b8e2206d492ba3cec8516f6a4ec">
+        <source>Settings saved, but no Wipop methods are available at checkout.</source>
+        <target>Settings saved, but no Wipöp methods are available at checkout.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fda45c8b3c17b782b52261d1f7b7a619">
+        <source>Settings saved, but methods could not be verified.</source>
+        <target>Settings saved, but methods could not be verified.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9a7e58ee13cb727cb7c4acc68f4cafe5">
+        <source>Settings saved.</source>
+        <target>Settings saved.</target>
+        <note>Line: </note>
+      </trans-unit>
       <trans-unit id="66dff4bc6149738292b7b2737e7e2e8c">
         <source>Invalid security token.</source>
         <target>Invalid security token.</target>
@@ -99,32 +119,27 @@
       </trans-unit>
       <trans-unit id="f957ac389ed573c01fdd9d6a10dcf04e">
         <source>Choose at least one Wipop method.</source>
-        <target>Choose at least one Wipop method.</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="2ea93b8e2206d492ba3cec8516f6a4ec">
-        <source>Settings saved, but no Wipop methods are available at checkout.</source>
-        <target>Settings saved, but no Wipöp methods are available at checkout.</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="fda45c8b3c17b782b52261d1f7b7a619">
-        <source>Settings saved, but methods could not be verified.</source>
-        <target>Settings saved, but methods could not be verified.</target>
+        <target>Choose at least one Wipöp method.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="96be93fa1d30ff19e8d31435f6e36ed1">
         <source>Accept card payments through Wipop.</source>
-        <target>Accept card payments through Wipop.</target>
+        <target>Accept card payments through Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="3e5fc4653c19fd9d74cec17638c02c0d">
         <source>Let customers pay with Bizum through Wipop.</source>
-        <target>Let customers pay with Bizum through Wipop.</target>
+        <target>Let customers pay with Bizum through Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="543783fd364dda81351144e095857c37">
         <source>Preauthorizations</source>
         <target>Preauthorizations</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0b7146e4525a5fe48078876907f6e8e4">
+        <source>If you choose to reserve the amount, you will need to confirm or cancel the charge manually from the order details. Only applies to card payments.</source>
+        <target>If you choose to reserve the amount, you will need to confirm or cancel the charge manually from the order details. Only applies to card payments.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="23e832cfa826851df86e90b0a22d8261">
@@ -137,84 +152,709 @@
         <target>Reserve the amount to charge it later</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="0b7146e4525a5fe48078876907f6e8e4">
-        <source>If you choose to reserve the amount, you will need to confirm or cancel the charge manually from the order details. Only applies to card payments.</source>
-        <target>If you choose to reserve the amount, you will need to confirm or cancel the charge manually from the order details. Only applies to card payments.</target>
-        <note>Line: </note>
-      </trans-unit>
       <trans-unit id="7ed9fc675598ed1a2fa6e382b60b2a7c">
         <source>Capture preauthorization with Wipop</source>
-        <target>Capture preauthorization with Wipop</target>
+        <target>Capture preauthorization with Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="1e06417458a176f0bc94d70a45c23d5f">
         <source>Void preauthorization with Wipop</source>
-        <target>Void preauthorization with Wipop</target>
+        <target>Void preauthorization with Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="f1e8aa23d096700901fade453654d5eb">
         <source>You do not have permission to capture this Wipop preauthorization.</source>
-        <target>You do not have permission to capture this Wipop preauthorization.</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="2df42449dd7a822e5e5356b5129a959c">
-        <source>Wipop: Preauthorization of %amount% captured.</source>
-        <target>Wipop: Preauthorization of %amount% captured.</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="c972e15cea0a409c7a9516175789709b">
-        <source>We could not capture the preauthorization in Wipop</source>
-        <target>We could not capture the preauthorization in Wipop</target>
+        <target>You do not have permission to capture this Wipöp preauthorization.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="c25818c139886c4f8da487ed91b29374">
         <source>You do not have permission to void this Wipop preauthorization.</source>
-        <target>You do not have permission to void this Wipop preauthorization.</target>
+        <target>You do not have permission to void this Wipöp preauthorization.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fa2cc2c794d986084a6164e8bfb54d73">
+        <source>You do not have permission to refund this order.</source>
+        <target>You do not have permission to refund this order.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2df42449dd7a822e5e5356b5129a959c">
+        <source>Wipop: Preauthorization of %amount% captured.</source>
+        <target>Wipöp: Preauthorization of %amount% captured.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="27a362392fb19f9859f3e78ae8589773">
         <source>Preauthorization manually voided in Wipop.</source>
-        <target>Preauthorization manually voided in Wipop.</target>
+        <target>Preauthorization manually voided in Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c972e15cea0a409c7a9516175789709b">
+        <source>We could not capture the preauthorization in Wipop</source>
+        <target>We could not capture the preauthorization in Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="08bdf2050a3e8bbec3bf199fa131af8a">
         <source>We could not void the preauthorization in Wipop.</source>
-        <target>We could not void the preauthorization in Wipop.</target>
+        <target>We could not void the preauthorization in Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="f092fe84c09610b3462cf21bdc27f53e">
-        <source>This Wipop preauthorization has already been voided.</source>
-        <target>This Wipop preauthorization has already been voided.</target>
+      <trans-unit id="ad6196e3f3d287953a433306ef5b9f06">
+        <source>This Wipop authorization has already been captured.</source>
+        <target>This Wipöp authorization has already been captured.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="304111ee3f8e75ca3615ab30467eeb06">
         <source>Captured Wipop preauthorizations cannot be voided.</source>
-        <target>Captured Wipop preauthorizations cannot be voided.</target>
+        <target>Captured Wipöp preauthorizations cannot be voided.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f092fe84c09610b3462cf21bdc27f53e">
+        <source>This Wipop preauthorization has already been voided.</source>
+        <target>This Wipöp preauthorization has already been voided.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="bc524cd4ff59edceeea3fc1229478125">
         <source>Only authorized Wipop payments can be captured or voided.</source>
-        <target>Only authorized Wipop payments can be captured or voided.</target>
+        <target>Only authorized Wipöp payments can be captured or voided.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="a8e9d01a7af283707c37a9ad2c5e32ea">
         <source>Only Wipop card preauthorizations can be captured or voided.</source>
-        <target>Only Wipop card preauthorizations can be captured or voided.</target>
+        <target>Only Wipöp card preauthorizations can be captured or voided.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4056e571b745c111c8c93929a957c4f0">
+        <source>This order does not have a Wipop payment.</source>
+        <target>This order does not have a Wipöp payment.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="034439335146098200fa74e3bf47a69c">
+        <source>The original Wipop authorization is missing.</source>
+        <target>The original Wipöp authorization is missing.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="762789e71cee6d3b63d7574af189d6a2">
+        <source>The Wipop authorization amount must be greater than zero.</source>
+        <target>The Wipöp authorization amount must be greater than zero.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fc3672e1eb5062aa56326002f3a60886">
+        <source>The Wipop authorization currency is missing.</source>
+        <target>The Wipöp authorization currency is missing.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3cc32428334d371d6085b4e8ba1b79c2">
+        <source>Wipop returned a different operation amount.</source>
+        <target>Wipöp returned a different operation amount.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="387e145ac60a49fc5b448351810e1123">
+        <source>Wipop returned a different operation currency.</source>
+        <target>Wipöp returned a different operation currency.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="da3746986d2adbc2330239e7f5d684ee">
+        <source>The order currency does not match the Wipop capture currency.</source>
+        <target>The order currency does not match the Wipöp capture currency.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c28701eec3217d693eed3d45544b5956">
+        <source>Unable to resolve the paid order status.</source>
+        <target>Unable to resolve the paid order status.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="62a1bdf3a49c8d40abee22016e5571a7">
+        <source>Unable to resolve the canceled order status.</source>
+        <target>Unable to resolve the canceled order status.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9a398c44af5b38c625ed5decb2260e2f">
+        <source>Unable to add the Wipop capture payment to the order.</source>
+        <target>Unable to add the Wipöp capture payment to the order.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e481cbaeb2c71ae904cff66d310e1bb5">
+        <source>Unable to update the Wipop preauthorization order status.</source>
+        <target>Unable to update the Wipöp preauthorization order status.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="137111fb016e53f27a4aea60c1a9b335">
+        <source>Could not load the PrestaShop order.</source>
+        <target>Could not load the PrestaShop order.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e43cb621b83ac91d3a0e7b9fc586b344">
+        <source>Wipop did not return a transaction identifier.</source>
+        <target>Wipöp did not return a transaction identifier.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7495942a58bc279ea20f2676be00413a">
+        <source>Wipop did not return an operation status.</source>
+        <target>Wipöp did not return an operation status.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8d6c44f96b94c91d132befce09bf6ee8">
+        <source>Wipop did not return an operation amount.</source>
+        <target>Wipöp did not return an operation amount.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="524529c67c88a14f10c6af3caa4a8477">
+        <source>Wipop did not return an operation currency.</source>
+        <target>Wipöp did not return an operation currency.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2c9319a4b1fb0b710a5c2c76936b9faa">
+        <source>Wipop captured the authorization, but the local payment attempt could not be marked as paid.</source>
+        <target>Wipöp captured the authorization, but the local payment attempt could not be marked as paid.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9fa0b5e46426b42107c8271ab77fe1b1">
+        <source>Wipop captured the authorization, but the PrestaShop order could not be marked as paid.</source>
+        <target>Wipöp captured the authorization, but the PrestaShop order could not be marked as paid.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="57a5add08b432cb9ac20f62467cdbe6b">
         <source>Wipop voided the preauthorization, but the local attempt could not be marked as cancelled.</source>
-        <target>Wipop voided the preauthorization, but the local attempt could not be marked as cancelled.</target>
+        <target>Wipöp voided the preauthorization, but the local attempt could not be marked as cancelled.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="b224948d2f84e6b58e8fcb8ec843df24">
         <source>Wipop voided the preauthorization, but the PrestaShop order could not be marked as cancelled.</source>
-        <target>Wipop voided the preauthorization, but the PrestaShop order could not be marked as cancelled.</target>
+        <target>Wipöp voided the preauthorization, but the PrestaShop order could not be marked as cancelled.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="5ebb8c549850591cb13ec22c97843a45">
         <source>Wipop authorized</source>
-        <target>Wipop authorized</target>
+        <target>Wipöp authorized</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="bfb85f0a42e6ff7cb648526ef2be3ff8">
+        <source>Wipop refund</source>
+        <target>Wipöp refund</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="34efdd3b84eb27b69fe5dd1ec1a9a0bc">
+        <source>Refund with Wipop</source>
+        <target>Refund with Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c0cb62c543a0ab6cbf49c748e9a62093">
+        <source>Wipop transaction</source>
+        <target>Wipöp transaction</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6d6fee681b7faf8d30899b64f4f7e161">
+        <source>Remaining amount</source>
+        <target>Remaining amount</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9d5acdce5623431e681ce18151958bfb">
+        <source>Refundable quantity</source>
+        <target>Refundable quantity</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0d7db8d700dd630df508925ff1577676">
+        <source>Refundable amount</source>
+        <target>Refundable amount</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0f6f8990f7c21bf32bd472c97c6e3b48">
+        <source>Refundable shipping</source>
+        <target>Refundable shipping</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="373daf767188fc81daf6a0e0796145e7">
+        <source>A Wipop refund is already being processed for this order.</source>
+        <target>A Wipöp refund is already being processed for this order.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3deccd529b7de3e04b2fb585aa623959">
+        <source>Refund data could not be loaded.</source>
+        <target>Refund data could not be loaded.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e36eea0210bb9893c5bc90610903895a">
+        <source>This order has no refundable amount.</source>
+        <target>This order has no refundable amount.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="09493e1b7d9534a2fd59b505a26c525a">
+        <source>The Wipop refund could not be completed.</source>
+        <target>The Wipöp refund could not be completed.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="98523ff086cbcf662ce64fade990a842">
+        <source>Unable to complete the Wipop refund.</source>
+        <target>Unable to complete the Wipöp refund.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c8e4958034bca243d9c0bce33faddcb1">
+        <source>Wipop did not confirm the refund.</source>
+        <target>Wipöp did not confirm the refund.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9883b0a964724edd83a2499b569f19af">
+        <source>Wipop returned a different refund amount.</source>
+        <target>Wipöp returned a different refund amount.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9727abf5b403921f9918a7d838b61406">
+        <source>Wipop returned a different refund currency.</source>
+        <target>Wipöp returned a different refund currency.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="54c6483fe5c1798a5b1594aa23ca9ff2">
+        <source>Wipop did not return refund details.</source>
+        <target>Wipöp did not return refund details.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d0c52eebb4441589b34e472755e4a6a7">
+        <source>Wipop did not return a refund transaction identifier.</source>
+        <target>Wipöp did not return a refund transaction identifier.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="403027a9bedf31c14ee5f656ca6ca92d">
+        <source>Wipop returned the original transaction as refund identifier.</source>
+        <target>Wipöp returned the original transaction as refund identifier.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="aebef11662fe8996e5f298021aec4763">
+        <source>Wipop did not return a refund status.</source>
+        <target>Wipöp did not return a refund status.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e784ba78a70b45213990ff0b75ea8e52">
+        <source>Wipop did not return a refund amount.</source>
+        <target>Wipöp did not return a refund amount.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9f7e7c53306d01691cd9be77077be399">
+        <source>Wipop did not return a refund currency.</source>
+        <target>Wipöp did not return a refund currency.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="45b2bad667908bb5646d040e7dad7668">
+        <source>The refund contains an unknown order line.</source>
+        <target>The refund contains an unknown order line.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a8a2b94eceaf92ffbdbce77c6cbba8a0">
+        <source>Only paid Wipop orders can be refunded.</source>
+        <target>Only paid Wipöp orders can be refunded.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4a98fb52f5c1aeeb81555d3c8acd2375">
+        <source>The original Wipop transaction is missing.</source>
+        <target>The original Wipöp transaction is missing.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7fb3e7ba0f92b922b468c66f7ce8c444">
+        <source>The order currency does not match the Wipop payment currency.</source>
+        <target>The order currency does not match the Wipöp payment currency.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7a34857f4ee28d8c8a04a2bdae04aec8">
+        <source>The refund amount must be greater than zero.</source>
+        <target>The refund amount must be greater than zero.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7a2d4061050b6f3c3fd4169f2fc7ac7a">
+        <source>The refund exceeds the remaining Wipop amount.</source>
+        <target>The refund exceeds the remaining Wipöp amount.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3f63310d250dad45b05fa85b16f093ba">
+        <source>Each refunded product must include quantity and amount.</source>
+        <target>Each refunded product must include quantity and amount.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fa79b28bf9ac02f617b504dbf574c2be">
+        <source>The refund quantity exceeds the refundable product quantity.</source>
+        <target>The refund quantity exceeds the refundable product quantity.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6c54789a289eac3fb0b1324647514ab4">
+        <source>The refund amount exceeds the refundable product amount.</source>
+        <target>The refund amount exceeds the refundable product amount.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a9c45cfe4a3d1bce890a7b7fbfc2c3e7">
+        <source>The shipping refund exceeds the refundable shipping amount.</source>
+        <target>The shipping refund exceeds the refundable shipping amount.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="bedcab7470acc3f949050f7288880947">
+        <source>PrestaShop order cannot be refunded.</source>
+        <target>PrestaShop order cannot be refunded.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="438f142c0d20095fbb236ab652a734f3">
+        <source>PrestaShop did not create a credit slip.</source>
+        <target>PrestaShop did not create a credit slip.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4e8aef57ac53932812ca65c2f2f2e980">
+        <source>Wipop refund completed for %amount%.</source>
+        <target>Wipöp refund completed for %amount%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3d6e9df689dadf53402dc93f5795f6d2">
+        <source>Credit slip: #%order_slip_id%.</source>
+        <target>Credit slip: #%order_slip_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="607d903b57bd170f23726271ad9f62a0">
+        <source>Wipop refunded the payment, but the credit slip could not be created.</source>
+        <target>Wipöp refunded the payment, but the credit slip could not be created.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3ff134de6b3f09617c9b5e0619775504">
+        <source>The refund and credit slip were completed, but the event could not be linked.</source>
+        <target>The refund and credit slip were completed, but the event could not be linked.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="59758c8f7f9cbef6939ca9991aaa8939">
+        <source>Payment status</source>
+        <target>Payment status</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="776da51abba2c315d877e47234e4ac6c">
+        <source>Wipop status</source>
+        <target>Wipöp status</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4c3880bb027f159e801041b1021e88e8">
+        <source>Method</source>
+        <target>Method</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b2f40690858b404ed10e62bdf422c704">
+        <source>Amount</source>
+        <target>Amount</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fc7fbf784be4b9e2b3237034928d1dc8">
+        <source>Wipop order</source>
+        <target>Wipöp order</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1b0ffaae3973401f71cd000ab9f7856e">
+        <source>Transaction</source>
+        <target>Transaction</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="236d0eb7130ba05580fa0cb21f6b968d">
+        <source>Last update</source>
+        <target>Last update</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="53114c53b2b573dff6e27ed240912ed8">
+        <source>Wipop manages refunds for this payment.</source>
+        <target>Wipöp manages refunds for this payment.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a4ecfc70574394990cf17bd83df499f7">
+        <source>Event</source>
+        <target>Event</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ec53a8c4f07baed5d8825072c89799be">
+        <source>Status</source>
+        <target>Status</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="44749712dbec183e983dcd78a7736c41">
+        <source>Date</source>
+        <target>Date</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="bf73eb2b0bdecc6ea2b5f995513abd09">
+        <source>Refund status</source>
+        <target>Refund status</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9f8c310d4b0402a61723b22c34fbd31c">
+        <source>Refunded amount</source>
+        <target>Refunded amount</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9ca0dc7810e7d01490d9342523447429">
+        <source>Last refund</source>
+        <target>Last refund</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="89ea01422d8c5b92b2b45ac68e4ed4ed">
+        <source>Last refund amount</source>
+        <target>Last refund amount</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6ad02e20debca6712d4952b194c83b42">
+        <source>Last refund status</source>
+        <target>Last refund status</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4a0a346745d964b0f2878b959729ee2c">
+        <source>Last refund update</source>
+        <target>Last refund update</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cf3bae95c5f6023d5a10fe415b205a45">
+        <source>Credit slip</source>
+        <target>Credit slip</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d930dbf4a7092e01caddb358c8f20bac">
+        <source>Recurring payment</source>
+        <target>Recurring payment</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1901606ea069a83dc7beea17881ef95a">
+        <source>Period</source>
+        <target>Period</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e1f1c28d5bf447a7cd6ae90e37d376ae">
+        <source>Recurring amount</source>
+        <target>Recurring amount</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a6471bea6a40f88180b17c0410221ad6">
+        <source>Next charge</source>
+        <target>Next charge</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fa81d45823b311114739a16e01f74e7c">
+        <source>Next sequence</source>
+        <target>Next sequence</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c05d8a54edce1050b2a16929dedf92aa">
+        <source>Last recurring transaction</source>
+        <target>Last recurring transaction</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5aa1408ba0e0e4925481f458020dd75f">
+        <source>Stop recurring payments</source>
+        <target>Stop recurring payments</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cb1856ec07fdc866c21f13566e3d5bcd">
+        <source>Attempt</source>
+        <target>Attempt</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a85eba4c6c699122b2bb1387ea4813ad">
+        <source>Cart</source>
+        <target>Cart</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="44a50f07b4bdc57740901280f9eddaf5">
+        <source>Capture</source>
+        <target>Capture</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="22c89da54673b9bed47f1183dae18524">
+        <source>Reversal</source>
+        <target>Reversal</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cc61945cbbf46721a053467c395c666f">
+        <source>Refunded</source>
+        <target>Refunded</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2fb630782f728ad00ec508e694cb9424">
+        <source>Refund event</source>
+        <target>Refund event</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="77fd2b4393b379bedd30efcd5df02090">
+        <source>Partial refund</source>
+        <target>Partial refund</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7ecadda819d0aa7d95bb4a7939ee8cde">
+        <source>Enable recurring payment</source>
+        <target>Enable recurring payment</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ac39606b8ba9b791c0955d889ac7c825">
+        <source>Periodicity</source>
+        <target>Periodicity</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d518033ae94128fa99a4445c2150defb">
+        <source>Choose a period</source>
+        <target>Choose a period</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9030e39f00132d583da4122532e509e9">
+        <source>Monthly</source>
+        <target>Monthly</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cf5ea7953dc47105e0eb179dbefaaf46">
+        <source>Yearly</source>
+        <target>Yearly</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4d3d769b812b6faa6b76e1a8abaece2d">
+        <source>Active</source>
+        <target>Active</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c23e2b09ebe6bf4cb5e2a9abe85c0be2">
+        <source>Stopped</source>
+        <target>Stopped</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="568bda7d476a612705e9fc46ab924cbc">
+        <source>Pending initial payment</source>
+        <target>Pending initial payment</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dfd515494018e8db43466a541fa0e199">
+        <source>This order does not have that Wipop subscription.</source>
+        <target>This order does not have that Wipöp subscription.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f54acbfdcaede53a6807ba85753a5361">
+        <source>This Wipop subscription is not active.</source>
+        <target>This Wipöp subscription is not active.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5024270a9bbb090a8591a07727225a87">
+        <source>Wipop subscription stopped.</source>
+        <target>Wipöp subscription stopped.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="11bdd2700fa30f969018ec7f55f3a278">
+        <source>The Wipop subscription could not be stopped.</source>
+        <target>The Wipöp subscription could not be stopped.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="29f8bc570092570cda4f67851333ddaa">
+        <source>Webhook authentication</source>
+        <target>Webhook authentication</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0b8764d3dc1a8f0ba45f7ab682e65766">
+        <source>Webhook URL</source>
+        <target>Webhook URL</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="855227c34b5db4db1578265695ec61aa">
+        <source>Webhook user</source>
+        <target>Webhook user</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="855ad5841ff72ef96b8a5a705300d89d">
+        <source>Webhook password</source>
+        <target>Webhook password</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="46a2a41cc6e552044816a2d04634545d">
+        <source>State</source>
+        <target>State</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="943769b205da24c9b0fe9808370b97b1">
+        <source>Verification code</source>
+        <target>Verification code</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="917b6e378ddf5967dab61faa3fb0eac2">
+        <source>Code received at</source>
+        <target>Code received at</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e599804bcd1375d1b02ed18a671df746">
+        <source>Connected at</source>
+        <target>Connected at</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="99c116d5c3436667c1cc17c7afc9d35c">
+        <source>After regenerating, update the user and password in the Wipop portal.</source>
+        <target>After regenerating, update the user and password in the Wipöp portal.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="89af07e486ba5ddf46816195a8eedfaf">
+        <source>Regenerate credentials</source>
+        <target>Regenerate credentials</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c1f088883e9604f44688a5b540489e71">
+        <source>Webhook credentials are unavailable. Please regenerate them.</source>
+        <target>Webhook credentials are unavailable. Please regenerate them.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="417fbcb78f17ea9cf0c15605539e1ef0">
+        <source>Webhook credentials could not be regenerated. Please check module logs.</source>
+        <target>Webhook credentials could not be regenerated. Please check module logs.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8618df140a79f87117fb3af86fe9771b">
+        <source>Webhook credentials regenerated.</source>
+        <target>Webhook credentials regenerated.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2ec0d16e4ca169baedb9b2d50ec5c6d7">
+        <source>Connected</source>
+        <target>Connected</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ecddbd73a90aaf17dd71134521b09079">
+        <source>Not verified</source>
+        <target>Not verified</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ef70e46fd3bbc21e3e1f0b6815e750c0">
+        <source>Disconnected</source>
+        <target>Disconnected</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dce6c794a03dec79cc5f13ebb780cc3a">
+        <source>Wipop: transaction created. Transaction: %transaction_id%.</source>
+        <target>Wipop: transaction created. Transaction: %transaction_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9d54e73a1fce75e358a34bacc3b35821">
+        <source>Wipop refund completed for %amount%. Transaction: %transaction_id%.</source>
+        <target>Wipop refund completed for %amount%. Transaction: %transaction_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c7cb3af55b7a585e309883298ff6f350">
+        <source>Wipop: refund of %amount%. Transaction: %transaction_id%.</source>
+        <target>Wipop: refund of %amount%. Transaction: %transaction_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f14f7a69ac0ccbbcadd6c0addac4d356">
+        <source>Wipop: preauthorization captured for %amount%. Transaction: %transaction_id%.</source>
+        <target>Wipop: preauthorization captured for %amount%. Transaction: %transaction_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6cdca9c913d2f51faa93f4eda58b3c70">
+        <source>Wipop: preauthorization voided. Transaction: %transaction_id%.</source>
+        <target>Wipop: preauthorization voided. Transaction: %transaction_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="302e339cca12452071887be13aac1dad">
+        <source>Wipop: recurring charges cancelled because the order changed status.</source>
+        <target>Wipop: recurring charges cancelled because the order changed status.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="671c35262f076648f592db96187d4c22">
+        <source>Wipop: recurring charges cancelled because the parent payment was fully refunded.</source>
+        <target>Wipop: recurring charges cancelled because the parent payment was fully refunded.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1c696b3ba141bb28e647be912259db4b">
+        <source>Wipop: recurring charges stopped manually.</source>
+        <target>Wipop: recurring charges stopped manually.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="454173b3a14a7cfd60e14a789031491d">
+        <source>The payment was refunded, but the recurring subscription could not be stopped automatically.</source>
+        <target>The payment was refunded, but the recurring subscription could not be stopped automatically.</target>
         <note>Line: </note>
       </trans-unit>
     </body>
