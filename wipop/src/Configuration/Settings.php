@@ -44,7 +44,6 @@ final class Settings
     {
         return $this->merchantId !== ''
             && $this->secretKey !== ''
-            && $this->publicSecretKey !== ''
             && $this->terminalId >= self::MIN_TERMINAL_ID
             && $this->terminalId <= self::MAX_TERMINAL_ID;
     }
