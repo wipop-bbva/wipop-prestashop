@@ -203,7 +203,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
                 'payment_method' => $paymentMethod,
                 'error_class' => $exception::class,
             ]);
-            $this->renderUnavailable($exception->getMessage());
+            $this->renderUnavailable($this->translateMessage($exception->getMessage()));
 
             return;
         } catch (Throwable $throwable) {
