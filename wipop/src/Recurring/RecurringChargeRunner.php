@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Recurring;
 
+use Context;
 use GuzzleHttp\Exception\RequestException;
 use Order;
 use PrestaShop\Module\Wipop\Card\CardCofSelection;
@@ -25,7 +26,7 @@ use Wipop\Domain\Charge;
 use Wipop\Domain\ChargeMethod;
 use Wipop\Domain\TransactionStatus;
 
-final class RecurringChargeRunner
+final class RecurringChargeRunner implements RecurringDueChargeRunnerInterface
 {
     public function __construct(
         private RecurringSubscriptionRepository $subscriptions,
@@ -44,6 +45,26 @@ final class RecurringChargeRunner
 
     public function runDue(int $limit): int
     {
+        $context = Context::getContext();
+        $previousContext = [
+            'cart' => $context->cart,
+            'customer' => $context->customer,
+            'shop' => $context->shop,
+            'currency' => $context->currency,
+            'language' => $context->language,
+        ];
+
+        try {
+            return $this->processDue($limit);
+        } finally {
+            foreach ($previousContext as $property => $value) {
+                $context->{$property} = $value;
+            }
+        }
+    }
+
+    private function processDue(int $limit): int
+    {
         $processed = 0;
 
         foreach ($this->subscriptions->findDueIds($limit) as $subscriptionId) {
@@ -56,6 +77,8 @@ final class RecurringChargeRunner
                 ) {
                     ++$processed;
                 }
+            } catch (RecurringLockUnavailableException) {
+                continue;
             } catch (Throwable $throwable) {
                 $this->logger->error('Unexpected Wipop recurring charge error.', [
                     'subscription_id' => $subscriptionId,

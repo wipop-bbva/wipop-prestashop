@@ -45,6 +45,7 @@ use PrestaShop\Module\Wipop\Order\OrderWipopPaymentPresenter;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentEventRepository;
 use PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository;
+use PrestaShop\Module\Wipop\Recurring\RecurringAutoRunner;
 use PrestaShop\Module\Wipop\Recurring\RecurringCartInspector;
 use PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository;
 use PrestaShop\Module\Wipop\Recurring\RecurringCheckoutPolicy;
@@ -121,6 +122,7 @@ class Wipop extends PaymentModule
             && $this->registerHook('actionProductFormBuilderModifier')
             && $this->registerHook('actionAfterCreateProductFormHandler')
             && $this->registerHook('actionAfterUpdateProductFormHandler')
+            && $this->registerHook('actionDispatcher')
             && $this->registerHook('actionOrderStatusPostUpdate');
     }
 
@@ -137,6 +139,23 @@ class Wipop extends PaymentModule
         );
 
         return '';
+    }
+
+    public function hookActionDispatcher(array $params): void
+    {
+        if (!$this->isRecurringAutoRunnerTriggerRequest($params)) {
+            return;
+        }
+
+        try {
+            /** @var RecurringAutoRunner $autoRunner */
+            $autoRunner = $this->get(RecurringAutoRunner::class);
+            $autoRunner->maybeRun();
+        } catch (Throwable $throwable) {
+            (new Logger())->error('Unable to start Wipop recurring auto-runner from dispatcher hook.', [
+                'error_class' => $throwable::class,
+            ]);
+        }
     }
 
     public function hookPaymentOptions(array $params): array
@@ -342,6 +361,21 @@ class Wipop extends PaymentModule
         $orderStateId = (int) $orderState->id;
 
         return $orderStateId > 0 ? $orderStateId : null;
+    }
+
+    private function isRecurringAutoRunnerTriggerRequest(array $params): bool
+    {
+        $controllerType = $params['controller_type'] ?? null;
+        if (!is_numeric($controllerType)) {
+            return false;
+        }
+
+        $isAjax = (bool) Tools::getValue('ajax') || (bool) Tools::getValue('ajaxMode');
+
+        return (int) $controllerType === Dispatcher::FC_FRONT
+            && empty($params['is_module'])
+            && strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'GET'
+            && !$isAjax;
     }
 
     private function translatedAdminLabel(string $label): string

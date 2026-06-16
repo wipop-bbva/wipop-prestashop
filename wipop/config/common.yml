@@ -35,15 +35,30 @@ services:
     class: PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository
     factory: [ 'PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository', 'createDefault' ]
 
-  PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock: ~
+  PrestaShop\Module\Wipop\Recurring\MySqlRecurringNamedLock: ~
+
+  PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock:
+    class: PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock
+    arguments:
+      $lock: '@PrestaShop\Module\Wipop\Recurring\MySqlRecurringNamedLock'
 
   PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopPolicy: ~
+
+  PrestaShop\Module\Wipop\Recurring\ConfigurationRecurringAutoRunnerState: ~
 
   PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper:
     class: PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper
     arguments:
       $subscriptions: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository'
       $subscriptionLock: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
+  PrestaShop\Module\Wipop\Recurring\RecurringAutoRunner:
+    class: PrestaShop\Module\Wipop\Recurring\RecurringAutoRunner
+    arguments:
+      $runner: '@PrestaShop\Module\Wipop\Recurring\RecurringChargeRunner'
+      $state: '@PrestaShop\Module\Wipop\Recurring\ConfigurationRecurringAutoRunnerState'
+      $lock: '@PrestaShop\Module\Wipop\Recurring\MySqlRecurringNamedLock'
       $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
   PrestaShop\Module\Wipop\Recurring\RecurringCartFactory: ~

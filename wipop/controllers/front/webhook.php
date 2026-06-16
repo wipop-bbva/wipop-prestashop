@@ -12,6 +12,7 @@ use PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentEventRepository;
 use PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater;
+use PrestaShop\Module\Wipop\Recurring\MySqlRecurringNamedLock;
 use PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository;
 use PrestaShop\Module\Wipop\Recurring\RecurringChargeWebhookSynchronizer;
 use PrestaShop\Module\Wipop\Recurring\RecurringDateCalculator;
@@ -186,7 +187,7 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
         $orderNotes = new OrderPrivateNoteWriter($logger, Context::getContext()->getTranslator());
         $recurringStopper = new RecurringSubscriptionStopper(
             $recurringSubscriptions,
-            new RecurringSubscriptionLock(),
+            new RecurringSubscriptionLock(new MySqlRecurringNamedLock()),
             $logger
         );
         $orderUpdater = new PrestaShopPreauthorizationOrderUpdater(

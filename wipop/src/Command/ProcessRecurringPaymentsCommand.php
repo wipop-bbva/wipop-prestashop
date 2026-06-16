@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Command;
 
-use PrestaShop\Module\Wipop\Recurring\RecurringChargeRunner;
+use PrestaShop\Module\Wipop\Recurring\RecurringDueChargeRunnerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -14,7 +14,7 @@ final class ProcessRecurringPaymentsCommand extends Command
 {
     protected static $defaultName = 'wipop:recurring:process';
 
-    public function __construct(private RecurringChargeRunner $runner)
+    public function __construct(private RecurringDueChargeRunnerInterface $runner)
     {
         parent::__construct(self::$defaultName);
     }
