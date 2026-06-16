@@ -99,7 +99,7 @@ final class PreauthorizationService
             'We could not void the preauthorization in Wipop.'
         );
 
-        $warning = $this->finishReversalLocally($orderId, $summary);
+        $warning = $this->finishReversalLocally($orderId, $summary, $result->remoteTransactionId, $employeeId);
 
         return new PreauthorizationOutcome(
             $result->amount,
@@ -239,8 +239,12 @@ final class PreauthorizationService
         return $warning;
     }
 
-    private function finishReversalLocally(int $orderId, PaymentAttemptSummary $summary): ?string
-    {
+    private function finishReversalLocally(
+        int $orderId,
+        PaymentAttemptSummary $summary,
+        string $transactionId,
+        int $employeeId,
+    ): ?string {
         $warning = null;
 
         /* Wipop already completed the remote operation; local failures become warnings so recovery stays visible. */
@@ -256,7 +260,7 @@ final class PreauthorizationService
         }
 
         try {
-            $this->orderUpdater->markCancelled($orderId);
+            $this->orderUpdater->markCancelled($orderId, $transactionId, $employeeId);
         } catch (Throwable $throwable) {
             $this->logger->error('Order update failed after Wipop reversal.', [
                 'order_id' => $orderId,

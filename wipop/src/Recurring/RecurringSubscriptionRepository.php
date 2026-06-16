@@ -213,6 +213,29 @@ final class RecurringSubscriptionRepository
         return is_array($row) ? $this->mapRowWithItems($row) : null;
     }
 
+    /**
+     * @return RecurringSubscription[]
+     */
+    public function findActiveByParentOrderId(int $orderId): array
+    {
+        if ($orderId <= 0) {
+            return [];
+        }
+
+        $sql = sprintf(
+            'SELECT *
+            FROM `%swipop_recurring_subscription`
+            WHERE `id_parent_order` = %d
+              AND `status` = \'%s\'
+            ORDER BY `id_wipop_recurring_subscription` ASC',
+            _DB_PREFIX_,
+            $orderId,
+            pSQL(RecurringSubscriptionStatus::ACTIVE->value)
+        );
+
+        return $this->mapRowsWithItems($this->db->executeS($sql));
+    }
+
     public function stop(int $subscriptionId): void
     {
         $this->update($subscriptionId, [

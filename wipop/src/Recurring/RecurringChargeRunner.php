@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Recurring;
 
 use GuzzleHttp\Exception\RequestException;
+use Order;
 use PrestaShop\Module\Wipop\Card\CardCofSelection;
 use PrestaShop\Module\Wipop\Card\StoredCard;
 use PrestaShop\Module\Wipop\Card\StoredCardRepository;
@@ -17,6 +18,7 @@ use PrestaShop\Module\Wipop\Exception\SettingsReadException;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use Throwable;
+use Validate;
 use Wipop\Client\Exception\HttpTransportException;
 use Wipop\Client\Exception\WipopApiTimeoutException;
 use Wipop\Domain\Charge;
@@ -36,6 +38,7 @@ final class RecurringChargeRunner
         private WipopRecurringChargeClientInterface $wipopClient,
         private CartOrderIdFactory $orderIdFactory,
         private Logger $logger,
+        private RecurringSubscriptionStopPolicy $stopPolicy,
     ) {
     }
 
@@ -68,6 +71,10 @@ final class RecurringChargeRunner
     {
         $subscription = $this->subscriptions->findById($subscriptionId);
         if ($subscription === null || $subscription->status !== RecurringSubscriptionStatus::ACTIVE) {
+            return false;
+        }
+
+        if ($this->stopIfParentCannotRenew($subscription)) {
             return false;
         }
 
@@ -235,6 +242,61 @@ final class RecurringChargeRunner
         );
     }
 
+    private function stopIfParentCannotRenew(RecurringSubscription $subscription): bool
+    {
+        if ($subscription->parentOrderId === null) {
+            $this->stopSubscription(
+                $subscription,
+                'Wipop recurring subscription stopped because its parent order is missing.'
+            );
+
+            return true;
+        }
+
+        $order = new Order($subscription->parentOrderId);
+        if (!Validate::isLoadedObject($order)) {
+            $this->stopSubscription(
+                $subscription,
+                'Wipop recurring subscription stopped because its parent order is unavailable.',
+                ['parent_order_id' => $subscription->parentOrderId]
+            );
+
+            return true;
+        }
+
+        if ($this->stopPolicy->shouldStopForParentOrderState((int) $order->current_state)) {
+            $this->stopSubscription(
+                $subscription,
+                'Wipop recurring subscription stopped because its parent order is closed.',
+                [
+                    'parent_order_id' => $subscription->parentOrderId,
+                    'order_state_id' => (int) $order->current_state,
+                ]
+            );
+
+            return true;
+        }
+
+        $initialAttempt = $this->paymentAttempts->findById($subscription->initialPaymentAttemptId);
+        if (
+            $initialAttempt === null
+            || $this->stopPolicy->shouldStopForInitialAttemptStatus($initialAttempt->status)
+        ) {
+            $this->stopSubscription(
+                $subscription,
+                'Wipop recurring subscription stopped because its initial payment is closed.',
+                [
+                    'parent_order_id' => $subscription->parentOrderId,
+                    'initial_attempt_id' => $subscription->initialPaymentAttemptId,
+                ]
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
     private function isFailedResponse(Charge $charge): bool
     {
         return in_array($charge->status, [TransactionStatus::FAILED, TransactionStatus::ERROR], true);
@@ -300,10 +362,14 @@ final class RecurringChargeRunner
         return $mayHaveReachedWipop;
     }
 
-    private function stopSubscription(RecurringSubscription $subscription, string $message): void
+    /**
+     * @param array<string, int|string> $context
+     */
+    private function stopSubscription(RecurringSubscription $subscription, string $message, array $context = []): void
     {
         $this->subscriptions->stop($subscription->id);
         $this->logger->warning($message, [
+            ...$context,
             'subscription_id' => $subscription->id,
         ]);
     }

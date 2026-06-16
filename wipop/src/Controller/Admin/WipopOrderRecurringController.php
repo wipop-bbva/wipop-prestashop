@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Controller\Admin;
 
 use PrestaShop\Module\Wipop\Log\Logger;
+use PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter;
 use PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository;
 use PrestaShop\Module\Wipop\Recurring\RecurringSubscription;
 use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock;
@@ -23,6 +24,7 @@ final class WipopOrderRecurringController extends FrameworkBundleAdminController
         private RecurringSubscriptionRepository $subscriptions,
         private RecurringChargeRepository $charges,
         private RecurringSubscriptionLock $subscriptionLock,
+        private OrderPrivateNoteWriter $orderNotes,
         private Logger $logger,
     ) {
     }
@@ -68,12 +70,19 @@ final class WipopOrderRecurringController extends FrameworkBundleAdminController
         }
 
         try {
-            $this->subscriptionLock->run($subscriptionId, function () use ($subscriptionId): void {
+            $stopped = $this->subscriptionLock->run($subscriptionId, function () use ($subscriptionId): bool {
                 $subscription = $this->subscriptions->findById($subscriptionId);
                 if ($subscription !== null && $subscription->status === RecurringSubscriptionStatus::ACTIVE) {
                     $this->subscriptions->stop($subscriptionId);
+
+                    return true;
                 }
+
+                return false;
             });
+            if ($stopped) {
+                $this->orderNotes->addRecurringStoppedManually($orderId, $this->employeeId());
+            }
             $this->addFlash('success', $this->trans('Wipop subscription stopped.', TranslationDomains::ADMIN));
         } catch (Throwable $throwable) {
             $this->logger->error('Unable to stop Wipop recurring subscription.', [
@@ -111,5 +120,10 @@ final class WipopOrderRecurringController extends FrameworkBundleAdminController
         return $this->redirectToRoute('admin_orders_view', [
             'orderId' => $orderId,
         ]);
+    }
+
+    private function employeeId(): int
+    {
+        return (int) $this->getContext()->employee->id;
     }
 }

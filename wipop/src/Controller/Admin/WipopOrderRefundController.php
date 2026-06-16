@@ -7,11 +7,14 @@ namespace PrestaShop\Module\Wipop\Controller\Admin;
 use Exception;
 use PrestaShop\Module\Wipop\Form\Type\ManualRefundType;
 use PrestaShop\Module\Wipop\Log\Logger;
+use PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter;
 use PrestaShop\Module\Wipop\Payment\PaymentAmount;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptLock;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptLockException;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
+use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
+use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper;
 use PrestaShop\Module\Wipop\Refund\ManualRefundException;
 use PrestaShop\Module\Wipop\Refund\ManualRefundFormDataProvider;
 use PrestaShop\Module\Wipop\Refund\ManualRefundOutcome;
@@ -32,6 +35,8 @@ final class WipopOrderRefundController extends FrameworkBundleAdminController
         private ManualRefundRequestFactory $requestFactory,
         private ManualRefundService $manualRefundService,
         private PaymentAttemptLock $paymentAttemptLock,
+        private RecurringSubscriptionStopper $recurringStopper,
+        private OrderPrivateNoteWriter $orderNotes,
         private Logger $logger,
     ) {
     }
@@ -88,6 +93,7 @@ final class WipopOrderRefundController extends FrameworkBundleAdminController
                 /** @var array<string, mixed> $submittedData */
                 $submittedData = $form->getData();
                 $outcome = $this->processSubmittedRefund($orderId, $summary->id, $submittedData);
+                $this->addRefundNote($orderId, $outcome);
                 $this->flashOutcome($outcome);
 
                 return $this->redirectToOrder($orderId);
@@ -132,32 +138,83 @@ final class WipopOrderRefundController extends FrameworkBundleAdminController
 
             $formData = $this->formDataProvider->getForOrder($orderId);
 
-            return $this->manualRefundService->refund(
+            $outcome = $this->manualRefundService->refund(
                 $orderId,
                 $summary,
                 $this->requestFactory->fromSubmittedData($submittedData, $formData),
                 $formData,
                 $this->employeeId(),
             );
+            $this->stopRecurringIfInitialPaymentRefunded($orderId);
+
+            return $outcome;
         });
+    }
+
+    private function stopRecurringIfInitialPaymentRefunded(int $orderId): void
+    {
+        $summary = $this->paymentAttemptRepository->findSummaryByOrderId($orderId);
+        if ($summary?->status !== PaymentAttemptStatus::REFUNDED) {
+            return;
+        }
+
+        try {
+            $stopped = $this->recurringStopper->stopActiveForParentOrder(
+                $orderId,
+                'Wipop recurring subscription stopped because parent payment was fully refunded.',
+                ['attempt_id' => $summary->id]
+            );
+            if ($stopped > 0) {
+                $this->orderNotes->addRecurringCancelledByFullRefund($orderId);
+            }
+        } catch (Exception $exception) {
+            $this->logger->error('Unable to stop Wipop recurring subscription after refund.', [
+                'order_id' => $orderId,
+                'attempt_id' => $summary->id,
+                'error_class' => $exception::class,
+            ]);
+            $this->addFlash(
+                'warning',
+                $this->trans(
+                    'The payment was refunded, but the recurring subscription could not be stopped automatically.',
+                    TranslationDomains::ADMIN
+                )
+            );
+        }
     }
 
     private function flashOutcome(ManualRefundOutcome $outcome): void
     {
-        $message = sprintf(
-            'Wipop refund completed for %s.',
-            $this->formatAmount($outcome->amount, $outcome->currencyIso),
+        $message = $this->trans(
+            'Wipop refund completed for %amount%.',
+            TranslationDomains::ADMIN,
+            ['%amount%' => $this->formatAmount($outcome->amount, $outcome->currencyIso)]
         );
 
         if ($outcome->orderSlipId !== null) {
-            $message .= sprintf(' Credit slip: #%d.', $outcome->orderSlipId);
+            $message .= ' ' . $this->trans(
+                'Credit slip: #%order_slip_id%.',
+                TranslationDomains::ADMIN,
+                ['%order_slip_id%' => $outcome->orderSlipId]
+            );
         }
 
-        $this->addFlash('success', $this->trans($message, TranslationDomains::ADMIN));
+        $this->addFlash('success', $message);
 
         if ($outcome->localWarning !== null) {
             $this->addFlash('warning', $this->trans($outcome->localWarning, TranslationDomains::ADMIN));
         }
+    }
+
+    private function addRefundNote(int $orderId, ManualRefundOutcome $outcome): void
+    {
+        $this->orderNotes->addManualRefundCompleted(
+            $orderId,
+            $outcome->amount,
+            $outcome->currencyIso,
+            $outcome->refundTransactionId,
+            $this->employeeId()
+        );
     }
 
     private function remainingAmount(PaymentAttemptSummary $summary): string

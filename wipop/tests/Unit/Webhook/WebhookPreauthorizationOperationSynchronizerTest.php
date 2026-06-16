@@ -295,7 +295,11 @@ final class WebhookPreauthorizationOperationSynchronizerTest extends TestCase
             }
         );
         $updater->method('markCancelled')->willReturnCallback(
-            static function (int $orderId) use (&$cancelledOrderId): void {
+            static function (
+                int $orderId,
+                ?string $transactionId = null,
+                ?int $employeeId = null,
+            ) use (&$cancelledOrderId): void {
                 $cancelledOrderId = $orderId;
             }
         );

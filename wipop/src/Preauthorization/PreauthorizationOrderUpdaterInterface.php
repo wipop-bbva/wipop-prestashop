@@ -14,5 +14,5 @@ interface PreauthorizationOrderUpdaterInterface
         int $employeeId,
     ): void;
 
-    public function markCancelled(int $orderId): void;
+    public function markCancelled(int $orderId, ?string $transactionId = null, ?int $employeeId = null): void;
 }

@@ -40,6 +40,7 @@ use PrestaShop\Module\Wipop\Form\Modifier\ProductRecurringFormModifier;
 use PrestaShop\Module\Wipop\Install\ModuleInstaller;
 use PrestaShop\Module\Wipop\Install\ModuleUninstaller;
 use PrestaShop\Module\Wipop\Log\Logger;
+use PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter;
 use PrestaShop\Module\Wipop\Order\OrderWipopPaymentPresenter;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentEventRepository;
@@ -50,6 +51,8 @@ use PrestaShop\Module\Wipop\Recurring\RecurringCheckoutPolicy;
 use PrestaShop\Module\Wipop\Recurring\RecurringOrderPresenter;
 use PrestaShop\Module\Wipop\Recurring\RecurringPeriod;
 use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository;
+use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper;
+use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopPolicy;
 use PrestaShop\Module\Wipop\Refund\ManualRefundEligibilityChecker;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
@@ -117,7 +120,8 @@ class Wipop extends PaymentModule
             && $this->registerHook('actionGetAdminOrderButtons')
             && $this->registerHook('actionProductFormBuilderModifier')
             && $this->registerHook('actionAfterCreateProductFormHandler')
-            && $this->registerHook('actionAfterUpdateProductFormHandler');
+            && $this->registerHook('actionAfterUpdateProductFormHandler')
+            && $this->registerHook('actionOrderStatusPostUpdate');
     }
 
     public function uninstall()
@@ -279,6 +283,43 @@ class Wipop extends PaymentModule
         $this->saveProductRecurringSettings($params);
     }
 
+    public function hookActionOrderStatusPostUpdate(array $params): void
+    {
+        $orderId = $this->orderIdFromHookParams($params);
+        $orderStateId = $this->orderStateIdFromHookParams($params);
+
+        if ($orderId === null || $orderStateId === null) {
+            return;
+        }
+
+        /** @var RecurringSubscriptionStopPolicy $stopPolicy */
+        $stopPolicy = $this->get(RecurringSubscriptionStopPolicy::class);
+        if (!$stopPolicy->shouldStopForParentOrderState($orderStateId)) {
+            return;
+        }
+
+        try {
+            /** @var RecurringSubscriptionStopper $stopper */
+            $stopper = $this->get(RecurringSubscriptionStopper::class);
+            $stopped = $stopper->stopActiveForParentOrder(
+                $orderId,
+                'Wipop recurring subscription stopped because parent order is closed.',
+                ['order_state_id' => $orderStateId]
+            );
+            if ($stopped > 0) {
+                /** @var OrderPrivateNoteWriter $orderNotes */
+                $orderNotes = $this->get(OrderPrivateNoteWriter::class);
+                $orderNotes->addRecurringCancelledByOrderStatus($orderId);
+            }
+        } catch (Throwable $throwable) {
+            (new Logger())->error('Unable to stop Wipop recurring subscription after order status update.', [
+                'order_id' => $orderId,
+                'order_state_id' => $orderStateId,
+                'error_class' => $throwable::class,
+            ]);
+        }
+    }
+
     private function orderIdFromHookParams(array $params): ?int
     {
         $orderId = $params['id_order'] ?? null;
@@ -289,6 +330,18 @@ class Wipop extends PaymentModule
         $orderId = (int) $orderId;
 
         return $orderId > 0 ? $orderId : null;
+    }
+
+    private function orderStateIdFromHookParams(array $params): ?int
+    {
+        $orderState = $params['newOrderStatus'] ?? null;
+        if (!$orderState instanceof OrderState) {
+            return null;
+        }
+
+        $orderStateId = (int) $orderState->id;
+
+        return $orderStateId > 0 ? $orderStateId : null;
     }
 
     private function translatedAdminLabel(string $label): string
@@ -424,6 +477,9 @@ class Wipop extends PaymentModule
 
             return $payment;
         }
+
+        $recurring['period'] = $this->translatedAdminLabel((string) $recurring['period']);
+        $recurring['status_label'] = $this->translatedAdminLabel((string) $recurring['status_label']);
 
         if ($recurring['can_stop']) {
             $container = SymfonyContainer::getInstance();

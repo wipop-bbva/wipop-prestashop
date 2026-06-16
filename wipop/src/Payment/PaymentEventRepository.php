@@ -20,9 +20,12 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
         return new self(Db::getInstance());
     }
 
-    public function save(PaymentAttempt $attempt, PaymentEventData $event): void
+    public function save(PaymentAttempt $attempt, PaymentEventData $event): bool
     {
+        $exists = $this->eventExists($event->remoteTransactionId, $event->transactionType);
         $this->saveEvent($attempt, $event);
+
+        return !$exists;
     }
 
     public function saveManualRefund(PaymentAttempt $attempt, PaymentEventData $event, int $employeeId): void
@@ -72,6 +75,21 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
         if (!$this->db->execute($this->upsertEventSql($data))) {
             throw new RuntimeException('Unable to save Wipop payment event.');
         }
+    }
+
+    private function eventExists(string $remoteTransactionId, string $transactionType): bool
+    {
+        $sql = sprintf(
+            'SELECT 1
+            FROM `%swipop_payment_event`
+            WHERE `remote_transaction_id` = %s
+                AND `transaction_type` = %s',
+            _DB_PREFIX_,
+            $this->sqlString($remoteTransactionId),
+            $this->sqlString($transactionType)
+        );
+
+        return (bool) $this->db->getValue($sql);
     }
 
     public function completedRefundedCentsForAttempt(

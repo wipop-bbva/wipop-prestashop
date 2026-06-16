@@ -8,6 +8,7 @@ use Configuration;
 use Currency;
 use Order;
 use OrderHistory;
+use PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter;
 use PrestaShop\PrestaShop\Core\CommandBus\CommandBusInterface;
 use PrestaShop\PrestaShop\Core\Domain\Order\Command\UpdateOrderStatusCommand;
 use PrestaShop\PrestaShop\Core\Domain\Order\Payment\Command\AddPaymentCommand;
@@ -18,6 +19,7 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
     private const PAYMENT_METHOD = 'Wipop';
 
     public function __construct(
+        private OrderPrivateNoteWriter $orderNotes,
         private ?CommandBusInterface $commandBus = null,
     ) {
     }
@@ -42,8 +44,10 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
             throw new PreauthorizationException('The order currency does not match the Wipop capture currency.');
         }
 
+        $paymentAdded = false;
         if (!$this->orderPaymentExists($order, $transactionId)) {
             $this->addOrderPayment($order, $currency, $amount, $transactionId, $employeeId);
+            $paymentAdded = true;
         }
 
         $paidStateId = (int) Configuration::get('PS_OS_PAYMENT');
@@ -51,15 +55,26 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
             throw new PreauthorizationException('Unable to resolve the paid order status.');
         }
 
-        if ((int) $order->current_state !== $paidStateId) {
+        $statusChanged = (int) $order->current_state !== $paidStateId;
+        if ($statusChanged) {
             $this->updateOrderStatus($orderId, $paidStateId);
+        }
+
+        if ($paymentAdded || $statusChanged) {
+            $this->orderNotes->addPreauthorizationCaptured(
+                $orderId,
+                $amount,
+                $currencyIso,
+                $transactionId,
+                $employeeId
+            );
         }
     }
 
     /**
      * @throws PreauthorizationException
      */
-    public function markCancelled(int $orderId): void
+    public function markCancelled(int $orderId, ?string $transactionId = null, ?int $employeeId = null): void
     {
         $order = $this->loadOrder($orderId);
         $cancelledStateId = (int) Configuration::get('PS_OS_CANCELED');
@@ -69,6 +84,9 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
 
         if ((int) $order->current_state !== $cancelledStateId) {
             $this->updateOrderStatus($orderId, $cancelledStateId);
+            if ($transactionId !== null) {
+                $this->orderNotes->addPreauthorizationVoided($orderId, $transactionId, $employeeId);
+            }
         }
     }
 

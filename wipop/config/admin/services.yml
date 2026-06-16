@@ -92,6 +92,7 @@ services:
     class: PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater
     arguments:
       $commandBus: '@prestashop.core.command_bus'
+      $orderNotes: '@PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter'
 
   PrestaShop\Module\Wipop\Preauthorization\PreauthorizationService:
     class: PrestaShop\Module\Wipop\Preauthorization\PreauthorizationService
@@ -118,6 +119,8 @@ services:
       $requestFactory: '@PrestaShop\Module\Wipop\Refund\ManualRefundRequestFactory'
       $manualRefundService: '@PrestaShop\Module\Wipop\Refund\ManualRefundService'
       $paymentAttemptLock: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptLock'
+      $recurringStopper: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper'
+      $orderNotes: '@PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter'
       $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
   PrestaShop\Module\Wipop\Controller\Admin\WipopOrderPreauthorizationController:
@@ -134,6 +137,7 @@ services:
       $subscriptions: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository'
       $charges: '@PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository'
       $subscriptionLock: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock'
+      $orderNotes: '@PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter'
       $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
   PrestaShop\Module\Wipop\Form\Type\SettingsType:

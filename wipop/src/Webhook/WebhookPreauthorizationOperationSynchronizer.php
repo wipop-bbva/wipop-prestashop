@@ -76,7 +76,7 @@ final class WebhookPreauthorizationOperationSynchronizer
                 self::WEBHOOK_EMPLOYEE_ID
             );
         } else {
-            $this->orderUpdater->markCancelled($orderId);
+            $this->orderUpdater->markCancelled($orderId, $transactionId, self::WEBHOOK_EMPLOYEE_ID);
         }
 
         return $targetStatus;

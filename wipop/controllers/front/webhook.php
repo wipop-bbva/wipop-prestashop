@@ -8,6 +8,7 @@ use PrestaShop\Module\Wipop\Exception\SettingsStorageException;
 use PrestaShop\Module\Wipop\Exception\WebhookCredentialsException;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
 use PrestaShop\Module\Wipop\Log\Logger;
+use PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentEventRepository;
 use PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater;
@@ -15,7 +16,9 @@ use PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository;
 use PrestaShop\Module\Wipop\Recurring\RecurringChargeWebhookSynchronizer;
 use PrestaShop\Module\Wipop\Recurring\RecurringDateCalculator;
 use PrestaShop\Module\Wipop\Recurring\RecurringInitialPaymentSynchronizer;
+use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock;
 use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository;
+use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper;
 use PrestaShop\Module\Wipop\Recurring\RecurringWebhookSynchronizer;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuth;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuthStatus;
@@ -179,7 +182,15 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
         $paymentAttemptRepository = PaymentAttemptRepository::createDefault();
         $paymentEventRepository = PaymentEventRepository::createDefault();
         $paymentValidator = new WebhookPaymentValidator();
+        $recurringSubscriptions = RecurringSubscriptionRepository::createDefault();
+        $orderNotes = new OrderPrivateNoteWriter($logger, Context::getContext()->getTranslator());
+        $recurringStopper = new RecurringSubscriptionStopper(
+            $recurringSubscriptions,
+            new RecurringSubscriptionLock(),
+            $logger
+        );
         $orderUpdater = new PrestaShopPreauthorizationOrderUpdater(
+            $orderNotes,
             SymfonyContainer::getInstance()?->get('prestashop.core.command_bus')
         );
 
@@ -189,13 +200,16 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
             new WebhookOrderSynchronizer(
                 $paymentAttemptRepository,
                 $this->module,
-                $paymentValidator
+                $paymentValidator,
+                $orderNotes
             ),
             new WebhookRefundExtractor(),
             new WebhookRefundSynchronizer(
                 $paymentAttemptRepository,
                 $paymentEventRepository,
-                $paymentValidator
+                $paymentValidator,
+                $recurringStopper,
+                $orderNotes
             ),
             new WebhookPreauthorizationOperationSynchronizer(
                 $paymentEventRepository,
@@ -203,14 +217,15 @@ class WipopWebhookModuleFrontController extends ModuleFrontController
                 $orderUpdater
             ),
             new StoredCardSynchronizer(StoredCardRepository::createDefault()),
-            $this->recurringWebhookSynchronizer($logger),
+            $this->recurringWebhookSynchronizer($logger, $recurringSubscriptions),
             $logger
         );
     }
 
-    private function recurringWebhookSynchronizer(Logger $logger): RecurringWebhookSynchronizer
-    {
-        $subscriptions = RecurringSubscriptionRepository::createDefault();
+    private function recurringWebhookSynchronizer(
+        Logger $logger,
+        RecurringSubscriptionRepository $subscriptions,
+    ): RecurringWebhookSynchronizer {
         $dateCalculator = new RecurringDateCalculator();
 
         return new RecurringWebhookSynchronizer(

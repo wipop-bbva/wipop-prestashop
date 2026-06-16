@@ -6,6 +6,12 @@ services:
 
   PrestaShop\Module\Wipop\Log\Logger: ~
 
+  PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter:
+    class: PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter
+    arguments:
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+      $translator: '@translator'
+
   PrestaShop\Module\Wipop\Api\ClientFactory: ~
 
   PrestaShop\Module\Wipop\Api\SdkCaller:
@@ -30,6 +36,15 @@ services:
     factory: [ 'PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository', 'createDefault' ]
 
   PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock: ~
+
+  PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopPolicy: ~
+
+  PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper:
+    class: PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper
+    arguments:
+      $subscriptions: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository'
+      $subscriptionLock: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
   PrestaShop\Module\Wipop\Recurring\RecurringCartFactory: ~
 
@@ -61,3 +76,4 @@ services:
       $wipopClient: '@PrestaShop\Module\Wipop\Recurring\WipopRecurringChargeClientInterface'
       $orderIdFactory: '@PrestaShop\Module\Wipop\Checkout\CartOrderIdFactory'
       $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+      $stopPolicy: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopPolicy'
