@@ -39,7 +39,7 @@
     ],
     "cs-fixer:init": "php vendor/bin/prestashop-coding-standards cs-fixer:init",
     "phpstan:init": "php vendor/bin/prestashop-coding-standards phpstan:init",
-    "lint:php": "find . -type f -name '*.php' -not -path './var/*' -not -path './dist/*' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l",
+    "lint:php": "find . -type f -name '*.php' -not -path './var/*' -not -path './dist/*' -not -path './vendor/*' -not -path './vendor-dev/*' -print0 | xargs -0 -n1 php -l",
     "lint:cs": "php vendor/bin/php-cs-fixer fix --dry-run --diff",
     "lint:phpcs": "php vendor/bin/phpcs -q --standard=phpcs.xml",
     "fix:cs": "php vendor/bin/php-cs-fixer fix",
