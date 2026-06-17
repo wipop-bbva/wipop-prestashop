@@ -52,7 +52,7 @@ final class PaymentAttemptLock
             self::LOCK_TIMEOUT_SECONDS
         );
 
-        $result = $this->db->getValue($sql);
+        $result = (string) $this->db->getValue($sql);
         if ($result === '1') {
             return true;
         }

@@ -30,7 +30,7 @@ final class MySqlRecurringNamedLock implements RecurringNamedLockInterface
     private function acquire(string $lockName, int $timeoutSeconds): bool
     {
         $sql = sprintf('SELECT GET_LOCK(\'%s\', %d)', pSQL($lockName), $timeoutSeconds);
-        $result = $this->db->getValue($sql);
+        $result = (string) $this->db->getValue($sql);
 
         if ($result === '1') {
             return true;
