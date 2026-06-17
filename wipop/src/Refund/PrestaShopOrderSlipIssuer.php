@@ -69,6 +69,11 @@ final class PrestaShopOrderSlipIssuer implements OrderSlipIssuerInterface
             $orderId
         );
 
-        return (int) $this->db->getValue($sql);
+        $orderSlipId = $this->db->getValue($sql);
+        if ($orderSlipId === false || $orderSlipId === null) {
+            throw new ManualRefundException('Unable to read latest PrestaShop credit slip.');
+        }
+
+        return (int) $orderSlipId;
     }
 }

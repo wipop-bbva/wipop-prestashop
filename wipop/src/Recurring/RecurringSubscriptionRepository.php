@@ -121,7 +121,12 @@ final class RecurringSubscriptionRepository
             pSQL(RecurringSubscriptionStatus::PENDING_INITIAL_PAYMENT->value)
         );
 
-        return (int) $this->db->getValue($sql) > 0;
+        $count = $this->db->getValue($sql);
+        if ($count === false || $count === null) {
+            throw new RuntimeException('Unable to read pending Wipop recurring subscriptions.');
+        }
+
+        return (int) $count > 0;
     }
 
     public function activateForAttempt(
@@ -169,10 +174,7 @@ final class RecurringSubscriptionRepository
             $limit
         );
 
-        $rows = $this->db->executeS($sql);
-        if (!is_array($rows)) {
-            return [];
-        }
+        $rows = $this->requiredRows($sql);
 
         return array_map('intval', array_column($rows, 'id_wipop_recurring_subscription'));
     }
@@ -233,7 +235,7 @@ final class RecurringSubscriptionRepository
             pSQL(RecurringSubscriptionStatus::ACTIVE->value)
         );
 
-        return $this->mapRowsWithItems($this->db->executeS($sql));
+        return $this->mapRowsWithItems($this->requiredRows($sql));
     }
 
     public function stop(int $subscriptionId): void
@@ -314,20 +316,14 @@ final class RecurringSubscriptionRepository
             pSQL(RecurringSubscriptionStatus::PENDING_INITIAL_PAYMENT->value)
         );
 
-        return $this->mapRowsWithItems($this->db->executeS($sql));
+        return $this->mapRowsWithItems($this->requiredRows($sql));
     }
 
     /**
-     * @param mixed $rows
-     *
      * @return RecurringSubscription[]
      */
-    private function mapRowsWithItems(mixed $rows): array
+    private function mapRowsWithItems(array $rows): array
     {
-        if (!is_array($rows)) {
-            return [];
-        }
-
         $subscriptions = [];
         /** @var list<array<string, mixed>> $rows */
         foreach ($rows as $row) {
@@ -358,14 +354,8 @@ final class RecurringSubscriptionRepository
             _DB_PREFIX_,
             $subscriptionId
         );
-        $rows = $this->db->executeS($sql);
-        if (!is_array($rows)) {
-            return [];
-        }
-
         $items = [];
-        /** @var list<array<string, mixed>> $rows */
-        foreach ($rows as $row) {
+        foreach ($this->requiredRows($sql) as $row) {
             $items[] = new RecurringSubscriptionItem(
                 (int) $row['id_product'],
                 (int) $row['id_product_attribute'],
@@ -374,6 +364,20 @@ final class RecurringSubscriptionRepository
         }
 
         return $items;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function requiredRows(string $sql): array
+    {
+        $rows = $this->db->executeS($sql);
+        if (!is_array($rows)) {
+            throw new RuntimeException('Unable to read Wipop recurring subscriptions.');
+        }
+
+        /* @var list<array<string, mixed>> $rows */
+        return $rows;
     }
 
     /**

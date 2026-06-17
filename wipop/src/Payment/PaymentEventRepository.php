@@ -118,7 +118,12 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
             implode(' AND ', $conditions)
         );
 
-        return PaymentAmount::toCents((float) $this->db->getValue($sql));
+        $amount = $this->db->getValue($sql);
+        if ($amount === false || $amount === null) {
+            throw new RuntimeException('Unable to read Wipop completed refund total.');
+        }
+
+        return PaymentAmount::toCents((float) $amount);
     }
 
     public function hasSuccessfulPreauthorizationEvent(int $attemptId, string $eventType): bool
