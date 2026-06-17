@@ -77,7 +77,12 @@ class WipopCardsModuleFrontController extends ModuleFrontController
             return;
         }
 
-        $cardId = (int) Tools::getValue('id_wipop_stored_card');
+        $cardId = Tools::getValue('id_wipop_stored_card');
+        if (!is_numeric($cardId)) {
+            return;
+        }
+
+        $cardId = (int) $cardId;
         if ($cardId <= 0) {
             return;
         }

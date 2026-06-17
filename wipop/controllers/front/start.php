@@ -58,7 +58,8 @@ class WipopStartModuleFrontController extends ModuleFrontController
         parent::initContent();
 
         $logger = new Logger();
-        $paymentMethod = strtoupper(trim((string) Tools::getValue('method')));
+        $method = Tools::getValue('method', '');
+        $paymentMethod = is_string($method) ? strtoupper(trim($method)) : '';
 
         if (!$this->isTokenValid()) {
             $logger->warning('Invalid token received on Wipop start controller.', [
@@ -153,7 +154,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
                 $settings->liveMode,
                 $settings->terminalId,
                 $this->selectedStoredCardId(),
-                (bool) Tools::getValue('wipop_save_card'),
+                Tools::getValue('wipop_save_card') === '1',
                 $recurringPolicy->requiresReusableCard($recurringCart)
             );
             $paymentAttemptRepository = PaymentAttemptRepository::createDefault();
@@ -244,7 +245,12 @@ class WipopStartModuleFrontController extends ModuleFrontController
 
     private function selectedStoredCardId(): ?int
     {
-        $selectedCardId = (int) Tools::getValue('wipop_saved_card_id');
+        $selectedCardId = Tools::getValue('wipop_saved_card_id');
+        if (!is_numeric($selectedCardId)) {
+            return null;
+        }
+
+        $selectedCardId = (int) $selectedCardId;
 
         return $selectedCardId > 0 ? $selectedCardId : null;
     }
