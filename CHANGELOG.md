@@ -1,3 +1,25 @@
+## [1.13.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.12.0...v1.13.0) (2026-06-17)
+
+### Features
+
+* **admin:** expose recurring subscription controls ([3334120](https://github.com/wipop-bbva/wipop-prestashop/commit/3334120a903f29ff798f4ac58d901b9787d58d6c))
+* **checkout:** support recurring card setup ([3ca31b0](https://github.com/wipop-bbva/wipop-prestashop/commit/3ca31b00d196d5df0c6644692fc175155c7c92ae))
+* **recurring:** add product recurring settings ([3c6aecc](https://github.com/wipop-bbva/wipop-prestashop/commit/3c6aeccf604538ee7e0fe6079492ef707bcf372f))
+* **recurring:** add traffic-triggered renewal runner ([189752b](https://github.com/wipop-bbva/wipop-prestashop/commit/189752babf8ddd500d969f6da8d5adabbd4fc587))
+* **recurring:** process due renewal charges ([377c19a](https://github.com/wipop-bbva/wipop-prestashop/commit/377c19aad28bfc28dd102b4b6343c8e5bc126ecc))
+* **recurring:** stop closed subscriptions and record lifecycle notes ([2c8b9aa](https://github.com/wipop-bbva/wipop-prestashop/commit/2c8b9aa269ad2b9086beddc3945a8b8c5836126c))
+* **recurring:** sync subscriptions from webhooks ([94eea4b](https://github.com/wipop-bbva/wipop-prestashop/commit/94eea4b0396899f8272464db5b64dc338c415b07))
+
+### Bug Fixes
+
+* **checkout:** parse PrestaShop request values explicitly ([8bc04b5](https://github.com/wipop-bbva/wipop-prestashop/commit/8bc04b5c24d7cb92ed59f238c5c2906290c11869))
+* **checkout:** translate unavailable payment errors ([9ac85e9](https://github.com/wipop-bbva/wipop-prestashop/commit/9ac85e9e8b5f82ae456951758814f6bba677e7b6))
+* **config:** allow settings without public secret key ([c56ddac](https://github.com/wipop-bbva/wipop-prestashop/commit/c56ddacd91a29ee1eac4f5e220de80caa178c910))
+* **payment:** align database scalar reads with PrestaShop contracts ([f41a9bd](https://github.com/wipop-bbva/wipop-prestashop/commit/f41a9bdf1dc3fde252fdce36f62825bc4b645c41))
+* **preauthorization:** normalize operation status handling ([c498392](https://github.com/wipop-bbva/wipop-prestashop/commit/c4983920ffecd90d473a98d3b1505674424172ab))
+* **recurring:** harden renewal charge submission recovery ([2afbd06](https://github.com/wipop-bbva/wipop-prestashop/commit/2afbd06fa3dab784a24eb456ec592a4ea36f4a5b))
+* **webhook:** hydrate nested customer identifiers ([110a1c1](https://github.com/wipop-bbva/wipop-prestashop/commit/110a1c1dc7270608d54adf5a92c927a6d91b549e))
+
 ## [1.12.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.11.1...v1.12.0) (2026-06-09)
 
 ### Features
