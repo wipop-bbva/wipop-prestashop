@@ -67,6 +67,63 @@ final class CardCofSelectionResolverTest extends TestCase
         self::assertSame(CardCofIntent::SAVE, $selection->intent);
     }
 
+    public function testItRequiresSavedCardForRecurringCardPayment(): void
+    {
+        $resolver = new CardCofSelectionResolver(new InMemoryStoredCards([]));
+
+        $selection = $resolver->resolve(
+            paymentMethod: ChargeMethod::CARD,
+            customerId: 10,
+            shopId: 1,
+            merchantId: 'merchant_123',
+            isLive: false,
+            terminalId: 1,
+            selectedCardId: null,
+            saveCard: false,
+            requiresReusableCard: true,
+        );
+
+        self::assertSame(CardCofIntent::SAVE, $selection->intent);
+    }
+
+    public function testItRejectsRecurringPaymentsForGuests(): void
+    {
+        $resolver = new CardCofSelectionResolver(new InMemoryStoredCards([]));
+
+        $this->expectException(CardCofException::class);
+
+        $resolver->resolve(
+            paymentMethod: ChargeMethod::CARD,
+            customerId: null,
+            shopId: 1,
+            merchantId: 'merchant_123',
+            isLive: false,
+            terminalId: 1,
+            selectedCardId: null,
+            saveCard: false,
+            requiresReusableCard: true,
+        );
+    }
+
+    public function testItRejectsRecurringPaymentsForNonCardMethods(): void
+    {
+        $resolver = new CardCofSelectionResolver(new InMemoryStoredCards([]));
+
+        $this->expectException(CardCofException::class);
+
+        $resolver->resolve(
+            paymentMethod: ChargeMethod::BIZUM,
+            customerId: 10,
+            shopId: 1,
+            merchantId: 'merchant_123',
+            isLive: false,
+            terminalId: 1,
+            selectedCardId: null,
+            saveCard: false,
+            requiresReusableCard: true,
+        );
+    }
+
     public function testItResolvesSelectedStoredCard(): void
     {
         $card = self::storedCard(7);

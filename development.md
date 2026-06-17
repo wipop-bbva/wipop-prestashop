@@ -82,6 +82,21 @@ cd wipop
 _PS_ROOT_DIR_="$PWD/../prestashop-core" php ../tools/vendor/bin/phpstan --configuration=tests/phpstan/phpstan.neon analyse .
 ```
 
+### Tests unitarios
+
+```bash
+cd wipop
+composer test:unit
+```
+
+### Validación completa
+
+```bash
+cd wipop
+composer lint
+composer test:unit
+```
+
 ### Header Stamp (cabeceras de licencia)
 
 ```bash
@@ -96,6 +111,22 @@ cd wipop
 composer autoindex
 ```
 
+### Probar el procesador de recurrencias
+
+Desde la raíz de una instalación PrestaShop:
+
+```bash
+php bin/console wipop:recurring:process --limit=1
+```
+
+En el entorno Docker local:
+
+```bash
+docker compose exec prestashop bash -lc 'cd /var/www/html && php bin/console wipop:recurring:process --limit=1'
+```
+
+Una salida con `Processed 0 Wipop recurring payment(s).` es correcta si no hay
+renovaciones pendientes.
 
 ## 7) Soporte de Prestashop en VScode y PHPstan.
 
@@ -135,4 +166,9 @@ Locales que mantenemos versionados en el repo:
 
 ## 9) Empaquetado
 
-Para distribuir el módulo creamos un zip con la carpeta `wipop/`. Excluye `wipop/vendor/` del zip final (o ejecutando `composer install --no-dev` antes de empaquetar).
+Para distribuir el módulo creamos un zip con la carpeta `wipop/`.
+
+El release de GitHub ejecuta `composer install --no-dev --optimize-autoloader`
+dentro de `wipop/` y después construye `wipop.zip` desde una lista explícita de
+ficheros runtime. El paquete incluye `vendor/` con dependencias de producción,
+pero excluye tests, caches, tooling local y configuración de QA.

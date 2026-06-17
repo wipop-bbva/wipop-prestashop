@@ -161,6 +161,51 @@
         {/if}
       {/if}
 
+      {if isset($wipopPayment.recurring) && $wipopPayment.recurring.has_recurring}
+        <hr>
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr>
+              <th scope="row">{l s='Recurring payment' d='Modules.Wipop.Admin'}</th>
+              <td>
+                <span class="badge badge-{$wipopPayment.recurring.status_badge_class|escape:'html':'UTF-8'}">
+                  {$wipopPayment.recurring.status_label|escape:'html':'UTF-8'}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">{l s='Period' d='Modules.Wipop.Admin'}</th>
+              <td>{$wipopPayment.recurring.period|escape:'html':'UTF-8'}</td>
+            </tr>
+            <tr>
+              <th scope="row">{l s='Recurring amount' d='Modules.Wipop.Admin'}</th>
+              <td>{$wipopPayment.recurring.amount|escape:'html':'UTF-8'}</td>
+            </tr>
+            <tr>
+              <th scope="row">{l s='Next charge' d='Modules.Wipop.Admin'}</th>
+              <td>{$wipopPayment.recurring.next_attempt_at|escape:'html':'UTF-8'}</td>
+            </tr>
+            <tr>
+              <th scope="row">{l s='Next sequence' d='Modules.Wipop.Admin'}</th>
+              <td>{$wipopPayment.recurring.next_sequence|escape:'html':'UTF-8'}</td>
+            </tr>
+            <tr>
+              <th scope="row">{l s='Last recurring transaction' d='Modules.Wipop.Admin'}</th>
+              <td>{$wipopPayment.recurring.last_transaction_id|escape:'html':'UTF-8'}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        {if $wipopPayment.recurring.can_stop}
+          <form method="post" action="{$wipopPayment.recurring.stop_url|escape:'html':'UTF-8'}" class="mt-2">
+            <input type="hidden" name="_csrf_token" value="{$wipopPayment.recurring.csrf_token|escape:'html':'UTF-8'}">
+            <button type="submit" class="btn btn-outline-danger btn-sm btn-block">
+              {l s='Stop recurring payments' d='Modules.Wipop.Admin'}
+            </button>
+          </form>
+        {/if}
+      {/if}
+
       <p class="text-muted small mt-2 mb-0">
         {l s='Attempt' d='Modules.Wipop.Admin'} #{$wipopPayment.attempt_id|escape:'html':'UTF-8'}
         / {l s='Cart' d='Modules.Wipop.Admin'} #{$wipopPayment.cart_id|escape:'html':'UTF-8'}

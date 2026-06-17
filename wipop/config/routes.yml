@@ -43,3 +43,13 @@ wipop_order_preauthorization_reverse:
     _legacy_controller: AdminOrders
   requirements:
     orderId: \d+
+
+wipop_order_recurring_stop:
+  path: /wipop/orders/{orderId}/recurring/{subscriptionId}/stop
+  methods: [POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRecurringController::stopAction
+    _legacy_controller: AdminOrders
+  requirements:
+    orderId: \d+
+    subscriptionId: \d+

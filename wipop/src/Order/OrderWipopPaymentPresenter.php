@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Order;
 
+use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
 use PrestaShop\Module\Wipop\Payment\PaymentEventData;
-use Wipop\Domain\ChargeMethod;
-use Wipop\Domain\TransactionStatus;
+use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOperationStatus;
 
 final class OrderWipopPaymentPresenter
 {
@@ -80,7 +80,7 @@ final class OrderWipopPaymentPresenter
     private function canManagePreauthorization(PaymentAttemptSummary $summary, array $events): bool
     {
         return $summary->status === PaymentAttemptStatus::AUTHORIZED
-            && strtoupper(trim((string) $summary->paymentMethod)) === ChargeMethod::CARD
+            && Settings::isCardMethod((string) $summary->paymentMethod)
             && $this->nullableString($summary->wipopTransactionId) !== null
             && !$this->hasSuccessfulPreauthorizationEvent($events, PaymentEventData::TYPE_CAPTURE)
             && !$this->hasSuccessfulPreauthorizationEvent($events, PaymentEventData::TYPE_REVERSAL);
@@ -94,7 +94,7 @@ final class OrderWipopPaymentPresenter
         foreach ($events as $event) {
             if (
                 $event['transaction_type'] === $eventType
-                && strtoupper(trim((string) $event['status'])) === TransactionStatus::COMPLETED->value
+                && PreauthorizationOperationStatus::isSuccessful($eventType, (string) $event['status'])
             ) {
                 return true;
             }

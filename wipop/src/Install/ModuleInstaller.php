@@ -39,7 +39,11 @@ final class ModuleInstaller
     {
         return $this->installPaymentAttemptTable()
             && $this->installPaymentEventTable()
-            && $this->installStoredCardTable();
+            && $this->installStoredCardTable()
+            && $this->installRecurringProductTable()
+            && $this->installRecurringSubscriptionTable()
+            && $this->installRecurringSubscriptionItemTable()
+            && $this->installRecurringChargeTable();
     }
 
     private function installPaymentAttemptTable(): bool
@@ -159,6 +163,113 @@ final class ModuleInstaller
                 KEY `wipop_payment_event_order_idx` (`id_order`),
                 KEY `wipop_payment_event_order_slip_idx` (`id_order_slip`),
                 UNIQUE KEY `wipop_payment_event_remote_uidx` (`remote_transaction_id`, `transaction_type`)
+            ) ENGINE=%s DEFAULT CHARSET=utf8;',
+            _DB_PREFIX_,
+            _MYSQL_ENGINE_
+        );
+
+        return Db::getInstance()->execute($sql);
+    }
+
+    private function installRecurringProductTable(): bool
+    {
+        $sql = sprintf(
+            'CREATE TABLE IF NOT EXISTS `%swipop_recurring_product` (
+                `id_wipop_recurring_product` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `id_product` INT UNSIGNED NOT NULL,
+                `id_shop` INT UNSIGNED NOT NULL,
+                `period` VARCHAR(16) NOT NULL,
+                `date_add` DATETIME NOT NULL,
+                `date_upd` DATETIME NOT NULL,
+                PRIMARY KEY (`id_wipop_recurring_product`),
+                UNIQUE KEY `wipop_recurring_product_uidx` (`id_product`, `id_shop`)
+            ) ENGINE=%s DEFAULT CHARSET=utf8;',
+            _DB_PREFIX_,
+            _MYSQL_ENGINE_
+        );
+
+        return Db::getInstance()->execute($sql);
+    }
+
+    private function installRecurringSubscriptionTable(): bool
+    {
+        $sql = sprintf(
+            'CREATE TABLE IF NOT EXISTS `%swipop_recurring_subscription` (
+                `id_wipop_recurring_subscription` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `id_initial_payment_attempt` INT UNSIGNED NOT NULL,
+                `id_parent_order` INT UNSIGNED DEFAULT NULL,
+                `id_customer` INT UNSIGNED NOT NULL,
+                `id_shop` INT UNSIGNED NOT NULL,
+                `merchant_id` VARCHAR(64) NOT NULL,
+                `is_live` TINYINT(1) NOT NULL DEFAULT 0,
+                `terminal_id` INT UNSIGNED NOT NULL,
+                `id_currency` INT UNSIGNED NOT NULL,
+                `id_lang` INT UNSIGNED NOT NULL,
+                `id_address_invoice` INT UNSIGNED NOT NULL DEFAULT 0,
+                `id_address_delivery` INT UNSIGNED NOT NULL DEFAULT 0,
+                `id_wipop_stored_card` INT UNSIGNED DEFAULT NULL,
+                `period` VARCHAR(16) NOT NULL,
+                `status` VARCHAR(24) NOT NULL,
+                `amount` DECIMAL(20, 6) NOT NULL,
+                `currency_iso` CHAR(3) NOT NULL,
+                `next_sequence` INT UNSIGNED NOT NULL DEFAULT 2,
+                `next_attempt_at` DATETIME DEFAULT NULL,
+                `last_transaction_id` VARCHAR(64) DEFAULT NULL,
+                `date_add` DATETIME NOT NULL,
+                `date_upd` DATETIME NOT NULL,
+                PRIMARY KEY (`id_wipop_recurring_subscription`),
+                KEY `wipop_recurring_subscription_due_idx` (`status`, `next_attempt_at`),
+                KEY `wipop_recurring_subscription_attempt_idx` (`id_initial_payment_attempt`),
+                KEY `wipop_recurring_subscription_parent_order_idx` (`id_parent_order`)
+            ) ENGINE=%s DEFAULT CHARSET=utf8;',
+            _DB_PREFIX_,
+            _MYSQL_ENGINE_
+        );
+
+        return Db::getInstance()->execute($sql);
+    }
+
+    private function installRecurringSubscriptionItemTable(): bool
+    {
+        $sql = sprintf(
+            'CREATE TABLE IF NOT EXISTS `%swipop_recurring_subscription_item` (
+                `id_wipop_recurring_subscription_item` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `id_wipop_recurring_subscription` INT UNSIGNED NOT NULL,
+                `id_product` INT UNSIGNED NOT NULL,
+                `id_product_attribute` INT UNSIGNED NOT NULL DEFAULT 0,
+                `quantity` INT UNSIGNED NOT NULL,
+                PRIMARY KEY (`id_wipop_recurring_subscription_item`),
+                KEY `wipop_recurring_subscription_item_subscription_idx` (`id_wipop_recurring_subscription`)
+            ) ENGINE=%s DEFAULT CHARSET=utf8;',
+            _DB_PREFIX_,
+            _MYSQL_ENGINE_
+        );
+
+        return Db::getInstance()->execute($sql);
+    }
+
+    private function installRecurringChargeTable(): bool
+    {
+        $sql = sprintf(
+            'CREATE TABLE IF NOT EXISTS `%swipop_recurring_charge` (
+                `id_wipop_recurring_charge` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `id_wipop_recurring_subscription` INT UNSIGNED NOT NULL,
+                `sequence` INT UNSIGNED NOT NULL,
+                `id_wipop_payment_attempt` INT UNSIGNED DEFAULT NULL,
+                `id_cart` INT UNSIGNED DEFAULT NULL,
+                `id_order` INT UNSIGNED DEFAULT NULL,
+                `wipop_order_id` VARCHAR(12) NOT NULL,
+                `wipop_transaction_id` VARCHAR(64) DEFAULT NULL,
+                `status` VARCHAR(24) NOT NULL,
+                `remote_error_code` VARCHAR(64) DEFAULT NULL,
+                `remote_error_message` TEXT DEFAULT NULL,
+                `date_add` DATETIME NOT NULL,
+                `date_upd` DATETIME NOT NULL,
+                PRIMARY KEY (`id_wipop_recurring_charge`),
+                UNIQUE KEY `wipop_recurring_charge_sequence_uidx` (`id_wipop_recurring_subscription`, `sequence`),
+                UNIQUE KEY `wipop_recurring_charge_order_uidx` (`wipop_order_id`),
+                KEY `wipop_recurring_charge_attempt_idx` (`id_wipop_payment_attempt`),
+                KEY `wipop_recurring_charge_order_idx` (`id_order`)
             ) ENGINE=%s DEFAULT CHARSET=utf8;',
             _DB_PREFIX_,
             _MYSQL_ENGINE_

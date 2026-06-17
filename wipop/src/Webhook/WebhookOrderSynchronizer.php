@@ -8,6 +8,7 @@ use Cart;
 use Order;
 use PaymentModule;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
+use PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter;
 use PrestaShop\Module\Wipop\Payment\PaymentAttempt;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\TransactionType;
@@ -21,6 +22,7 @@ final class WebhookOrderSynchronizer
         private PaymentAttemptRepository $paymentAttemptRepository,
         private PaymentModule $module,
         private WebhookPaymentValidator $paymentValidator,
+        private OrderPrivateNoteWriter $orderNotes,
     ) {
     }
 
@@ -43,6 +45,7 @@ final class WebhookOrderSynchronizer
         $existingOrderId = $this->existingOrderId($attempt->cartId);
         if ($existingOrderId !== null) {
             $this->paymentAttemptRepository->assignOrderId($attempt->id, $existingOrderId);
+            $this->orderNotes->addPaymentConfirmed($existingOrderId, $this->transactionId($transaction));
 
             return;
         }
@@ -78,10 +81,7 @@ final class WebhookOrderSynchronizer
      */
     private function createOrder(PaymentAttempt $attempt, Transaction $transaction, Cart $cart, int $orderStateId): void
     {
-        $transactionId = trim((string) $transaction->id);
-        if ($transactionId === '') {
-            throw new WebhookException('Missing transaction id for the Wipop payment.', 400);
-        }
+        $transactionId = $this->transactionId($transaction);
 
         $secureKey = trim((string) $cart->secure_key);
         if ($secureKey === '') {
@@ -118,5 +118,19 @@ final class WebhookOrderSynchronizer
         }
 
         $this->paymentAttemptRepository->assignOrderId($attempt->id, $orderId);
+        $this->orderNotes->addPaymentConfirmed($orderId, $transactionId);
+    }
+
+    /**
+     * @throws WebhookException
+     */
+    private function transactionId(Transaction $transaction): string
+    {
+        $transactionId = trim((string) $transaction->id);
+        if ($transactionId === '') {
+            throw new WebhookException('Missing transaction id for the Wipop payment.', 400);
+        }
+
+        return $transactionId;
     }
 }

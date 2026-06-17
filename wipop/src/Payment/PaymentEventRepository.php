@@ -6,8 +6,8 @@ namespace PrestaShop\Module\Wipop\Payment;
 
 use DateTimeImmutable;
 use Db;
+use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOperationStatus;
 use RuntimeException;
-use Wipop\Domain\TransactionStatus;
 
 final class PaymentEventRepository implements RefundEventStoreInterface, PreauthorizationEventStoreInterface
 {
@@ -20,9 +20,12 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
         return new self(Db::getInstance());
     }
 
-    public function save(PaymentAttempt $attempt, PaymentEventData $event): void
+    public function save(PaymentAttempt $attempt, PaymentEventData $event): bool
     {
+        $exists = $this->eventExists($event->remoteTransactionId, $event->transactionType);
         $this->saveEvent($attempt, $event);
+
+        return !$exists;
     }
 
     public function saveManualRefund(PaymentAttempt $attempt, PaymentEventData $event, int $employeeId): void
@@ -74,6 +77,21 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
         }
     }
 
+    private function eventExists(string $remoteTransactionId, string $transactionType): bool
+    {
+        $sql = sprintf(
+            'SELECT 1
+            FROM `%swipop_payment_event`
+            WHERE `remote_transaction_id` = %s
+                AND `transaction_type` = %s',
+            _DB_PREFIX_,
+            $this->sqlString($remoteTransactionId),
+            $this->sqlString($transactionType)
+        );
+
+        return (bool) $this->db->getValue($sql);
+    }
+
     public function completedRefundedCentsForAttempt(
         int $attemptId,
         string $currencyIso,
@@ -100,21 +118,34 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
             implode(' AND ', $conditions)
         );
 
-        return PaymentAmount::toCents((float) $this->db->getValue($sql));
+        $amount = $this->db->getValue($sql);
+        if ($amount === false || $amount === null) {
+            throw new RuntimeException('Unable to read Wipop completed refund total.');
+        }
+
+        return PaymentAmount::toCents((float) $amount);
     }
 
     public function hasSuccessfulPreauthorizationEvent(int $attemptId, string $eventType): bool
     {
+        $successfulStatuses = PreauthorizationOperationStatus::successfulStatuses($eventType);
+        if ($successfulStatuses === []) {
+            return false;
+        }
+
         $sql = sprintf(
             'SELECT 1
             FROM `%swipop_payment_event`
             WHERE `id_wipop_payment_attempt` = %d
                 AND `transaction_type` = %s
-                AND `status` = %s',
+                AND `status` IN (%s)',
             _DB_PREFIX_,
             $attemptId,
             $this->sqlString($eventType),
-            $this->sqlString(TransactionStatus::COMPLETED->value)
+            implode(', ', array_map(
+                fn (string $status): string => $this->sqlString($status),
+                $successfulStatuses
+            ))
         );
 
         return (bool) $this->db->getValue($sql);
@@ -254,10 +285,7 @@ final class PaymentEventRepository implements RefundEventStoreInterface, Preauth
     private function upsertEventSql(array $data): string
     {
         $columns = array_keys($data);
-        $updates = array_filter(
-            $columns,
-            static fn (string $column): bool => $column !== 'date_add'
-        );
+        $updates = array_values(array_diff($columns, ['date_add']));
 
         return sprintf(
             'INSERT INTO `%swipop_payment_event` (%s)

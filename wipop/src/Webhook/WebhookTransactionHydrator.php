@@ -26,11 +26,28 @@ final class WebhookTransactionHydrator
     public function hydrate(array $payload): Transaction
     {
         try {
-            $transaction = $this->hydrator->hydrate(Transaction::class, $payload);
+            return $this->hydrator->hydrate(Transaction::class, $this->withCustomerId($payload));
         } catch (Throwable $throwable) {
             throw new WebhookException('Payload does not match the expected transaction model.', 400, $throwable);
         }
+    }
 
-        return $transaction;
+    /**
+     * @param array<string, mixed> $payload
+     *
+     * @return array<string, mixed>
+     */
+    private function withCustomerId(array $payload): array
+    {
+        if (isset($payload['customer_id'])) {
+            return $payload;
+        }
+
+        $customer = $payload['customer'] ?? null;
+        if (is_array($customer) && isset($customer['id']) && is_string($customer['id'])) {
+            $payload['customer_id'] = $customer['id'];
+        }
+
+        return $payload;
     }
 }

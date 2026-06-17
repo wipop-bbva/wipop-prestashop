@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PrestaShop\Module\Wipop\Payment;
 
 use Db;
+use RuntimeException;
 
 final class PaymentAttemptLock
 {
@@ -27,6 +28,7 @@ final class PaymentAttemptLock
      * @return T
      *
      * @throws PaymentAttemptLockException
+     * @throws RuntimeException
      */
     public function run(int $attemptId, callable $callback): mixed
     {
@@ -50,7 +52,16 @@ final class PaymentAttemptLock
             self::LOCK_TIMEOUT_SECONDS
         );
 
-        return (int) $this->db->getValue($sql) === 1;
+        $result = $this->db->getValue($sql);
+        if ($result === '1') {
+            return true;
+        }
+
+        if ($result === '0') {
+            return false;
+        }
+
+        throw new RuntimeException('Unable to acquire Wipop payment attempt lock.');
     }
 
     private function release(string $lockName): void

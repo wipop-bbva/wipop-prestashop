@@ -41,7 +41,7 @@ class WipopReturnModuleFrontController extends ModuleFrontController
     {
         parent::initContent();
 
-        $logger = $this->logger();
+        $logger = new Logger();
         $cartId = $this->cartId();
 
         if ($cartId === null) {
@@ -55,7 +55,7 @@ class WipopReturnModuleFrontController extends ModuleFrontController
             'cart_id' => $cartId,
         ]);
 
-        $attempt = $this->paymentAttemptRepository()->findLatestByCartId($cartId);
+        $attempt = PaymentAttemptRepository::createDefault()->findLatestByCartId($cartId);
         if ($attempt !== null && $attempt->orderId !== null) {
             Tools::redirect($this->orderConfirmationUrl($attempt));
 
@@ -94,16 +94,6 @@ class WipopReturnModuleFrontController extends ModuleFrontController
         ]);
 
         $this->setTemplate('module:wipop/views/templates/front/unavailable.tpl');
-    }
-
-    private function logger(): Logger
-    {
-        return new Logger();
-    }
-
-    private function paymentAttemptRepository(): PaymentAttemptRepository
-    {
-        return PaymentAttemptRepository::createDefault();
     }
 
     private function cartId(): ?int

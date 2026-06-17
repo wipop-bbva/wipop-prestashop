@@ -60,12 +60,12 @@ final class WebhookPreauthorizationOperationSynchronizerTest extends TestCase
 
         $status = $synchronizer->sync(
             $this->attempt(),
-            $this->transaction('tx_reversal', 'reversal')
+            $this->transaction('tx_reversal', 'reversal', TransactionStatus::CANCELLED)
         );
 
         self::assertSame(PaymentAttemptStatus::CANCELLED, $status);
         self::assertSame(PaymentEventData::TYPE_REVERSAL, $savedEvent?->transactionType);
-        self::assertSame(TransactionStatus::COMPLETED->value, $savedEvent?->status);
+        self::assertSame(TransactionStatus::CANCELLED->value, $savedEvent?->status);
         self::assertSame('tx_reversal', $savedEvent?->remoteTransactionId);
         self::assertSame('tx_auth', $savedEvent?->parentTransactionId);
         self::assertSame(56, $cancelledOrderId);
@@ -119,6 +119,26 @@ final class WebhookPreauthorizationOperationSynchronizerTest extends TestCase
 
         self::assertSame(PaymentAttemptStatus::PAID, $status);
         self::assertSame('tx_capture', $capturedOrder['transaction_id'] ?? null);
+    }
+
+    public function testItCanProcessGenericCancelledAuthorizationWebhook(): void
+    {
+        $savedEvent = null;
+        $cancelledOrderId = null;
+        $synchronizer = $this->synchronizer(
+            $this->eventStore($savedEvent),
+            $this->orderUpdater(cancelledOrderId: $cancelledOrderId)
+        );
+
+        $status = $synchronizer->sync(
+            $this->attempt(),
+            $this->transaction('tx_auth', 'IN', TransactionStatus::CANCELLED)
+        );
+
+        self::assertSame(PaymentAttemptStatus::CANCELLED, $status);
+        self::assertSame(PaymentEventData::TYPE_REVERSAL, $savedEvent?->transactionType);
+        self::assertSame('tx_auth', $savedEvent?->remoteTransactionId);
+        self::assertSame(56, $cancelledOrderId);
     }
 
     public function testItRecordsFailedCaptureWebhookWithoutFinalizingAuthorization(): void
@@ -275,7 +295,11 @@ final class WebhookPreauthorizationOperationSynchronizerTest extends TestCase
             }
         );
         $updater->method('markCancelled')->willReturnCallback(
-            static function (int $orderId) use (&$cancelledOrderId): void {
+            static function (
+                int $orderId,
+                ?string $transactionId = null,
+                ?int $employeeId = null,
+            ) use (&$cancelledOrderId): void {
                 $cancelledOrderId = $orderId;
             }
         );

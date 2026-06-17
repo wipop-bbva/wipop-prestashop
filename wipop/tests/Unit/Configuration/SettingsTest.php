@@ -69,16 +69,26 @@ final class SettingsTest extends TestCase
         self::assertTrue($settings->shouldCaptureImmediately(ChargeMethod::BIZUM));
     }
 
+    public function testPublicSecretKeyDoesNotBlockConfiguration(): void
+    {
+        $settings = $this->settings(publicSecretKey: '');
+
+        self::assertTrue($settings->isConfigured());
+    }
+
     /**
      * @param string[] $enabledGateways
      */
-    private function settings(array $enabledGateways = [], CaptureMode $captureMode = CaptureMode::IMMEDIATE): Settings
-    {
+    private function settings(
+        array $enabledGateways = [],
+        CaptureMode $captureMode = CaptureMode::IMMEDIATE,
+        string $publicSecretKey = 'public',
+    ): Settings {
         return new Settings(
             liveMode: false,
             merchantId: 'merchant',
             secretKey: 'secret',
-            publicSecretKey: 'public',
+            publicSecretKey: $publicSecretKey,
             terminalId: Settings::DEFAULT_TERMINAL_ID,
             enabledGateways: $enabledGateways,
             captureMode: $captureMode,

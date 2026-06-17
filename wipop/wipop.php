@@ -36,18 +36,31 @@ use PrestaShop\Module\Wipop\Api\SdkCaller;
 use PrestaShop\Module\Wipop\Card\StoredCardRepository;
 use PrestaShop\Module\Wipop\Checkout\PaymentOptionFactory;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
+use PrestaShop\Module\Wipop\Form\Modifier\ProductRecurringFormModifier;
 use PrestaShop\Module\Wipop\Install\ModuleInstaller;
 use PrestaShop\Module\Wipop\Install\ModuleUninstaller;
 use PrestaShop\Module\Wipop\Log\Logger;
+use PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter;
 use PrestaShop\Module\Wipop\Order\OrderWipopPaymentPresenter;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentEventRepository;
+use PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository;
+use PrestaShop\Module\Wipop\Recurring\RecurringAutoRunner;
+use PrestaShop\Module\Wipop\Recurring\RecurringCartInspector;
+use PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository;
+use PrestaShop\Module\Wipop\Recurring\RecurringCheckoutPolicy;
+use PrestaShop\Module\Wipop\Recurring\RecurringOrderPresenter;
+use PrestaShop\Module\Wipop\Recurring\RecurringPeriod;
+use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository;
+use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper;
+use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopPolicy;
 use PrestaShop\Module\Wipop\Refund\ManualRefundEligibilityChecker;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use PrestaShop\PrestaShop\Core\Action\ActionsBarButton;
 use PrestaShop\PrestaShop\Core\Action\ActionsBarButtonsCollection;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class Wipop extends PaymentModule
@@ -88,7 +101,7 @@ class Wipop extends PaymentModule
 
     public function install()
     {
-        if (extension_loaded('curl') == false) {
+        if (!extension_loaded('curl')) {
             $this->_errors[] = $this->trans(
                 'You have to enable the cURL extension on your server to install this module',
                 [],
@@ -105,7 +118,12 @@ class Wipop extends PaymentModule
             && $this->registerHook('displayPaymentReturn')
             && $this->registerHook('displayCustomerAccount')
             && $this->registerHook('displayAdminOrderSide')
-            && $this->registerHook('actionGetAdminOrderButtons');
+            && $this->registerHook('actionGetAdminOrderButtons')
+            && $this->registerHook('actionProductFormBuilderModifier')
+            && $this->registerHook('actionAfterCreateProductFormHandler')
+            && $this->registerHook('actionAfterUpdateProductFormHandler')
+            && $this->registerHook('actionDispatcher')
+            && $this->registerHook('actionOrderStatusPostUpdate');
     }
 
     public function uninstall()
@@ -121,6 +139,23 @@ class Wipop extends PaymentModule
         );
 
         return '';
+    }
+
+    public function hookActionDispatcher(array $params): void
+    {
+        if (!$this->isRecurringAutoRunnerTriggerRequest($params)) {
+            return;
+        }
+
+        try {
+            /** @var RecurringAutoRunner $autoRunner */
+            $autoRunner = $this->get(RecurringAutoRunner::class);
+            $autoRunner->maybeRun();
+        } catch (Throwable $throwable) {
+            (new Logger())->error('Unable to start Wipop recurring auto-runner from dispatcher hook.', [
+                'error_class' => $throwable::class,
+            ]);
+        }
     }
 
     public function hookPaymentOptions(array $params): array
@@ -196,11 +231,12 @@ class Wipop extends PaymentModule
             return '';
         }
 
-        $payment = $this->orderWipopPaymentPresenter()->present(
+        $payment = (new OrderWipopPaymentPresenter())->present(
             $summary,
-            $this->paymentEventRepository()->findPreauthorizationEventsByAttemptId($summary->id)
+            PaymentEventRepository::createDefault()->findPreauthorizationEventsByAttemptId($summary->id)
         );
         $payment = $this->withPreauthorizationActions($orderId, $payment);
+        $payment = $this->withRecurringActions($orderId, $payment);
 
         $this->context->smarty->assign([
             'wipopPayment' => $payment,
@@ -218,11 +254,16 @@ class Wipop extends PaymentModule
         }
 
         $summary = $this->paymentAttemptRepository()->findSummaryByOrderId($orderId);
-        if ($summary === null || !$this->manualRefundEligibility()->canRefund($summary)) {
+        if ($summary === null || !(new ManualRefundEligibilityChecker())->canRefund($summary)) {
             return;
         }
 
-        $url = SymfonyContainer::getInstance()->get('router')->generate('wipop_order_refund', [
+        $container = SymfonyContainer::getInstance();
+        if ($container === null) {
+            return;
+        }
+
+        $url = $container->get('router')->generate('wipop_order_refund', [
             'orderId' => $orderId,
         ]);
 
@@ -239,6 +280,65 @@ class Wipop extends PaymentModule
         ));
     }
 
+    public function hookActionProductFormBuilderModifier(array $params): void
+    {
+        $formBuilder = $params['form_builder'] ?? null;
+        if (!$formBuilder instanceof FormBuilderInterface) {
+            return;
+        }
+
+        /** @var ProductRecurringFormModifier $modifier */
+        $modifier = $this->get(ProductRecurringFormModifier::class);
+        $modifier->modify($this->productIdFromHookParams($params), (int) $this->context->shop->id, $formBuilder);
+    }
+
+    public function hookActionAfterCreateProductFormHandler(array $params): void
+    {
+        $this->saveProductRecurringSettings($params);
+    }
+
+    public function hookActionAfterUpdateProductFormHandler(array $params): void
+    {
+        $this->saveProductRecurringSettings($params);
+    }
+
+    public function hookActionOrderStatusPostUpdate(array $params): void
+    {
+        $orderId = $this->orderIdFromHookParams($params);
+        $orderStateId = $this->orderStateIdFromHookParams($params);
+
+        if ($orderId === null || $orderStateId === null) {
+            return;
+        }
+
+        /** @var RecurringSubscriptionStopPolicy $stopPolicy */
+        $stopPolicy = $this->get(RecurringSubscriptionStopPolicy::class);
+        if (!$stopPolicy->shouldStopForParentOrderState($orderStateId)) {
+            return;
+        }
+
+        try {
+            /** @var RecurringSubscriptionStopper $stopper */
+            $stopper = $this->get(RecurringSubscriptionStopper::class);
+            $stopped = $stopper->stopActiveForParentOrder(
+                $orderId,
+                'Wipop recurring subscription stopped because parent order is closed.',
+                ['order_state_id' => $orderStateId]
+            );
+            if ($stopped > 0) {
+                /** @var OrderPrivateNoteWriter $orderNotes */
+                $orderNotes = $this->get(OrderPrivateNoteWriter::class);
+                $orderNotes->addRecurringCancelledByOrderStatus($orderId);
+            }
+        } catch (Throwable $throwable) {
+            (new Logger())->error('Unable to stop Wipop recurring subscription after order status update.', [
+                'order_id' => $orderId,
+                'order_state_id' => $orderStateId,
+                'error_class' => $throwable::class,
+            ]);
+        }
+    }
+
     private function orderIdFromHookParams(array $params): ?int
     {
         $orderId = $params['id_order'] ?? null;
@@ -251,9 +351,77 @@ class Wipop extends PaymentModule
         return $orderId > 0 ? $orderId : null;
     }
 
+    private function orderStateIdFromHookParams(array $params): ?int
+    {
+        $orderState = $params['newOrderStatus'] ?? null;
+        if (!$orderState instanceof OrderState) {
+            return null;
+        }
+
+        $orderStateId = (int) $orderState->id;
+
+        return $orderStateId > 0 ? $orderStateId : null;
+    }
+
+    private function isRecurringAutoRunnerTriggerRequest(array $params): bool
+    {
+        $controllerType = $params['controller_type'] ?? null;
+        if (!is_numeric($controllerType)) {
+            return false;
+        }
+
+        $isAjax = (bool) Tools::getValue('ajax') || (bool) Tools::getValue('ajaxMode');
+
+        return (int) $controllerType === Dispatcher::FC_FRONT
+            && empty($params['is_module'])
+            && strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'GET'
+            && !$isAjax;
+    }
+
     private function translatedAdminLabel(string $label): string
     {
         return $this->trans($label, [], TranslationDomains::ADMIN);
+    }
+
+    private function productIdFromHookParams(array $params): ?int
+    {
+        $productId = $params['id'] ?? $params['id_product'] ?? null;
+        if (!is_numeric($productId)) {
+            return null;
+        }
+
+        $productId = (int) $productId;
+
+        return $productId > 0 ? $productId : null;
+    }
+
+    private function saveProductRecurringSettings(array $params): void
+    {
+        $productId = $this->productIdFromHookParams($params);
+        if ($productId === null) {
+            return;
+        }
+
+        /** @var ProductRecurringSettingsRepository $repository */
+        $repository = $this->get(ProductRecurringSettingsRepository::class);
+        $shopId = (int) $this->context->shop->id;
+        $product = new Product($productId);
+        if (!Validate::isLoadedObject($product) || !(bool) $product->is_virtual) {
+            $repository->save($productId, $shopId, null);
+
+            return;
+        }
+
+        $period = null;
+        $formData = $params['form_data'] ?? [];
+        $recurringData = is_array($formData)
+            ? ($formData[ProductRecurringFormModifier::FIELD_NAME] ?? null)
+            : null;
+        if (is_array($recurringData) && !empty($recurringData['enabled'])) {
+            $period = RecurringPeriod::fromValue($recurringData['period'] ?? null);
+        }
+
+        $repository->save($productId, $shopId, $period);
     }
 
     private function formatPaymentAmount(float $amount, string $currencyIso): string
@@ -267,6 +435,8 @@ class Wipop extends PaymentModule
             $this->merchantOperationsService(),
             $this->settingsRepository(),
             StoredCardRepository::createDefault(),
+            new RecurringCartInspector(ProductRecurringSettingsRepository::createDefault()),
+            new RecurringCheckoutPolicy(),
             $this->getTranslator(),
         );
     }
@@ -281,21 +451,6 @@ class Wipop extends PaymentModule
         return PaymentAttemptRepository::createDefault();
     }
 
-    private function paymentEventRepository(): PaymentEventRepository
-    {
-        return PaymentEventRepository::createDefault();
-    }
-
-    private function orderWipopPaymentPresenter(): OrderWipopPaymentPresenter
-    {
-        return new OrderWipopPaymentPresenter();
-    }
-
-    private function manualRefundEligibility(): ManualRefundEligibilityChecker
-    {
-        return new ManualRefundEligibilityChecker();
-    }
-
     private function merchantOperationsService(): MerchantOperationsService
     {
         return new MerchantOperationsService(
@@ -306,9 +461,9 @@ class Wipop extends PaymentModule
     }
 
     /**
-     * @param array<string, bool|string|array<int, array<string, string|bool>>> $payment
+     * @param array<string, mixed> $payment
      *
-     * @return array<string, bool|string|array<int, array<string, string|bool>>>
+     * @return array<string, mixed>
      */
     private function withPreauthorizationActions(int $orderId, array $payment): array
     {
@@ -316,9 +471,16 @@ class Wipop extends PaymentModule
             return $payment;
         }
 
-        $router = SymfonyContainer::getInstance()->get('router');
+        $container = SymfonyContainer::getInstance();
+        if ($container === null) {
+            $payment['can_manage_preauthorization'] = false;
+
+            return $payment;
+        }
+
+        $router = $container->get('router');
         /** @var CsrfTokenManagerInterface $tokenManager */
-        $tokenManager = SymfonyContainer::getInstance()->get('security.csrf.token_manager');
+        $tokenManager = $container->get('security.csrf.token_manager');
 
         $payment['preauthorization_capture_url'] = $router->generate('wipop_order_preauthorization_capture', [
             'orderId' => $orderId,
@@ -329,6 +491,54 @@ class Wipop extends PaymentModule
         $payment['preauthorization_csrf_token'] = (string) $tokenManager->getToken(
             sprintf('wipop_order_preauthorization_%d', $orderId)
         );
+
+        return $payment;
+    }
+
+    /**
+     * @param array<string, mixed> $payment
+     *
+     * @return array<string, mixed>
+     */
+    private function withRecurringActions(int $orderId, array $payment): array
+    {
+        $recurring = (new RecurringOrderPresenter(
+            RecurringSubscriptionRepository::createDefault(),
+            RecurringChargeRepository::createDefault()
+        ))->presentForOrder($orderId);
+        if (!$recurring['has_recurring']) {
+            $payment['recurring'] = $recurring;
+
+            return $payment;
+        }
+
+        $recurring['period'] = $this->translatedAdminLabel((string) $recurring['period']);
+        $recurring['status_label'] = $this->translatedAdminLabel((string) $recurring['status_label']);
+
+        if ($recurring['can_stop']) {
+            $container = SymfonyContainer::getInstance();
+            if ($container === null) {
+                $recurring['can_stop'] = false;
+                $payment['recurring'] = $recurring;
+
+                return $payment;
+            }
+
+            $router = $container->get('router');
+            /** @var CsrfTokenManagerInterface $tokenManager */
+            $tokenManager = $container->get('security.csrf.token_manager');
+            $subscriptionId = (int) $recurring['subscription_id'];
+
+            $recurring['stop_url'] = $router->generate('wipop_order_recurring_stop', [
+                'orderId' => $orderId,
+                'subscriptionId' => $subscriptionId,
+            ]);
+            $recurring['csrf_token'] = (string) $tokenManager->getToken(
+                sprintf('wipop_order_recurring_%d', $subscriptionId)
+            );
+        }
+
+        $payment['recurring'] = $recurring;
 
         return $payment;
     }

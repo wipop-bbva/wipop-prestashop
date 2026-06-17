@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="admin" source-language="en-US" target-language="ca-ES" datatype="plaintext">
     <body>
-      <trans-unit id="e6ef20d1b254c6b9681ff8e117482f63">
+      <trans-unit id="b03984491713713e001d79265e113820">
         <source>Wipop</source>
         <target>Wipöp</target>
         <note>Line: </note>
@@ -37,9 +37,14 @@
         <target>ID del terminal</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="80964a30587af49027407cc4a6840bcf">
+      <trans-unit id="d06f12476a233750984ad8595f2f48bc">
         <source>Unable to save the Wipop settings.</source>
         <target>No s'ha pogut desar la configuració de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5f21616bae29fb31281a367bd890e1c4">
+        <source>Stored Wipop settings could not be read.</source>
+        <target>No s’ha pogut llegir la configuració desada de Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="82eb5eb8fb67c266c92d378d6ce09057">
@@ -64,17 +69,32 @@
       </trans-unit>
       <trans-unit id="8624da4c58498df8580d10ac3e69e1cf">
         <source>Wipop data verified. Available methods: %methods%.</source>
-        <target>Dades de Wipop verificades. Mètodes disponibles: %methods%.</target>
+        <target>Dades de Wipöp verificades. Mètodes disponibles: %methods%.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="5cde20958aac01f464fa2a2d1674ff1e">
         <source>Wipop data verified, but no supported methods were found.</source>
-        <target>Dades de Wipop verificades, però no s’han trobat mètodes compatibles.</target>
+        <target>Dades de Wipöp verificades, però no s’han trobat mètodes compatibles.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="d0d320ba833664aef939388a4f632609">
         <source>Could not verify Wipop data. Check the settings and try again.</source>
-        <target>No s’han pogut verificar les dades de Wipop. Revisa la configuració i torna-ho a provar.</target>
+        <target>No s’han pogut verificar les dades de Wipöp. Revisa la configuració i torna-ho a provar.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2ea93b8e2206d492ba3cec8516f6a4ec">
+        <source>Settings saved, but no Wipop methods are available at checkout.</source>
+        <target>Configuració desada, però no hi ha mètodes de Wipöp disponibles al checkout.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fda45c8b3c17b782b52261d1f7b7a619">
+        <source>Settings saved, but methods could not be verified.</source>
+        <target>Configuració desada, però no s’han pogut verificar els mètodes.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9a7e58ee13cb727cb7c4acc68f4cafe5">
+        <source>Settings saved.</source>
+        <target>Configuració desada.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="66dff4bc6149738292b7b2737e7e2e8c">
@@ -99,32 +119,27 @@
       </trans-unit>
       <trans-unit id="f957ac389ed573c01fdd9d6a10dcf04e">
         <source>Choose at least one Wipop method.</source>
-        <target>Tria com a mínim un mètode de Wipop.</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="2ea93b8e2206d492ba3cec8516f6a4ec">
-        <source>Settings saved, but no Wipop methods are available at checkout.</source>
-        <target>Configuració desada, però no hi ha mètodes de Wipop disponibles al checkout.</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="fda45c8b3c17b782b52261d1f7b7a619">
-        <source>Settings saved, but methods could not be verified.</source>
-        <target>Configuració desada, però no s’han pogut verificar els mètodes.</target>
+        <target>Tria com a mínim un mètode de Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="96be93fa1d30ff19e8d31435f6e36ed1">
         <source>Accept card payments through Wipop.</source>
-        <target>Accepta pagaments amb targeta a través de Wipop.</target>
+        <target>Accepta pagaments amb targeta a través de Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="3e5fc4653c19fd9d74cec17638c02c0d">
         <source>Let customers pay with Bizum through Wipop.</source>
-        <target>Permet pagar amb Bizum a través de Wipop.</target>
+        <target>Permet pagar amb Bizum a través de Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="543783fd364dda81351144e095857c37">
         <source>Preauthorizations</source>
         <target>Preautoritzacions</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0b7146e4525a5fe48078876907f6e8e4">
+        <source>If you choose to reserve the amount, you will need to confirm or cancel the charge manually from the order details. Only applies to card payments.</source>
+        <target>Si tries reservar l'import, hauràs de confirmar o anul·lar el cobrament manualment des del detall de la comanda. Només s'aplica a pagaments amb targeta.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="23e832cfa826851df86e90b0a22d8261">
@@ -137,84 +152,709 @@
         <target>Reservar l'import per cobrar-lo després</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="0b7146e4525a5fe48078876907f6e8e4">
-        <source>If you choose to reserve the amount, you will need to confirm or cancel the charge manually from the order details. Only applies to card payments.</source>
-        <target>Si tries reservar l'import, hauràs de confirmar o anul·lar el cobrament manualment des del detall de la comanda. Només s'aplica a pagaments amb targeta.</target>
-        <note>Line: </note>
-      </trans-unit>
       <trans-unit id="7ed9fc675598ed1a2fa6e382b60b2a7c">
         <source>Capture preauthorization with Wipop</source>
-        <target>Capturar preautorització amb Wipop</target>
+        <target>Capturar preautorització amb Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="1e06417458a176f0bc94d70a45c23d5f">
         <source>Void preauthorization with Wipop</source>
-        <target>Anul·lar preautorització amb Wipop</target>
+        <target>Anul·lar preautorització amb Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="f1e8aa23d096700901fade453654d5eb">
         <source>You do not have permission to capture this Wipop preauthorization.</source>
-        <target>No tens permís per capturar aquesta preautorització de Wipop.</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="2df42449dd7a822e5e5356b5129a959c">
-        <source>Wipop: Preauthorization of %amount% captured.</source>
-        <target>Wipop: Capturada preautorització de %amount%.</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="c972e15cea0a409c7a9516175789709b">
-        <source>We could not capture the preauthorization in Wipop</source>
-        <target>No hem pogut capturar la preautorització a Wipop</target>
+        <target>No tens permís per capturar aquesta preautorització de Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="c25818c139886c4f8da487ed91b29374">
         <source>You do not have permission to void this Wipop preauthorization.</source>
-        <target>No tens permís per anul·lar aquesta preautorització de Wipop.</target>
+        <target>No tens permís per anul·lar aquesta preautorització de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fa2cc2c794d986084a6164e8bfb54d73">
+        <source>You do not have permission to refund this order.</source>
+        <target>No tens permís per reemborsar aquesta comanda.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2df42449dd7a822e5e5356b5129a959c">
+        <source>Wipop: Preauthorization of %amount% captured.</source>
+        <target>Wipöp: Capturada preautorització de %amount%.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="27a362392fb19f9859f3e78ae8589773">
         <source>Preauthorization manually voided in Wipop.</source>
-        <target>Preautorització anul·lada manualment a Wipop.</target>
+        <target>Preautorització anul·lada manualment a Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c972e15cea0a409c7a9516175789709b">
+        <source>We could not capture the preauthorization in Wipop</source>
+        <target>No hem pogut capturar la preautorització a Wipöp</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="08bdf2050a3e8bbec3bf199fa131af8a">
         <source>We could not void the preauthorization in Wipop.</source>
-        <target>No hem pogut cancel·lar la preautorització a Wipop.</target>
+        <target>No hem pogut cancel·lar la preautorització a Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="f092fe84c09610b3462cf21bdc27f53e">
-        <source>This Wipop preauthorization has already been voided.</source>
-        <target>Aquesta preautorització de Wipop ja ha estat anul·lada.</target>
+      <trans-unit id="ad6196e3f3d287953a433306ef5b9f06">
+        <source>This Wipop authorization has already been captured.</source>
+        <target>Aquesta autorització de Wipöp ja s’ha capturat.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="304111ee3f8e75ca3615ab30467eeb06">
         <source>Captured Wipop preauthorizations cannot be voided.</source>
-        <target>Les preautoritzacions de Wipop capturades no es poden anul·lar.</target>
+        <target>Les preautoritzacions de Wipöp capturades no es poden anul·lar.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f092fe84c09610b3462cf21bdc27f53e">
+        <source>This Wipop preauthorization has already been voided.</source>
+        <target>Aquesta preautorització de Wipöp ja ha estat anul·lada.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="bc524cd4ff59edceeea3fc1229478125">
         <source>Only authorized Wipop payments can be captured or voided.</source>
-        <target>Només els pagaments autoritzats de Wipop es poden capturar o anul·lar.</target>
+        <target>Només els pagaments autoritzats de Wipöp es poden capturar o anul·lar.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="a8e9d01a7af283707c37a9ad2c5e32ea">
         <source>Only Wipop card preauthorizations can be captured or voided.</source>
-        <target>Només les preautoritzacions amb targeta de Wipop es poden capturar o anul·lar.</target>
+        <target>Només les preautoritzacions amb targeta de Wipöp es poden capturar o anul·lar.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4056e571b745c111c8c93929a957c4f0">
+        <source>This order does not have a Wipop payment.</source>
+        <target>Aquesta comanda no té cap pagament de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="034439335146098200fa74e3bf47a69c">
+        <source>The original Wipop authorization is missing.</source>
+        <target>Falta l’autorització original de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="762789e71cee6d3b63d7574af189d6a2">
+        <source>The Wipop authorization amount must be greater than zero.</source>
+        <target>L’import de l’autorització de Wipöp ha de ser superior a zero.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fc3672e1eb5062aa56326002f3a60886">
+        <source>The Wipop authorization currency is missing.</source>
+        <target>Falta la moneda de l’autorització de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3cc32428334d371d6085b4e8ba1b79c2">
+        <source>Wipop returned a different operation amount.</source>
+        <target>Wipöp ha retornat un import d’operació diferent.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="387e145ac60a49fc5b448351810e1123">
+        <source>Wipop returned a different operation currency.</source>
+        <target>Wipöp ha retornat una moneda d’operació diferent.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="da3746986d2adbc2330239e7f5d684ee">
+        <source>The order currency does not match the Wipop capture currency.</source>
+        <target>La moneda de la comanda no coincideix amb la moneda de la captura de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c28701eec3217d693eed3d45544b5956">
+        <source>Unable to resolve the paid order status.</source>
+        <target>No s’ha pogut resoldre l’estat de comanda pagada.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="62a1bdf3a49c8d40abee22016e5571a7">
+        <source>Unable to resolve the canceled order status.</source>
+        <target>No s’ha pogut resoldre l’estat de comanda cancel·lada.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9a398c44af5b38c625ed5decb2260e2f">
+        <source>Unable to add the Wipop capture payment to the order.</source>
+        <target>No s’ha pogut afegir el pagament de captura de Wipöp a la comanda.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e481cbaeb2c71ae904cff66d310e1bb5">
+        <source>Unable to update the Wipop preauthorization order status.</source>
+        <target>No s’ha pogut actualitzar l’estat de la comanda amb preautorització de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="137111fb016e53f27a4aea60c1a9b335">
+        <source>Could not load the PrestaShop order.</source>
+        <target>No s’ha pogut carregar la comanda de PrestaShop.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e43cb621b83ac91d3a0e7b9fc586b344">
+        <source>Wipop did not return a transaction identifier.</source>
+        <target>Wipöp no ha retornat cap identificador de transacció.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7495942a58bc279ea20f2676be00413a">
+        <source>Wipop did not return an operation status.</source>
+        <target>Wipöp no ha retornat cap estat d’operació.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8d6c44f96b94c91d132befce09bf6ee8">
+        <source>Wipop did not return an operation amount.</source>
+        <target>Wipöp no ha retornat cap import d’operació.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="524529c67c88a14f10c6af3caa4a8477">
+        <source>Wipop did not return an operation currency.</source>
+        <target>Wipöp no ha retornat cap moneda d’operació.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2c9319a4b1fb0b710a5c2c76936b9faa">
+        <source>Wipop captured the authorization, but the local payment attempt could not be marked as paid.</source>
+        <target>Wipöp ha capturat l’autorització, però l’intent de pagament local no s’ha pogut marcar com a pagat.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9fa0b5e46426b42107c8271ab77fe1b1">
+        <source>Wipop captured the authorization, but the PrestaShop order could not be marked as paid.</source>
+        <target>Wipöp ha capturat l’autorització, però la comanda de PrestaShop no s’ha pogut marcar com a pagada.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="57a5add08b432cb9ac20f62467cdbe6b">
         <source>Wipop voided the preauthorization, but the local attempt could not be marked as cancelled.</source>
-        <target>Wipop ha anul·lat la preautorització, però l'intent local no s'ha pogut marcar com a cancel·lat.</target>
+        <target>Wipöp ha anul·lat la preautorització, però l'intent local no s'ha pogut marcar com a cancel·lat.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="b224948d2f84e6b58e8fcb8ec843df24">
         <source>Wipop voided the preauthorization, but the PrestaShop order could not be marked as cancelled.</source>
-        <target>Wipop ha anul·lat la preautorització, però la comanda de PrestaShop no s'ha pogut marcar com a cancel·lada.</target>
+        <target>Wipöp ha anul·lat la preautorització, però la comanda de PrestaShop no s'ha pogut marcar com a cancel·lada.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="5ebb8c549850591cb13ec22c97843a45">
         <source>Wipop authorized</source>
-        <target>Wipop autoritzat</target>
+        <target>Wipöp autoritzat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="bfb85f0a42e6ff7cb648526ef2be3ff8">
+        <source>Wipop refund</source>
+        <target>Reemborsament Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="34efdd3b84eb27b69fe5dd1ec1a9a0bc">
+        <source>Refund with Wipop</source>
+        <target>Reemborsa amb Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c0cb62c543a0ab6cbf49c748e9a62093">
+        <source>Wipop transaction</source>
+        <target>Transacció Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6d6fee681b7faf8d30899b64f4f7e161">
+        <source>Remaining amount</source>
+        <target>Import restant</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9d5acdce5623431e681ce18151958bfb">
+        <source>Refundable quantity</source>
+        <target>Quantitat reemborsable</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0d7db8d700dd630df508925ff1577676">
+        <source>Refundable amount</source>
+        <target>Import reemborsable</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0f6f8990f7c21bf32bd472c97c6e3b48">
+        <source>Refundable shipping</source>
+        <target>Enviament reemborsable</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="373daf767188fc81daf6a0e0796145e7">
+        <source>A Wipop refund is already being processed for this order.</source>
+        <target>Ja s’està processant un reemborsament de Wipöp per a aquesta comanda.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3deccd529b7de3e04b2fb585aa623959">
+        <source>Refund data could not be loaded.</source>
+        <target>No s’han pogut carregar les dades del reemborsament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e36eea0210bb9893c5bc90610903895a">
+        <source>This order has no refundable amount.</source>
+        <target>Aquesta comanda no té cap import reemborsable.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="09493e1b7d9534a2fd59b505a26c525a">
+        <source>The Wipop refund could not be completed.</source>
+        <target>No s’ha pogut completar el reemborsament de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="98523ff086cbcf662ce64fade990a842">
+        <source>Unable to complete the Wipop refund.</source>
+        <target>No s’ha pogut completar el reemborsament de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c8e4958034bca243d9c0bce33faddcb1">
+        <source>Wipop did not confirm the refund.</source>
+        <target>Wipöp no ha confirmat el reemborsament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9883b0a964724edd83a2499b569f19af">
+        <source>Wipop returned a different refund amount.</source>
+        <target>Wipöp ha retornat un import de reemborsament diferent.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9727abf5b403921f9918a7d838b61406">
+        <source>Wipop returned a different refund currency.</source>
+        <target>Wipöp ha retornat una moneda de reemborsament diferent.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="54c6483fe5c1798a5b1594aa23ca9ff2">
+        <source>Wipop did not return refund details.</source>
+        <target>Wipöp no ha retornat els detalls del reemborsament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d0c52eebb4441589b34e472755e4a6a7">
+        <source>Wipop did not return a refund transaction identifier.</source>
+        <target>Wipöp no ha retornat cap identificador de transacció de reemborsament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="403027a9bedf31c14ee5f656ca6ca92d">
+        <source>Wipop returned the original transaction as refund identifier.</source>
+        <target>Wipöp ha retornat la transacció original com a identificador de reemborsament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="aebef11662fe8996e5f298021aec4763">
+        <source>Wipop did not return a refund status.</source>
+        <target>Wipöp no ha retornat cap estat de reemborsament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e784ba78a70b45213990ff0b75ea8e52">
+        <source>Wipop did not return a refund amount.</source>
+        <target>Wipöp no ha retornat cap import de reemborsament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9f7e7c53306d01691cd9be77077be399">
+        <source>Wipop did not return a refund currency.</source>
+        <target>Wipöp no ha retornat cap moneda de reemborsament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="45b2bad667908bb5646d040e7dad7668">
+        <source>The refund contains an unknown order line.</source>
+        <target>El reemborsament conté una línia de comanda desconeguda.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a8a2b94eceaf92ffbdbce77c6cbba8a0">
+        <source>Only paid Wipop orders can be refunded.</source>
+        <target>Només es poden reemborsar comandes de Wipöp pagades.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4a98fb52f5c1aeeb81555d3c8acd2375">
+        <source>The original Wipop transaction is missing.</source>
+        <target>Falta la transacció original de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7fb3e7ba0f92b922b468c66f7ce8c444">
+        <source>The order currency does not match the Wipop payment currency.</source>
+        <target>La moneda de la comanda no coincideix amb la moneda del pagament de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7a34857f4ee28d8c8a04a2bdae04aec8">
+        <source>The refund amount must be greater than zero.</source>
+        <target>L’import del reemborsament ha de ser superior a zero.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7a2d4061050b6f3c3fd4169f2fc7ac7a">
+        <source>The refund exceeds the remaining Wipop amount.</source>
+        <target>El reemborsament supera l’import restant de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3f63310d250dad45b05fa85b16f093ba">
+        <source>Each refunded product must include quantity and amount.</source>
+        <target>Cada producte reemborsat ha d’incloure quantitat i import.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fa79b28bf9ac02f617b504dbf574c2be">
+        <source>The refund quantity exceeds the refundable product quantity.</source>
+        <target>La quantitat del reemborsament supera la quantitat reemborsable del producte.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6c54789a289eac3fb0b1324647514ab4">
+        <source>The refund amount exceeds the refundable product amount.</source>
+        <target>L’import del reemborsament supera l’import reemborsable del producte.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a9c45cfe4a3d1bce890a7b7fbfc2c3e7">
+        <source>The shipping refund exceeds the refundable shipping amount.</source>
+        <target>El reemborsament de l’enviament supera l’import d’enviament reemborsable.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="bedcab7470acc3f949050f7288880947">
+        <source>PrestaShop order cannot be refunded.</source>
+        <target>La comanda de PrestaShop no es pot reemborsar.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="438f142c0d20095fbb236ab652a734f3">
+        <source>PrestaShop did not create a credit slip.</source>
+        <target>PrestaShop no ha creat l’abonament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4e8aef57ac53932812ca65c2f2f2e980">
+        <source>Wipop refund completed for %amount%.</source>
+        <target>Reemborsament de Wipöp completat per %amount%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3d6e9df689dadf53402dc93f5795f6d2">
+        <source>Credit slip: #%order_slip_id%.</source>
+        <target>Abonament: #%order_slip_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="607d903b57bd170f23726271ad9f62a0">
+        <source>Wipop refunded the payment, but the credit slip could not be created.</source>
+        <target>Wipöp ha reemborsat el pagament, però no s’ha pogut crear l’abonament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3ff134de6b3f09617c9b5e0619775504">
+        <source>The refund and credit slip were completed, but the event could not be linked.</source>
+        <target>El reemborsament i l’abonament s’han completat, però no s’ha pogut vincular l’esdeveniment.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="59758c8f7f9cbef6939ca9991aaa8939">
+        <source>Payment status</source>
+        <target>Estat del pagament</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="776da51abba2c315d877e47234e4ac6c">
+        <source>Wipop status</source>
+        <target>Estat Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4c3880bb027f159e801041b1021e88e8">
+        <source>Method</source>
+        <target>Mètode</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b2f40690858b404ed10e62bdf422c704">
+        <source>Amount</source>
+        <target>Import</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fc7fbf784be4b9e2b3237034928d1dc8">
+        <source>Wipop order</source>
+        <target>Comanda Wipöp</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1b0ffaae3973401f71cd000ab9f7856e">
+        <source>Transaction</source>
+        <target>Transacció</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="236d0eb7130ba05580fa0cb21f6b968d">
+        <source>Last update</source>
+        <target>Darrera actualització</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="53114c53b2b573dff6e27ed240912ed8">
+        <source>Wipop manages refunds for this payment.</source>
+        <target>Wipöp gestiona els reemborsaments d’aquest pagament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a4ecfc70574394990cf17bd83df499f7">
+        <source>Event</source>
+        <target>Esdeveniment</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ec53a8c4f07baed5d8825072c89799be">
+        <source>Status</source>
+        <target>Estat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="44749712dbec183e983dcd78a7736c41">
+        <source>Date</source>
+        <target>Data</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="bf73eb2b0bdecc6ea2b5f995513abd09">
+        <source>Refund status</source>
+        <target>Estat del reemborsament</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9f8c310d4b0402a61723b22c34fbd31c">
+        <source>Refunded amount</source>
+        <target>Import reemborsat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9ca0dc7810e7d01490d9342523447429">
+        <source>Last refund</source>
+        <target>Darrer reemborsament</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="89ea01422d8c5b92b2b45ac68e4ed4ed">
+        <source>Last refund amount</source>
+        <target>Import del darrer reemborsament</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6ad02e20debca6712d4952b194c83b42">
+        <source>Last refund status</source>
+        <target>Estat del darrer reemborsament</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4a0a346745d964b0f2878b959729ee2c">
+        <source>Last refund update</source>
+        <target>Darrera actualització del reemborsament</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cf3bae95c5f6023d5a10fe415b205a45">
+        <source>Credit slip</source>
+        <target>Abonament</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d930dbf4a7092e01caddb358c8f20bac">
+        <source>Recurring payment</source>
+        <target>Pagament recurrent</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1901606ea069a83dc7beea17881ef95a">
+        <source>Period</source>
+        <target>Periodicitat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e1f1c28d5bf447a7cd6ae90e37d376ae">
+        <source>Recurring amount</source>
+        <target>Import recurrent</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a6471bea6a40f88180b17c0410221ad6">
+        <source>Next charge</source>
+        <target>Proper cobrament</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="fa81d45823b311114739a16e01f74e7c">
+        <source>Next sequence</source>
+        <target>Proper cicle</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c05d8a54edce1050b2a16929dedf92aa">
+        <source>Last recurring transaction</source>
+        <target>Darrera transacció recurrent</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5aa1408ba0e0e4925481f458020dd75f">
+        <source>Stop recurring payments</source>
+        <target>Atura els pagaments recurrents</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cb1856ec07fdc866c21f13566e3d5bcd">
+        <source>Attempt</source>
+        <target>Intent</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a85eba4c6c699122b2bb1387ea4813ad">
+        <source>Cart</source>
+        <target>Carret</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="44a50f07b4bdc57740901280f9eddaf5">
+        <source>Capture</source>
+        <target>Captura</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="22c89da54673b9bed47f1183dae18524">
+        <source>Reversal</source>
+        <target>Anul·lació</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cc61945cbbf46721a053467c395c666f">
+        <source>Refunded</source>
+        <target>Reemborsat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2fb630782f728ad00ec508e694cb9424">
+        <source>Refund event</source>
+        <target>Esdeveniment de reemborsament</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="77fd2b4393b379bedd30efcd5df02090">
+        <source>Partial refund</source>
+        <target>Reemborsament parcial</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="7ecadda819d0aa7d95bb4a7939ee8cde">
+        <source>Enable recurring payment</source>
+        <target>Activa el pagament recurrent</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ac39606b8ba9b791c0955d889ac7c825">
+        <source>Periodicity</source>
+        <target>Periodicitat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d518033ae94128fa99a4445c2150defb">
+        <source>Choose a period</source>
+        <target>Tria una periodicitat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9030e39f00132d583da4122532e509e9">
+        <source>Monthly</source>
+        <target>Mensual</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cf5ea7953dc47105e0eb179dbefaaf46">
+        <source>Yearly</source>
+        <target>Anual</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="4d3d769b812b6faa6b76e1a8abaece2d">
+        <source>Active</source>
+        <target>Activa</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c23e2b09ebe6bf4cb5e2a9abe85c0be2">
+        <source>Stopped</source>
+        <target>Aturada</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="568bda7d476a612705e9fc46ab924cbc">
+        <source>Pending initial payment</source>
+        <target>Pagament inicial pendent</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dfd515494018e8db43466a541fa0e199">
+        <source>This order does not have that Wipop subscription.</source>
+        <target>Aquesta comanda no té aquesta subscripció de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f54acbfdcaede53a6807ba85753a5361">
+        <source>This Wipop subscription is not active.</source>
+        <target>Aquesta subscripció de Wipöp no està activa.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5024270a9bbb090a8591a07727225a87">
+        <source>Wipop subscription stopped.</source>
+        <target>Subscripció de Wipöp aturada.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="11bdd2700fa30f969018ec7f55f3a278">
+        <source>The Wipop subscription could not be stopped.</source>
+        <target>No s’ha pogut aturar la subscripció de Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="29f8bc570092570cda4f67851333ddaa">
+        <source>Webhook authentication</source>
+        <target>Autenticació del webhook</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0b8764d3dc1a8f0ba45f7ab682e65766">
+        <source>Webhook URL</source>
+        <target>URL del webhook</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="855227c34b5db4db1578265695ec61aa">
+        <source>Webhook user</source>
+        <target>Usuari webhook</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="855ad5841ff72ef96b8a5a705300d89d">
+        <source>Webhook password</source>
+        <target>Contrasenya webhook</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="46a2a41cc6e552044816a2d04634545d">
+        <source>State</source>
+        <target>Estat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="943769b205da24c9b0fe9808370b97b1">
+        <source>Verification code</source>
+        <target>Codi de verificació</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="917b6e378ddf5967dab61faa3fb0eac2">
+        <source>Code received at</source>
+        <target>Codi rebut a</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="e599804bcd1375d1b02ed18a671df746">
+        <source>Connected at</source>
+        <target>Connectat a</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="99c116d5c3436667c1cc17c7afc9d35c">
+        <source>After regenerating, update the user and password in the Wipop portal.</source>
+        <target>Després de regenerar, actualitza l’usuari i la contrasenya al portal Wipöp.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="89af07e486ba5ddf46816195a8eedfaf">
+        <source>Regenerate credentials</source>
+        <target>Regenera credencials</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c1f088883e9604f44688a5b540489e71">
+        <source>Webhook credentials are unavailable. Please regenerate them.</source>
+        <target>Les credencials del webhook no estan disponibles. Regenera-les.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="417fbcb78f17ea9cf0c15605539e1ef0">
+        <source>Webhook credentials could not be regenerated. Please check module logs.</source>
+        <target>No s’han pogut regenerar les credencials del webhook. Revisa els logs del mòdul.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="8618df140a79f87117fb3af86fe9771b">
+        <source>Webhook credentials regenerated.</source>
+        <target>Credencials del webhook regenerades.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2ec0d16e4ca169baedb9b2d50ec5c6d7">
+        <source>Connected</source>
+        <target>Connectat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ecddbd73a90aaf17dd71134521b09079">
+        <source>Not verified</source>
+        <target>Sense verificar</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ef70e46fd3bbc21e3e1f0b6815e750c0">
+        <source>Disconnected</source>
+        <target>Desconnectat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="dce6c794a03dec79cc5f13ebb780cc3a">
+        <source>Wipop: transaction created. Transaction: %transaction_id%.</source>
+        <target>Transacció Wipop creada. Transacció: %transaction_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9d54e73a1fce75e358a34bacc3b35821">
+        <source>Wipop refund completed for %amount%. Transaction: %transaction_id%.</source>
+        <target>Reemborsament Wipop completat per %amount%. Transacció: %transaction_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c7cb3af55b7a585e309883298ff6f350">
+        <source>Wipop: refund of %amount%. Transaction: %transaction_id%.</source>
+        <target>Wipop: Reemborsament de %amount%. Transacció: %transaction_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="f14f7a69ac0ccbbcadd6c0addac4d356">
+        <source>Wipop: preauthorization captured for %amount%. Transaction: %transaction_id%.</source>
+        <target>Wipop: Preautorització capturada de %amount%. Transacció: %transaction_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6cdca9c913d2f51faa93f4eda58b3c70">
+        <source>Wipop: preauthorization voided. Transaction: %transaction_id%.</source>
+        <target>Wipop: Preautorització anul·lada. Transacció: %transaction_id%.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="302e339cca12452071887be13aac1dad">
+        <source>Wipop: recurring charges cancelled because the order changed status.</source>
+        <target>Wipop: hem cancel·lat els cobraments recurrents perquè la comanda ha canviat d'estat.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="671c35262f076648f592db96187d4c22">
+        <source>Wipop: recurring charges cancelled because the parent payment was fully refunded.</source>
+        <target>Wipop: hem cancel·lat els cobraments recurrents perquè el pagament pare s'ha reemborsat completament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="1c696b3ba141bb28e647be912259db4b">
+        <source>Wipop: recurring charges stopped manually.</source>
+        <target>Wipop: has aturat manualment els cobraments recurrents.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="454173b3a14a7cfd60e14a789031491d">
+        <source>The payment was refunded, but the recurring subscription could not be stopped automatically.</source>
+        <target>El pagament s'ha reemborsat, però la subscripció recurrent no s'ha pogut aturar automàticament.</target>
         <note>Line: </note>
       </trans-unit>
     </body>

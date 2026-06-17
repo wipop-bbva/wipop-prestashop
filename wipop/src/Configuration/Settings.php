@@ -44,7 +44,6 @@ final class Settings
     {
         return $this->merchantId !== ''
             && $this->secretKey !== ''
-            && $this->publicSecretKey !== ''
             && $this->terminalId >= self::MIN_TERMINAL_ID
             && $this->terminalId <= self::MAX_TERMINAL_ID;
     }
@@ -64,7 +63,12 @@ final class Settings
     public function shouldCaptureImmediately(string $method): bool
     {
         return $this->captureMode !== CaptureMode::MANUAL
-            || self::normalizeGateway($method) !== ChargeMethod::CARD;
+            || !self::isCardMethod($method);
+    }
+
+    public static function isCardMethod(string $method): bool
+    {
+        return self::normalizeGateway($method) === ChargeMethod::CARD;
     }
 
     /**

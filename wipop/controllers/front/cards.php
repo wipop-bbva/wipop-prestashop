@@ -77,12 +77,17 @@ class WipopCardsModuleFrontController extends ModuleFrontController
             return;
         }
 
-        $cardId = (int) Tools::getValue('id_wipop_stored_card');
+        $cardId = Tools::getValue('id_wipop_stored_card');
+        if (!is_numeric($cardId)) {
+            return;
+        }
+
+        $cardId = (int) $cardId;
         if ($cardId <= 0) {
             return;
         }
 
-        $this->storedCards()->deactivate(
+        StoredCardRepository::createDefault()->deactivate(
             $cardId,
             (int) $this->context->customer->id,
             (int) $this->context->shop->id
@@ -102,7 +107,7 @@ class WipopCardsModuleFrontController extends ModuleFrontController
 
         $presenter = new StoredCardPresenter();
         $cards = [];
-        $storedCards = $this->storedCards()->findActiveByCustomer(
+        $storedCards = StoredCardRepository::createDefault()->findActiveByCustomer(
             (int) $this->context->customer->id,
             (int) $this->context->shop->id,
             $settings->merchantId,
@@ -115,11 +120,6 @@ class WipopCardsModuleFrontController extends ModuleFrontController
         }
 
         return $cards;
-    }
-
-    private function storedCards(): StoredCardRepository
-    {
-        return StoredCardRepository::createDefault();
     }
 
     private function cardsUrl(): string

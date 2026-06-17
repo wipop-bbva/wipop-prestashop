@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-  <file original="admin" source-language="en-US" target-language="eu-ES" datatype="plaintext">
+  <file original="shop" source-language="en-US" target-language="eu-ES" datatype="plaintext">
     <body>
       <trans-unit id="fc8238ac558549bdf182e1367245e0e4">
         <source>Return to checkout</source>
         <target>Itzuli ordainketara</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="8811b65545f5ff277e4be49a1cd2f203">
+      <trans-unit id="d093d5eb00ab75cca9dc628459ea2a41">
         <source>Unsupported Wipop payment method.</source>
         <target>Wipöp ordainketa-metodo bateragarria ez da.</target>
         <note>Line: </note>
@@ -22,44 +22,149 @@
         <target>Baliozko saski bat behar da.</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="dd235ae78af574cc39e559648a5dbe84">
-        <source>WIP.</source>
-        <target>Garapen fasean.</target>
+      <trans-unit id="001f5f20c4beb14003ce9d2b9de1ce0c">
+        <source>Invalid checkout session.</source>
+        <target>Checkout saioa ez da baliozkoa.</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="60f2bfeaed0a36ff9864e008e1e67a36">
-        <source>WIP</source>
-        <target>Garapen fasean</target>
+      <trans-unit id="0aa00cccab3b99ad686831d7e462b43a">
+        <source>Unable to verify the available payment methods.</source>
+        <target>Ezin izan dira eskuragarri dauden ordainketa-metodoak egiaztatu.</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="837016e06b58966629d56676e667e648">
-        <source>Unavailable.</source>
-        <target>Ez dago erabilgarri.</target>
+      <trans-unit id="b3ee9a06a4f0567ed7b6ab5602c1fe09">
+        <source>Unable to start the Wipop checkout.</source>
+        <target>Ezin izan da Wipöp checkout-a hasi.</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="e8d173a1deac0ee4541823bd2c6f32f1">
-        <source>Wipop return</source>
-        <target>Wipöp itzulera</target>
+      <trans-unit id="d74a204146ff8c707c0ec7b30f7ffd1c">
+        <source>Wipop unavailable</source>
+        <target>Wipöp ez dago erabilgarri</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="dccf0a7987391bfc8f541204eaae296e">
+      <trans-unit id="efba4a538a86df1668430d1fd25699dd">
         <source>Pay by card with Wipop</source>
         <target>Ordaindu txartelarekin Wipöp erabiliz</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="5c1c3aefe53746246190ef5e6713d352">
+      <trans-unit id="e496b3c90d201ac3bf9be7f03c97fe4f">
         <source>Pay with Bizum via Wipop</source>
         <target>Ordaindu Bizum bidez Wipöp erabiliz</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="dbbc228291734636cbefb5241dbe2885">
-        <source>Pay with Google Pay via Wipop</source>
-        <target>Ordaindu Google Pay bidez Wipöp erabiliz</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="3702a6eb8aaac85a2d6bd66e33ec8c0e">
+      <trans-unit id="7302dffb398f589f24697affd5140e1f">
         <source>Pay with Wipop</source>
         <target>Ordaindu Wipöp erabiliz</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="aad365cc31995fb773fa05fa6c199fb6">
+        <source>Recurring products must be paid by card.</source>
+        <target>Produktu errepikariak txartelarekin ordaindu behar dira.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a8cecab8d6b0abd797767acf2269f0b6">
+        <source>Recurring payments are available only for virtual products.</source>
+        <target>Ordainketa errepikariak produktu birtualetarako soilik daude erabilgarri.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5d7cde15039fa7ece1de3a3c53b0cd00">
+        <source>Recurring products in the same cart must use the same period.</source>
+        <target>Saski bereko produktu errepikariek maiztasun bera erabili behar dute.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ba7970b54e9e1d65a3b8f10dace7e6f0">
+        <source>Recurring payments require card payment.</source>
+        <target>Ordainketa errepikariek txartel bidezko ordainketa behar dute.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b0dbedc7b3205aaa97a8cf4fce4cd041">
+        <source>Log in to pay for recurring products with Wipop.</source>
+        <target>Hasi saioa produktu errepikariak Wipöp-ekin ordaintzeko.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="ef687af9314a5231b7eb8d8d01c24595">
+        <source>The selected saved card is no longer available.</source>
+        <target>Hautatutako gordetako txartela ez dago erabilgarri.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="3ed4028e7913a468ac265ba0947f8f18">
+        <source>Wipop credentials are incomplete.</source>
+        <target>Wipöp kredentzialak osatu gabe daude.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5950a70a3ccf0d0cd27b69fd21b19872">
+        <source>Saved cards</source>
+        <target>Gordetako txartelak</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="acd4f1d1f27b6a7f29f123b6b7dd13f1">
+        <source>You do not have any saved cards yet.</source>
+        <target>Oraindik ez duzu txartelik gordeta.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="cfc36842a01da69c484ffdcc6782f437">
+        <source>Expires</source>
+        <target>Iraungitzen da</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="a681801ba3623e5bffc7a52ec76530b8">
+        <source>Forget card</source>
+        <target>Ahaztu txartela</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5b89ccdc20d37bba3e6c47cdd21405bb">
+        <source>Use a saved card</source>
+        <target>Erabili gordetako txartel bat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="82081d376e8a6467ca34a7eb878e048b">
+        <source>Use a new card</source>
+        <target>Erabili txartel berri bat</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9fda78cba692a2c806914bd60cd643a8">
+        <source>Remember this card for future payments</source>
+        <target>Gogoratu txartel hau etorkizuneko ordainketetarako</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5d9bb9c40773bd55d7eafd3562b9c6c8">
+        <source>Your Wipop payment has been confirmed.</source>
+        <target>Zure Wipöp ordainketa berretsi da.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b913dabf84a2fbeb711e6873210228b7">
+        <source>Order reference:</source>
+        <target>Eskaeraren erreferentzia:</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6702a6e3bc2dce95c3e3b61fe578f29c">
+        <source>Amount:</source>
+        <target>Zenbatekoa:</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="af1acc556e736432f8be1b73cff08df6">
+        <source>Transaction:</source>
+        <target>Transakzioa:</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="5f6690a6216d4757bcb959f74d617e61">
+        <source>Wipop payment failed</source>
+        <target>Wipöp ordainketak huts egin du</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="96f9ce3de0d902102d70f862d8ad44bd">
+        <source>The Wipop payment was not completed. Please return to checkout and try again.</source>
+        <target>Wipöp ordainketa ez da osatu. Itzuli checkout-era eta saiatu berriro.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="c87a93f3285c8fd6f654c7034f307219">
+        <source>Wipop payment pending</source>
+        <target>Wipöp ordainketa zain</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="b83986e3c451e30356c3e30116a38c43">
+        <source>The payment is waiting for webhook confirmation. Your order will be confirmed when Wipop completes the payment.</source>
+        <target>Ordainketa webhook baieztapenaren zain dago. Eskaera Wipöp-ek ordainketa osatzen duenean berretsiko da.</target>
         <note>Line: </note>
       </trans-unit>
     </body>
