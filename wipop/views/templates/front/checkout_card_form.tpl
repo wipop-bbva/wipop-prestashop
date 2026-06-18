@@ -23,7 +23,7 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
-<form method="POST" action="{$wipopCardForm.action nofilter}">
+<form method="POST" action="{$wipopCardForm.action|escape:'html':'UTF-8'}">
   <input type="hidden" name="token" value="{$wipopCardForm.token|escape:'html':'UTF-8'}">
 
   {if $wipopCardForm.is_recurring}

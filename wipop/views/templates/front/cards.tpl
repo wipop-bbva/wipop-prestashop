@@ -41,7 +41,7 @@
                 </span>
               {/if}
             </div>
-            <form method="POST" action="{$wipopSavedCards.action nofilter}">
+            <form method="POST" action="{$wipopSavedCards.action|escape:'html':'UTF-8'}">
               <input type="hidden" name="token" value="{$wipopSavedCards.token|escape:'html':'UTF-8'}">
               <input type="hidden" name="id_wipop_stored_card" value="{$card.id|intval}">
               <button class="btn btn-outline-secondary btn-sm" type="submit" name="forget_wipop_card" value="1">
