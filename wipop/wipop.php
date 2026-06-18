@@ -99,7 +99,7 @@ class Wipop extends PaymentModule
             TranslationDomains::MAIN
         );
 
-        $this->ps_versions_compliancy = ['min' => '8.1.0', 'max' => '9.0.0'];
+        $this->ps_versions_compliancy = ['min' => '8.1.0', 'max' => '9.1.999'];
     }
 
     public function isUsingNewTranslationSystem(): bool

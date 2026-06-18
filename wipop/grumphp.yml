@@ -1,6 +1,10 @@
-parameters:
-  git_dir: ..
-  bin_dir: vendor/bin
+grumphp:
+  git_hook_variables:
+    ENV:
+      GRUMPHP_BIN_DIR: vendor-dev/bin
+  environment:
+    variables:
+      GRUMPHP_BIN_DIR: vendor-dev/bin
   process_timeout: 600
   tasks:
     phpcsfixer:

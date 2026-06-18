@@ -29,7 +29,7 @@
   },
   "scripts": {
     "grumphp-init": [
-      "@php -r 'if (getenv(\"CI\")) { echo \"Skipping GrumPHP init on CI\".PHP_EOL; exit(0); } $bin = \"vendor/bin/grumphp\"; if (!file_exists($bin)) { echo \"Skipping GrumPHP init (binary missing)\".PHP_EOL; exit(0); } $cmd = escapeshellarg(PHP_BINARY) . \" \" . escapeshellarg($bin) . \" git:init\"; passthru($cmd, $exit); exit($exit);'"
+      "@php -r 'if (getenv(\"CI\")) { echo \"Skipping GrumPHP init on CI\".PHP_EOL; exit(0); } $bin = \"vendor-dev/bin/grumphp\"; if (!file_exists($bin)) { echo \"Skipping GrumPHP init (binary missing)\".PHP_EOL; exit(0); } $cmd = escapeshellarg(PHP_BINARY) . \" \" . escapeshellarg($bin) . \" git:init\"; passthru($cmd, $exit); exit($exit);'"
     ],
     "post-install-cmd": [
       "@grumphp-init"
