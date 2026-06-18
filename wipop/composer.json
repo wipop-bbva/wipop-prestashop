@@ -58,6 +58,7 @@
     "allow-plugins": {
       "phpro/grumphp": true
     },
+    "prepend-autoloader": false,
     "platform": {
       "php": "8.1.0"
     },

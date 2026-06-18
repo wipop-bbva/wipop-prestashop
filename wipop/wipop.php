@@ -87,9 +87,9 @@ class Wipop extends PaymentModule
 
         parent::__construct();
 
-        $this->displayName = $this->trans('Wipop', [], TranslationDomains::MAIN);
+        $this->displayName = $this->trans('Wipöp', [], TranslationDomains::MAIN);
         $this->description = $this->trans(
-            'PrestaShop module that integrates the Wipop payment gateway',
+            'PrestaShop module that integrates the Wipöp payment gateway',
             [],
             TranslationDomains::MAIN
         );
