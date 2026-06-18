@@ -34,7 +34,7 @@ final class WebhookSettingsRepository
      */
     public function getSettings(): array
     {
-        $rawSettings = Configuration::get(self::CONFIG_KEY, '');
+        $rawSettings = Configuration::get(self::CONFIG_KEY, default: '');
         if (!is_string($rawSettings) || $rawSettings === '') {
             return self::defaults();
         }

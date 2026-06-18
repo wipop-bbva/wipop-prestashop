@@ -117,7 +117,7 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
 
         if (
             !$order->addOrderPayment(
-                $amount,
+                number_format($amount, 6, '.', ''),
                 self::PAYMENT_METHOD,
                 $transactionId,
                 $currency,

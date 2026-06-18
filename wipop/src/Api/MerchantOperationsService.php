@@ -94,7 +94,7 @@ final class MerchantOperationsService
      */
     private function readCachedGateways(Settings $settings): ?array
     {
-        $rawSnapshot = Configuration::get(ConfigKeys::AVAILABLE_GATEWAYS_CACHE, '');
+        $rawSnapshot = Configuration::get(ConfigKeys::AVAILABLE_GATEWAYS_CACHE, default: '');
 
         if (!is_string($rawSnapshot) || $rawSnapshot === '') {
             return null;

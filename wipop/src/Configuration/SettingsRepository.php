@@ -118,7 +118,7 @@ final class SettingsRepository
      */
     private function readPayload(): array
     {
-        $rawPayload = PrestaShopConfiguration::get(ConfigKeys::SETTINGS, '');
+        $rawPayload = PrestaShopConfiguration::get(ConfigKeys::SETTINGS, default: '');
         if (!is_string($rawPayload) || $rawPayload === '') {
             return self::defaultPayload();
         }
