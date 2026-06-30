@@ -45,7 +45,7 @@ if (!defined('_PS_VERSION_')) {
 final class ModuleInstaller
 {
     private const MODULE_NAME = 'wipop';
-    private const AUTHORIZED_ORDER_STATE_LABEL = 'Wipop authorized';
+    private const AUTHORIZED_ORDER_STATE_LABEL = 'Wipop authorized manual';
 
     public function __construct(private SettingsRepository $settingsRepository)
     {
@@ -312,11 +312,21 @@ final class ModuleInstaller
         if ($configuredStateId > 0) {
             $configuredState = new OrderState($configuredStateId);
             if (Validate::isLoadedObject($configuredState) && $configuredState->module_name === self::MODULE_NAME) {
-                return true;
+                $this->configureAuthorizedOrderState($configuredState);
+
+                return (bool) $configuredState->save();
             }
         }
 
-        $orderState = new OrderState();
+        $orderState = $this->existingAuthorizedOrderState() ?? new OrderState();
+        $this->configureAuthorizedOrderState($orderState);
+
+        return (bool) (Validate::isLoadedObject($orderState) ? $orderState->save() : $orderState->add())
+            && Configuration::updateValue(ConfigKeys::AUTHORIZED_ORDER_STATE_ID, (int) $orderState->id);
+    }
+
+    private function configureAuthorizedOrderState(OrderState $orderState): void
+    {
         $orderState->module_name = self::MODULE_NAME;
         $orderState->name = $this->authorizedOrderStateNames();
         $orderState->color = '#ffc107';
@@ -332,9 +342,23 @@ final class ModuleInstaller
         $orderState->pdf_delivery = false;
         $orderState->pdf_invoice = false;
         $orderState->deleted = false;
+    }
 
-        return (bool) $orderState->add()
-            && Configuration::updateValue(ConfigKeys::AUTHORIZED_ORDER_STATE_ID, (int) $orderState->id);
+    private function existingAuthorizedOrderState(): ?OrderState
+    {
+        $stateId = (int) Db::getInstance()->getValue(sprintf(
+            "SELECT `id_order_state` FROM `%sorder_state` WHERE `module_name` = '%s' "
+            . 'AND `deleted` = 0 ORDER BY `id_order_state` ASC',
+            _DB_PREFIX_,
+            pSQL(self::MODULE_NAME)
+        ));
+        if ($stateId <= 0) {
+            return null;
+        }
+
+        $orderState = new OrderState($stateId);
+
+        return Validate::isLoadedObject($orderState) ? $orderState : null;
     }
 
     /**
