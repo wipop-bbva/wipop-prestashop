@@ -15,7 +15,11 @@
   <exclude-pattern>vendor/*</exclude-pattern>
   <exclude-pattern>var/*</exclude-pattern>
 
-  <rule ref="PSR12"/>
+  <rule ref="PSR12">
+    <!-- PrestaShop Addons validator rejects blank lines before the file header. -->
+    <exclude name="PSR12.Files.FileHeader.SpacingAfterTagBlock"/>
+    <exclude name="PSR12.Files.FileHeader.SpacingAfterDocblockBlock"/>
+  </rule>
 
   <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
     <exclude-pattern>wipop.php</exclude-pattern>
@@ -26,7 +30,9 @@
     <exclude-pattern>autoload.php</exclude-pattern>
     <exclude-pattern>controllers/*</exclude-pattern>
     <exclude-pattern>wipop.php</exclude-pattern>
+    <exclude-pattern>src/*</exclude-pattern>
     <exclude-pattern>tests/phpstan/bootstrap.php</exclude-pattern>
+    <exclude-pattern>tests/bootstrap.php</exclude-pattern>
   </rule>
 
   <rule ref="PSR12.Files.FileHeader.SpacingAfterDocblockBlock">

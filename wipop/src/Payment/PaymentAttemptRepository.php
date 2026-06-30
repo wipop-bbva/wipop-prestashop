@@ -1,4 +1,28 @@
 <?php
+/**
+ * 2007-2026 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author    PrestaShop SA <contact@prestashop.com>
+ *  @copyright 2007-2026 PrestaShop SA
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
 declare(strict_types=1);
 
@@ -14,6 +38,10 @@ use PrestaShop\Module\Wipop\Configuration\CaptureMode;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use RuntimeException;
 use Wipop\Domain\Transaction;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 final class PaymentAttemptRepository implements
     PaymentAttemptRefundMarkerInterface,
@@ -150,14 +178,6 @@ final class PaymentAttemptRepository implements
 
     public function findByRemoteIdentifiers(?string $wipopOrderId, ?string $transactionId): ?PaymentAttempt
     {
-        $wipopOrderId = $this->nullableString($wipopOrderId);
-        if ($wipopOrderId !== null) {
-            $attempt = $this->findOneByColumn('wipop_order_id', $wipopOrderId);
-            if ($attempt !== null) {
-                return $attempt;
-            }
-        }
-
         $transactionId = $this->nullableString($transactionId);
         if ($transactionId !== null) {
             $attempt = $this->findOneByColumn('wipop_transaction_id', $transactionId);
@@ -168,6 +188,14 @@ final class PaymentAttemptRepository implements
             $attemptId = $this->paymentEventRepository()->findAttemptIdByRemoteTransactionId($transactionId);
             if ($attemptId !== null) {
                 return $this->findOneByColumn('id_wipop_payment_attempt', $attemptId);
+            }
+        }
+
+        $wipopOrderId = $this->nullableString($wipopOrderId);
+        if ($wipopOrderId !== null) {
+            $attempt = $this->findOneByColumn('wipop_order_id', $wipopOrderId);
+            if ($attempt !== null) {
+                return $attempt;
             }
         }
 
@@ -254,7 +282,7 @@ final class PaymentAttemptRepository implements
         }
 
         $wipopOrderId = $this->nullableString($transaction->orderId);
-        if ($wipopOrderId !== null) {
+        if ($wipopOrderId !== null && $attempt->captureMode !== CaptureMode::MANUAL) {
             $data['wipop_order_id'] = pSQL($wipopOrderId);
         }
 

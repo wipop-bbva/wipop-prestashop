@@ -1,4 +1,28 @@
 <?php
+/**
+ * 2007-2026 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author    PrestaShop SA <contact@prestashop.com>
+ *  @copyright 2007-2026 PrestaShop SA
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
 declare(strict_types=1);
 
@@ -9,6 +33,11 @@ use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
 use PrestaShop\Module\Wipop\Payment\PaymentEventData;
 use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOperationStatus;
+use Wipop\Domain\ChargeMethod;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 final class OrderWipopPaymentPresenter
 {
@@ -29,7 +58,7 @@ final class OrderWipopPaymentPresenter
             'cart_id' => (string) $summary->cartId,
             'status_label' => $this->formatStatus($summary->status->value),
             'status_badge_class' => $this->badgeClass($summary->status),
-            'remote_status' => $this->displayValue($summary->remoteStatus),
+            'remote_status' => $this->preauthorizationStatus($summary, $preauthorizationEvents),
             'payment_method' => $this->displayValue($summary->paymentMethod),
             'amount' => $this->formatAmount($summary->amount, $summary->currencyIso),
             'wipop_order_id' => $this->displayValue($summary->wipopOrderId),
@@ -37,7 +66,7 @@ final class OrderWipopPaymentPresenter
             'webhook_received_at' => $this->displayValue($summary->webhookReceivedAt),
             'has_error' => $remoteError !== null,
             'remote_error' => $this->displayValue($remoteError),
-            'native_refunds_disabled' => $this->disablesNativeRefunds($summary->status),
+            'native_refunds_disabled' => $this->disablesNativeRefunds($summary),
             'can_manage_preauthorization' => $canManagePreauthorization,
             'has_preauthorization_events' => $events !== [],
             'preauthorization_events' => $events,
@@ -65,11 +94,16 @@ final class OrderWipopPaymentPresenter
         return $value ?? '-';
     }
 
-    private function disablesNativeRefunds(PaymentAttemptStatus $status): bool
+    private function disablesNativeRefunds(PaymentAttemptSummary $summary): bool
     {
-        return in_array($status, [
+        if ($summary->status === PaymentAttemptStatus::PAID) {
+            $method = strtoupper(trim((string) $summary->paymentMethod));
+
+            return $method !== ChargeMethod::BIZUM;
+        }
+
+        return in_array($summary->status, [
             PaymentAttemptStatus::AUTHORIZED,
-            PaymentAttemptStatus::PAID,
             PaymentAttemptStatus::REFUNDED,
         ], true);
     }
@@ -101,6 +135,35 @@ final class OrderWipopPaymentPresenter
         }
 
         return false;
+    }
+
+    /**
+     * @param array<int, array<string, float|int|string|null>> $events
+     */
+    private function preauthorizationStatus(PaymentAttemptSummary $summary, array $events): string
+    {
+        $expectedType = match ($summary->status) {
+            PaymentAttemptStatus::PAID => PaymentEventData::TYPE_CAPTURE,
+            PaymentAttemptStatus::CANCELLED => PaymentEventData::TYPE_REVERSAL,
+            default => null,
+        };
+
+        if ($expectedType === null) {
+            return $this->displayValue($summary->remoteStatus);
+        }
+
+        foreach ($events as $event) {
+            $status = $this->nullableString($event['status']);
+
+            if (
+                $this->nullableString($event['transaction_type']) === $expectedType
+                && PreauthorizationOperationStatus::isSuccessful($expectedType, $status)
+            ) {
+                return $this->displayValue($status);
+            }
+        }
+
+        return $this->displayValue($summary->remoteStatus);
     }
 
     private function formatAmount(float $amount, string $currencyIso): string

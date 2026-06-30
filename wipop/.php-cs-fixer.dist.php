@@ -17,6 +17,7 @@ $config->setRules(array_replace($baseRules, [
         'single_line' => false,
         'single_item_single_line' => false,
     ],
+    'blank_line_after_opening_tag' => false,
     'fully_qualified_strict_types' => false,
     'global_namespace_import' => false,
     'types_spaces' => [

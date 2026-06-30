@@ -91,7 +91,6 @@ services:
   PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater:
     class: PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater
     arguments:
-      $commandBus: '@prestashop.core.command_bus'
       $orderNotes: '@PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter'
 
   PrestaShop\Module\Wipop\Preauthorization\PreauthorizationService:

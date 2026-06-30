@@ -1,7 +1,6 @@
 <?php
-
 /**
- * 2007-2025 PrestaShop
+ * 2007-2026 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -20,7 +19,7 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  *  @author    PrestaShop SA <contact@prestashop.com>
- *  @copyright 2007-2025 PrestaShop SA
+ *  @copyright 2007-2026 PrestaShop SA
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
@@ -34,6 +33,8 @@ use PrestaShop\Module\Wipop\Api\ClientFactory;
 use PrestaShop\Module\Wipop\Api\MerchantOperationsService;
 use PrestaShop\Module\Wipop\Api\SdkCaller;
 use PrestaShop\Module\Wipop\Card\StoredCardRepository;
+use PrestaShop\Module\Wipop\Checkout\CartOrderIdFactory;
+use PrestaShop\Module\Wipop\Checkout\ChargeRequestFactory;
 use PrestaShop\Module\Wipop\Checkout\PaymentOptionFactory;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Form\Modifier\ProductRecurringFormModifier;
@@ -44,22 +45,30 @@ use PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter;
 use PrestaShop\Module\Wipop\Order\OrderWipopPaymentPresenter;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentEventRepository;
+use PrestaShop\Module\Wipop\Recurring\ConfigurationRecurringAutoRunnerState;
+use PrestaShop\Module\Wipop\Recurring\MySqlRecurringNamedLock;
 use PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository;
 use PrestaShop\Module\Wipop\Recurring\RecurringAutoRunner;
+use PrestaShop\Module\Wipop\Recurring\RecurringCartFactory;
 use PrestaShop\Module\Wipop\Recurring\RecurringCartInspector;
 use PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository;
+use PrestaShop\Module\Wipop\Recurring\RecurringChargeRunner;
 use PrestaShop\Module\Wipop\Recurring\RecurringCheckoutPolicy;
 use PrestaShop\Module\Wipop\Recurring\RecurringOrderPresenter;
 use PrestaShop\Module\Wipop\Recurring\RecurringPeriod;
+use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock;
 use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository;
 use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper;
 use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopPolicy;
+use PrestaShop\Module\Wipop\Recurring\WipopRecurringChargeApiClient;
 use PrestaShop\Module\Wipop\Refund\ManualRefundEligibilityChecker;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use PrestaShop\PrestaShop\Core\Action\ActionsBarButton;
 use PrestaShop\PrestaShop\Core\Action\ActionsBarButtonsCollection;
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use PrestaShopBundle\Form\FormBuilderModifier;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
@@ -78,9 +87,9 @@ class Wipop extends PaymentModule
 
         parent::__construct();
 
-        $this->displayName = $this->trans('Wipop', [], TranslationDomains::MAIN);
+        $this->displayName = $this->trans('Wipöp', [], TranslationDomains::MAIN);
         $this->description = $this->trans(
-            'PrestaShop module that integrates the Wipop payment gateway',
+            'PrestaShop module that integrates the Wipöp payment gateway',
             [],
             TranslationDomains::MAIN
         );
@@ -91,7 +100,7 @@ class Wipop extends PaymentModule
             TranslationDomains::MAIN
         );
 
-        $this->ps_versions_compliancy = ['min' => '8.1.0', 'max' => '9.0.0'];
+        $this->ps_versions_compliancy = ['min' => '8.1.0', 'max' => '9.1.999'];
     }
 
     public function isUsingNewTranslationSystem(): bool
@@ -147,17 +156,19 @@ class Wipop extends PaymentModule
             return;
         }
 
+        $logger = new Logger();
         try {
-            /** @var RecurringAutoRunner $autoRunner */
-            $autoRunner = $this->get(RecurringAutoRunner::class);
-            $autoRunner->maybeRun();
+            $this->recurringAutoRunner($logger)->maybeRun();
         } catch (Throwable $throwable) {
-            (new Logger())->error('Unable to start Wipop recurring auto-runner from dispatcher hook.', [
+            $logger->error('Unable to start Wipop recurring auto-runner from dispatcher hook.', [
                 'error_class' => $throwable::class,
             ]);
         }
     }
 
+    /**
+     * @return PaymentOption[]
+     */
     public function hookPaymentOptions(array $params): array
     {
         $cart = $params['cart'] ?? null;
@@ -287,9 +298,10 @@ class Wipop extends PaymentModule
             return;
         }
 
-        /** @var ProductRecurringFormModifier $modifier */
-        $modifier = $this->get(ProductRecurringFormModifier::class);
-        $modifier->modify($this->productIdFromHookParams($params), (int) $this->context->shop->id, $formBuilder);
+        (new ProductRecurringFormModifier(
+            $this->productRecurringSettingsRepository(),
+            new FormBuilderModifier(),
+        ))->modify($this->productIdFromHookParams($params), (int) $this->context->shop->id, $formBuilder);
     }
 
     public function hookActionAfterCreateProductFormHandler(array $params): void
@@ -311,27 +323,23 @@ class Wipop extends PaymentModule
             return;
         }
 
-        /** @var RecurringSubscriptionStopPolicy $stopPolicy */
-        $stopPolicy = $this->get(RecurringSubscriptionStopPolicy::class);
-        if (!$stopPolicy->shouldStopForParentOrderState($orderStateId)) {
+        if (!(new RecurringSubscriptionStopPolicy())->shouldStopForParentOrderState($orderStateId)) {
             return;
         }
 
+        $logger = new Logger();
         try {
-            /** @var RecurringSubscriptionStopper $stopper */
-            $stopper = $this->get(RecurringSubscriptionStopper::class);
-            $stopped = $stopper->stopActiveForParentOrder(
+            $stopped = $this->recurringSubscriptionStopper($logger)->stopActiveForParentOrder(
                 $orderId,
                 'Wipop recurring subscription stopped because parent order is closed.',
                 ['order_state_id' => $orderStateId]
             );
             if ($stopped > 0) {
-                /** @var OrderPrivateNoteWriter $orderNotes */
-                $orderNotes = $this->get(OrderPrivateNoteWriter::class);
-                $orderNotes->addRecurringCancelledByOrderStatus($orderId);
+                (new OrderPrivateNoteWriter($logger, $this->getTranslator()))
+                    ->addRecurringCancelledByOrderStatus($orderId);
             }
         } catch (Throwable $throwable) {
-            (new Logger())->error('Unable to stop Wipop recurring subscription after order status update.', [
+            $logger->error('Unable to stop Wipop recurring subscription after order status update.', [
                 'order_id' => $orderId,
                 'order_state_id' => $orderStateId,
                 'error_class' => $throwable::class,
@@ -402,8 +410,7 @@ class Wipop extends PaymentModule
             return;
         }
 
-        /** @var ProductRecurringSettingsRepository $repository */
-        $repository = $this->get(ProductRecurringSettingsRepository::class);
+        $repository = $this->productRecurringSettingsRepository();
         $shopId = (int) $this->context->shop->id;
         $product = new Product($productId);
         if (!Validate::isLoadedObject($product) || !(bool) $product->is_virtual) {
@@ -435,7 +442,7 @@ class Wipop extends PaymentModule
             $this->merchantOperationsService(),
             $this->settingsRepository(),
             StoredCardRepository::createDefault(),
-            new RecurringCartInspector(ProductRecurringSettingsRepository::createDefault()),
+            new RecurringCartInspector($this->productRecurringSettingsRepository()),
             new RecurringCheckoutPolicy(),
             $this->getTranslator(),
         );
@@ -449,6 +456,48 @@ class Wipop extends PaymentModule
     private function paymentAttemptRepository(): PaymentAttemptRepository
     {
         return PaymentAttemptRepository::createDefault();
+    }
+
+    private function productRecurringSettingsRepository(): ProductRecurringSettingsRepository
+    {
+        return ProductRecurringSettingsRepository::createDefault();
+    }
+
+    private function recurringSubscriptionStopper(Logger $logger): RecurringSubscriptionStopper
+    {
+        return new RecurringSubscriptionStopper(
+            RecurringSubscriptionRepository::createDefault(),
+            new RecurringSubscriptionLock(new MySqlRecurringNamedLock()),
+            $logger,
+        );
+    }
+
+    private function recurringAutoRunner(Logger $logger): RecurringAutoRunner
+    {
+        $wipopClient = new WipopRecurringChargeApiClient(
+            new ClientFactory(),
+            new SdkCaller($logger),
+            new ChargeRequestFactory(),
+        );
+
+        return new RecurringAutoRunner(
+            new RecurringChargeRunner(
+                RecurringSubscriptionRepository::createDefault(),
+                RecurringChargeRepository::createDefault(),
+                StoredCardRepository::createDefault(),
+                $this->settingsRepository(),
+                $this->paymentAttemptRepository(),
+                new RecurringSubscriptionLock(new MySqlRecurringNamedLock()),
+                new RecurringCartFactory(),
+                $wipopClient,
+                new CartOrderIdFactory(),
+                $logger,
+                new RecurringSubscriptionStopPolicy(),
+            ),
+            new ConfigurationRecurringAutoRunnerState(),
+            new MySqlRecurringNamedLock(),
+            $logger,
+        );
     }
 
     private function merchantOperationsService(): MerchantOperationsService
@@ -479,8 +528,13 @@ class Wipop extends PaymentModule
         }
 
         $router = $container->get('router');
-        /** @var CsrfTokenManagerInterface $tokenManager */
-        $tokenManager = $container->get('security.csrf.token_manager');
+        try {
+            /** @var CsrfTokenManagerInterface $tokenManager */
+            $tokenManager = $container->get(CsrfTokenManagerInterface::class);
+        } catch (Throwable) {
+            /** @var CsrfTokenManagerInterface $tokenManager */
+            $tokenManager = $container->get('security.csrf.token_manager');
+        }
 
         $payment['preauthorization_capture_url'] = $router->generate('wipop_order_preauthorization_capture', [
             'orderId' => $orderId,

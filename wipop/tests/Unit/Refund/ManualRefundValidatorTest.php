@@ -40,6 +40,17 @@ final class ManualRefundValidatorTest extends TestCase
         );
     }
 
+    public function testItRejectsNonCardPayments(): void
+    {
+        $this->expectException(ManualRefundException::class);
+
+        $this->validator()->assertRefundable(
+            $this->summary(paymentMethod: 'BIZUM'),
+            $this->request(),
+            $this->formData(),
+        );
+    }
+
     public function testItRejectsCurrencyMismatch(): void
     {
         $this->expectException(ManualRefundException::class);
@@ -89,12 +100,12 @@ final class ManualRefundValidatorTest extends TestCase
         return new ManualRefundValidator(new WipopRefundTaxIncludedAmountCalculator());
     }
 
-    private function summary(float $refundedAmount = 0.0): PaymentAttemptSummary
+    private function summary(float $refundedAmount = 0.0, string $paymentMethod = 'card'): PaymentAttemptSummary
     {
         return new PaymentAttemptSummary(
             id: 12,
             cartId: 34,
-            paymentMethod: 'card',
+            paymentMethod: $paymentMethod,
             status: PaymentAttemptStatus::PAID,
             amount: 49.9,
             currencyIso: 'EUR',

@@ -1,4 +1,28 @@
 <?php
+/**
+ * 2007-2026 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author    PrestaShop SA <contact@prestashop.com>
+ *  @copyright 2007-2026 PrestaShop SA
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
 declare(strict_types=1);
 
@@ -14,10 +38,14 @@ use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\TranslationDomains;
 use Validate;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 final class ModuleInstaller
 {
     private const MODULE_NAME = 'wipop';
-    private const AUTHORIZED_ORDER_STATE_LABEL = 'Wipop authorized';
+    private const AUTHORIZED_ORDER_STATE_LABEL = 'Wipop authorized manual';
 
     public function __construct(private SettingsRepository $settingsRepository)
     {
@@ -284,11 +312,21 @@ final class ModuleInstaller
         if ($configuredStateId > 0) {
             $configuredState = new OrderState($configuredStateId);
             if (Validate::isLoadedObject($configuredState) && $configuredState->module_name === self::MODULE_NAME) {
-                return true;
+                $this->configureAuthorizedOrderState($configuredState);
+
+                return (bool) $configuredState->save();
             }
         }
 
-        $orderState = new OrderState();
+        $orderState = $this->existingAuthorizedOrderState() ?? new OrderState();
+        $this->configureAuthorizedOrderState($orderState);
+
+        return (bool) (Validate::isLoadedObject($orderState) ? $orderState->save() : $orderState->add())
+            && Configuration::updateValue(ConfigKeys::AUTHORIZED_ORDER_STATE_ID, (int) $orderState->id);
+    }
+
+    private function configureAuthorizedOrderState(OrderState $orderState): void
+    {
         $orderState->module_name = self::MODULE_NAME;
         $orderState->name = $this->authorizedOrderStateNames();
         $orderState->color = '#ffc107';
@@ -304,9 +342,23 @@ final class ModuleInstaller
         $orderState->pdf_delivery = false;
         $orderState->pdf_invoice = false;
         $orderState->deleted = false;
+    }
 
-        return (bool) $orderState->add()
-            && Configuration::updateValue(ConfigKeys::AUTHORIZED_ORDER_STATE_ID, (int) $orderState->id);
+    private function existingAuthorizedOrderState(): ?OrderState
+    {
+        $stateId = (int) Db::getInstance()->getValue(sprintf(
+            "SELECT `id_order_state` FROM `%sorder_state` WHERE `module_name` = '%s' "
+            . 'AND `deleted` = 0 ORDER BY `id_order_state` ASC',
+            _DB_PREFIX_,
+            pSQL(self::MODULE_NAME)
+        ));
+        if ($stateId <= 0) {
+            return null;
+        }
+
+        $orderState = new OrderState($stateId);
+
+        return Validate::isLoadedObject($orderState) ? $orderState : null;
     }
 
     /**

@@ -1,4 +1,28 @@
 <?php
+/**
+ * 2007-2026 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author    PrestaShop SA <contact@prestashop.com>
+ *  @copyright 2007-2026 PrestaShop SA
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
 declare(strict_types=1);
 
@@ -14,7 +38,10 @@ use PrestaShop\Module\Wipop\Payment\PreauthorizationEventStoreInterface;
 use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOperationStatus;
 use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOrderUpdaterInterface;
 use Wipop\Domain\Transaction;
-use Wipop\Domain\TransactionStatus;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 final class WebhookPreauthorizationOperationSynchronizer
 {
@@ -71,7 +98,7 @@ final class WebhookPreauthorizationOperationSynchronizer
             $this->orderUpdater->markCaptured(
                 $orderId,
                 (float) $transaction->amount,
-                strtoupper(trim((string) $transaction->currency)),
+                $this->currencyIso($transaction) ?? strtoupper(trim($attempt->currencyIso)),
                 $transactionId,
                 self::WEBHOOK_EMPLOYEE_ID
             );
@@ -147,13 +174,6 @@ final class WebhookPreauthorizationOperationSynchronizer
         }
 
         $remoteStatus = $transaction->status?->value;
-
-        if (
-            $remoteStatus === TransactionStatus::COMPLETED->value
-            && in_array($attempt->status, [PaymentAttemptStatus::AUTHORIZED, PaymentAttemptStatus::PAID], true)
-        ) {
-            return PaymentEventData::TYPE_CAPTURE;
-        }
 
         if (
             PreauthorizationOperationStatus::isCancelled($remoteStatus)

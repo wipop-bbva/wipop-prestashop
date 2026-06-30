@@ -10,6 +10,7 @@ use PrestaShop\Module\Wipop\Payment\PaymentAttempt;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentEventData;
 use PrestaShop\Module\Wipop\Webhook\WebhookPaymentValidator;
+use Wipop\Domain\Transaction;
 
 final class WebhookPaymentValidatorTest extends TestCase
 {
@@ -21,6 +22,17 @@ final class WebhookPaymentValidatorTest extends TestCase
             $this->attempt(),
             $this->refund(6.1, 'eur')
         );
+    }
+
+    public function testItAcceptsCompletedChargesWhenWipopOmitsCurrency(): void
+    {
+        $this->expectNotToPerformAssertions();
+
+        $transaction = new Transaction();
+        $transaction->amount = 49.9;
+        $transaction->currency = null;
+
+        (new WebhookPaymentValidator())->assertTransactionMatches($this->attempt(), $transaction);
     }
 
     public function testItRejectsARefundWithADifferentCurrency(): void

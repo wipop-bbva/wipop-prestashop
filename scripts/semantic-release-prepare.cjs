@@ -9,6 +9,7 @@ const execFileAsync = promisify(execFile);
 const MODULE_NAME = 'wipop';
 const PACKAGED_MODULE_PATHS = [
   'autoload.php',
+  '.htaccess',
   'assets',
   'composer.json',
   'config',

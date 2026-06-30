@@ -35,6 +35,29 @@ final class WebhookRefundExtractorTest extends TestCase
         self::assertSame('eur', $refund->currencyIso);
     }
 
+    public function testItCorrelatesTopLevelRefundWithNestedCharge(): void
+    {
+        $transaction = new Transaction();
+        $transaction->id = 'tx_refund';
+        $transaction->orderId = 'refund_order';
+        $transaction->transactionType = 'refund';
+        $transaction->status = TransactionStatus::COMPLETED;
+        $transaction->amount = 6.1;
+        $transaction->currency = 'EUR';
+
+        $refund = (new WebhookRefundExtractor())->extract($transaction, [
+            'charge' => [
+                'id' => 'tx_charge',
+                'order_id' => 'charge_order',
+            ],
+        ]);
+
+        self::assertInstanceOf(PaymentEventData::class, $refund);
+        self::assertSame('tx_refund', $refund->remoteTransactionId);
+        self::assertSame('tx_charge', $refund->parentTransactionId);
+        self::assertSame('charge_order', $refund->wipopOrderId);
+    }
+
     public function testItExtractsADocumentedNestedRefundPayload(): void
     {
         $transaction = new Transaction();

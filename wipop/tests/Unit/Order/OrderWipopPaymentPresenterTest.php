@@ -70,6 +70,15 @@ final class OrderWipopPaymentPresenterTest extends TestCase
         self::assertTrue($refundedPayment['native_refunds_disabled']);
     }
 
+    public function testItKeepsNativeRefundsOnlyForPaidBizumPayments(): void
+    {
+        $presenter = new OrderWipopPaymentPresenter();
+
+        self::assertFalse($presenter->present($this->summary(paymentMethod: 'bizum'))['native_refunds_disabled']);
+        self::assertTrue($presenter->present($this->summary(paymentMethod: null))['native_refunds_disabled']);
+        self::assertTrue($presenter->present($this->summary(paymentMethod: 'unknown'))['native_refunds_disabled']);
+    }
+
     public function testItShowsPreauthorizationActionsForAuthorizedCardPayments(): void
     {
         $payment = (new OrderWipopPaymentPresenter())->present(
@@ -106,6 +115,29 @@ final class OrderWipopPaymentPresenterTest extends TestCase
         self::assertFalse($payment['can_manage_preauthorization']);
         self::assertSame('Reversal', $payment['preauthorization_events'][0]['type']);
         self::assertSame('CANCELLED', $payment['preauthorization_events'][0]['status']);
+    }
+
+    public function testItShowsCaptureStatusAfterCapturedPreauthorization(): void
+    {
+        $payment = (new OrderWipopPaymentPresenter())->present(
+            $this->summary(status: PaymentAttemptStatus::PAID, remoteStatus: 'IN_PROGRESS'),
+            [$this->preauthorizationEvent(PaymentEventData::TYPE_CAPTURE)]
+        );
+
+        self::assertSame('COMPLETED', $payment['remote_status']);
+    }
+
+    public function testItShowsReversalStatusAfterCancelledPreauthorization(): void
+    {
+        $payment = (new OrderWipopPaymentPresenter())->present(
+            $this->summary(status: PaymentAttemptStatus::CANCELLED, remoteStatus: 'IN_PROGRESS'),
+            [$this->preauthorizationEvent(
+                PaymentEventData::TYPE_REVERSAL,
+                TransactionStatus::CANCELLED->value
+            )]
+        );
+
+        self::assertSame('CANCELLED', $payment['remote_status']);
     }
 
     public function testItBuildsARefundSummary(): void
