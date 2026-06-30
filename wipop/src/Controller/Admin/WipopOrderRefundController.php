@@ -39,6 +39,7 @@ use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
 use PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper;
+use PrestaShop\Module\Wipop\Refund\ManualRefundEligibilityChecker;
 use PrestaShop\Module\Wipop\Refund\ManualRefundException;
 use PrestaShop\Module\Wipop\Refund\ManualRefundFormDataProvider;
 use PrestaShop\Module\Wipop\Refund\ManualRefundOutcome;
@@ -84,6 +85,15 @@ final class WipopOrderRefundController extends FrameworkBundleAdminController
             $this->addFlash(
                 'error',
                 $this->trans('This order does not have a Wipop payment.', TranslationDomains::ADMIN)
+            );
+
+            return $this->redirectToOrder($orderId);
+        }
+
+        if (!(new ManualRefundEligibilityChecker())->canRefund($summary)) {
+            $this->addFlash(
+                'warning',
+                $this->trans('This Wipop payment cannot be refunded automatically.', TranslationDomains::ADMIN)
             );
 
             return $this->redirectToOrder($orderId);

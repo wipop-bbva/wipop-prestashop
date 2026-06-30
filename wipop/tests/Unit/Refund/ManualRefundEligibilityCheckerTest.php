@@ -23,18 +23,20 @@ final class ManualRefundEligibilityCheckerTest extends TestCase
 
         self::assertFalse($eligibility->canRefund($this->summary(status: PaymentAttemptStatus::FAILED)));
         self::assertFalse($eligibility->canRefund($this->summary(transactionId: null)));
+        self::assertFalse($eligibility->canRefund($this->summary(paymentMethod: 'BIZUM')));
         self::assertFalse($eligibility->canRefund($this->summary(refundedAmount: 49.9)));
     }
 
     private function summary(
         PaymentAttemptStatus $status = PaymentAttemptStatus::PAID,
         ?string $transactionId = 'tx_charge',
+        string $paymentMethod = 'card',
         float $refundedAmount = 0.0,
     ): PaymentAttemptSummary {
         return new PaymentAttemptSummary(
             id: 12,
             cartId: 34,
-            paymentMethod: 'card',
+            paymentMethod: $paymentMethod,
             status: $status,
             amount: 49.9,
             currencyIso: 'EUR',

@@ -28,6 +28,7 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Refund;
 
+use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Payment\PaymentAmount;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
@@ -56,6 +57,10 @@ final class ManualRefundValidator
 
         if (trim((string) $summary->wipopTransactionId) === '') {
             throw new ManualRefundException('The original Wipop transaction is missing.');
+        }
+
+        if (!Settings::isCardMethod((string) $summary->paymentMethod)) {
+            throw new ManualRefundException('Only Wipop card payments can be refunded automatically.');
         }
 
         if ($this->normalizeCurrency($summary->currencyIso) !== $this->normalizeCurrency($formData->currencyIso)) {

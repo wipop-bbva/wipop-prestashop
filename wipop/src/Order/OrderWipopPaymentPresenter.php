@@ -33,6 +33,7 @@ use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
 use PrestaShop\Module\Wipop\Payment\PaymentEventData;
 use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOperationStatus;
+use Wipop\Domain\ChargeMethod;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -65,7 +66,7 @@ final class OrderWipopPaymentPresenter
             'webhook_received_at' => $this->displayValue($summary->webhookReceivedAt),
             'has_error' => $remoteError !== null,
             'remote_error' => $this->displayValue($remoteError),
-            'native_refunds_disabled' => $this->disablesNativeRefunds($summary->status),
+            'native_refunds_disabled' => $this->disablesNativeRefunds($summary),
             'can_manage_preauthorization' => $canManagePreauthorization,
             'has_preauthorization_events' => $events !== [],
             'preauthorization_events' => $events,
@@ -93,11 +94,16 @@ final class OrderWipopPaymentPresenter
         return $value ?? '-';
     }
 
-    private function disablesNativeRefunds(PaymentAttemptStatus $status): bool
+    private function disablesNativeRefunds(PaymentAttemptSummary $summary): bool
     {
-        return in_array($status, [
+        if ($summary->status === PaymentAttemptStatus::PAID) {
+            $method = strtoupper(trim((string) $summary->paymentMethod));
+
+            return $method !== ChargeMethod::BIZUM;
+        }
+
+        return in_array($summary->status, [
             PaymentAttemptStatus::AUTHORIZED,
-            PaymentAttemptStatus::PAID,
             PaymentAttemptStatus::REFUNDED,
         ], true);
     }

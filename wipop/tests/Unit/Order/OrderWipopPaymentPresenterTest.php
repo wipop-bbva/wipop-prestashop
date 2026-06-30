@@ -70,6 +70,15 @@ final class OrderWipopPaymentPresenterTest extends TestCase
         self::assertTrue($refundedPayment['native_refunds_disabled']);
     }
 
+    public function testItKeepsNativeRefundsOnlyForPaidBizumPayments(): void
+    {
+        $presenter = new OrderWipopPaymentPresenter();
+
+        self::assertFalse($presenter->present($this->summary(paymentMethod: 'bizum'))['native_refunds_disabled']);
+        self::assertTrue($presenter->present($this->summary(paymentMethod: null))['native_refunds_disabled']);
+        self::assertTrue($presenter->present($this->summary(paymentMethod: 'unknown'))['native_refunds_disabled']);
+    }
+
     public function testItShowsPreauthorizationActionsForAuthorizedCardPayments(): void
     {
         $payment = (new OrderWipopPaymentPresenter())->present(
