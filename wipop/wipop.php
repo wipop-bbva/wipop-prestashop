@@ -524,8 +524,13 @@ class Wipop extends PaymentModule
         }
 
         $router = $container->get('router');
-        /** @var CsrfTokenManagerInterface $tokenManager */
-        $tokenManager = $container->get('security.csrf.token_manager');
+        try {
+            /** @var CsrfTokenManagerInterface $tokenManager */
+            $tokenManager = $container->get(CsrfTokenManagerInterface::class);
+        } catch (Throwable) {
+            /** @var CsrfTokenManagerInterface $tokenManager */
+            $tokenManager = $container->get('security.csrf.token_manager');
+        }
 
         $payment['preauthorization_capture_url'] = $router->generate('wipop_order_preauthorization_capture', [
             'orderId' => $orderId,
