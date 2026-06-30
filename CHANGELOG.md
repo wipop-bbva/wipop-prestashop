@@ -1,3 +1,21 @@
+## [1.13.1](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.13.0...v1.13.1) (2026-06-30)
+
+### Bug Fixes
+
+* **admin:** support CSRF token manager service aliases ([ca4fccd](https://github.com/wipop-bbva/wipop-prestashop/commit/ca4fccd526395bdcb272e0a41527cf77c577d6e3))
+* **grumphp:** remove unnecessary git hook variables from configuration ([18c90d0](https://github.com/wipop-bbva/wipop-prestashop/commit/18c90d0696379c15def48aa0469c1b20dd1c535b))
+* **install:** reuse Wipop authorized order state ([a78815f](https://github.com/wipop-bbva/wipop-prestashop/commit/a78815ffe1a695e5b86907cfd35911741e512b53))
+* **locking:** normalize PrestaShop GET_LOCK results ([5a86c30](https://github.com/wipop-bbva/wipop-prestashop/commit/5a86c3028c84c7d0b5b823ae4eaf4f5b1b00dbad))
+* **module:** align Addons metadata and autoload ([f68f98a](https://github.com/wipop-bbva/wipop-prestashop/commit/f68f98abc306b1d8718992df11934f0e302971b1))
+* **module:** build recurring services safely in legacy hooks ([621f2d0](https://github.com/wipop-bbva/wipop-prestashop/commit/621f2d08925b1e9a44087cde6e53adb011fca410))
+* **preauthorization:** finalize manual authorization flows consistently ([cdac2b5](https://github.com/wipop-bbva/wipop-prestashop/commit/cdac2b53a712b48cd8a208caf7a292a23adbddc7))
+* **prestashop:** match legacy configuration signatures ([f752aee](https://github.com/wipop-bbva/wipop-prestashop/commit/f752aeee81813edc7659489c24028cf0c0b04b04))
+* **prestashop:** update PS version compatibility to support up to 9.1.999 ([9981366](https://github.com/wipop-bbva/wipop-prestashop/commit/99813664708275ecc2e0dbd23fa7a902f944377e))
+* **refund:** restrict automatic Wipop refunds to card payments ([49b0ad5](https://github.com/wipop-bbva/wipop-prestashop/commit/49b0ad56bc943eafd6a04feb0b10b390440878c5))
+* **security:** harden module package output ([7aa2d4d](https://github.com/wipop-bbva/wipop-prestashop/commit/7aa2d4d449d96bcfe18d5c55c03fbd6d06b086b9))
+* **webhook:** avoid SDK serializer for incoming transactions ([5ce9f6a](https://github.com/wipop-bbva/wipop-prestashop/commit/5ce9f6a0c6f9d9c596c313e5dd7bff2ef736e523))
+* **webhook:** harden Wipop webhook correlation ([fd0a783](https://github.com/wipop-bbva/wipop-prestashop/commit/fd0a783761456b057b0e7f7bb36936a3eef1cc38))
+
 ## [1.13.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.12.0...v1.13.0) (2026-06-17)
 
 ### Features
