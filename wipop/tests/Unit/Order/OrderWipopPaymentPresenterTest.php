@@ -108,6 +108,29 @@ final class OrderWipopPaymentPresenterTest extends TestCase
         self::assertSame('CANCELLED', $payment['preauthorization_events'][0]['status']);
     }
 
+    public function testItShowsCaptureStatusAfterCapturedPreauthorization(): void
+    {
+        $payment = (new OrderWipopPaymentPresenter())->present(
+            $this->summary(status: PaymentAttemptStatus::PAID, remoteStatus: 'IN_PROGRESS'),
+            [$this->preauthorizationEvent(PaymentEventData::TYPE_CAPTURE)]
+        );
+
+        self::assertSame('COMPLETED', $payment['remote_status']);
+    }
+
+    public function testItShowsReversalStatusAfterCancelledPreauthorization(): void
+    {
+        $payment = (new OrderWipopPaymentPresenter())->present(
+            $this->summary(status: PaymentAttemptStatus::CANCELLED, remoteStatus: 'IN_PROGRESS'),
+            [$this->preauthorizationEvent(
+                PaymentEventData::TYPE_REVERSAL,
+                TransactionStatus::CANCELLED->value
+            )]
+        );
+
+        self::assertSame('CANCELLED', $payment['remote_status']);
+    }
+
     public function testItBuildsARefundSummary(): void
     {
         $payment = (new OrderWipopPaymentPresenter())->present(

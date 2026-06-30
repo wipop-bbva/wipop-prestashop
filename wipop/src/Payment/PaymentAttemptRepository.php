@@ -282,7 +282,7 @@ final class PaymentAttemptRepository implements
         }
 
         $wipopOrderId = $this->nullableString($transaction->orderId);
-        if ($wipopOrderId !== null) {
+        if ($wipopOrderId !== null && $attempt->captureMode !== CaptureMode::MANUAL) {
             $data['wipop_order_id'] = pSQL($wipopOrderId);
         }
 

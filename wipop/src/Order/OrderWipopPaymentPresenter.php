@@ -57,7 +57,7 @@ final class OrderWipopPaymentPresenter
             'cart_id' => (string) $summary->cartId,
             'status_label' => $this->formatStatus($summary->status->value),
             'status_badge_class' => $this->badgeClass($summary->status),
-            'remote_status' => $this->displayValue($summary->remoteStatus),
+            'remote_status' => $this->preauthorizationStatus($summary, $preauthorizationEvents),
             'payment_method' => $this->displayValue($summary->paymentMethod),
             'amount' => $this->formatAmount($summary->amount, $summary->currencyIso),
             'wipop_order_id' => $this->displayValue($summary->wipopOrderId),
@@ -129,6 +129,35 @@ final class OrderWipopPaymentPresenter
         }
 
         return false;
+    }
+
+    /**
+     * @param array<int, array<string, float|int|string|null>> $events
+     */
+    private function preauthorizationStatus(PaymentAttemptSummary $summary, array $events): string
+    {
+        $expectedType = match ($summary->status) {
+            PaymentAttemptStatus::PAID => PaymentEventData::TYPE_CAPTURE,
+            PaymentAttemptStatus::CANCELLED => PaymentEventData::TYPE_REVERSAL,
+            default => null,
+        };
+
+        if ($expectedType === null) {
+            return $this->displayValue($summary->remoteStatus);
+        }
+
+        foreach ($events as $event) {
+            $status = $this->nullableString($event['status']);
+
+            if (
+                $this->nullableString($event['transaction_type']) === $expectedType
+                && PreauthorizationOperationStatus::isSuccessful($expectedType, $status)
+            ) {
+                return $this->displayValue($status);
+            }
+        }
+
+        return $this->displayValue($summary->remoteStatus);
     }
 
     private function formatAmount(float $amount, string $currencyIso): string

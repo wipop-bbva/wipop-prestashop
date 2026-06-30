@@ -32,7 +32,7 @@ final class WebhookPreauthorizationOperationSynchronizerTest extends TestCase
 
         $status = $synchronizer->sync(
             $this->attempt(),
-            $this->transaction('tx_capture', 'capture')
+            $this->transaction('tx_capture', 'capture', currency: null)
         );
 
         self::assertSame(PaymentAttemptStatus::PAID, $status);
@@ -183,6 +183,16 @@ final class WebhookPreauthorizationOperationSynchronizerTest extends TestCase
         self::assertFalse($synchronizer->supports(
             $this->attempt(),
             $this->transaction('tx_operation', 'authorization')
+        ));
+    }
+
+    public function testItDoesNotTreatAuthorizationCompletionRetryAsCapture(): void
+    {
+        $synchronizer = $this->synchronizer($this->eventStore(), $this->orderUpdater());
+
+        self::assertFalse($synchronizer->supports(
+            $this->attempt(),
+            $this->transaction('tx_auth', 'IN')
         ));
     }
 

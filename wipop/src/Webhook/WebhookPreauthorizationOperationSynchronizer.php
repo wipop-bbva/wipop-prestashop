@@ -38,7 +38,6 @@ use PrestaShop\Module\Wipop\Payment\PreauthorizationEventStoreInterface;
 use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOperationStatus;
 use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOrderUpdaterInterface;
 use Wipop\Domain\Transaction;
-use Wipop\Domain\TransactionStatus;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -99,7 +98,7 @@ final class WebhookPreauthorizationOperationSynchronizer
             $this->orderUpdater->markCaptured(
                 $orderId,
                 (float) $transaction->amount,
-                strtoupper(trim((string) $transaction->currency)),
+                $this->currencyIso($transaction) ?? strtoupper(trim($attempt->currencyIso)),
                 $transactionId,
                 self::WEBHOOK_EMPLOYEE_ID
             );
@@ -175,13 +174,6 @@ final class WebhookPreauthorizationOperationSynchronizer
         }
 
         $remoteStatus = $transaction->status?->value;
-
-        if (
-            $remoteStatus === TransactionStatus::COMPLETED->value
-            && in_array($attempt->status, [PaymentAttemptStatus::AUTHORIZED, PaymentAttemptStatus::PAID], true)
-        ) {
-            return PaymentEventData::TYPE_CAPTURE;
-        }
 
         if (
             PreauthorizationOperationStatus::isCancelled($remoteStatus)

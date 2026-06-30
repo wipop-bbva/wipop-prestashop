@@ -155,10 +155,10 @@ final class WebhookTransactionHandler
      */
     private function mapStatus(PaymentAttempt $attempt, Transaction $transaction): PaymentAttemptStatus
     {
-        /* Manual card auths are not paid here; capture/reversal webhooks finalize them later */
+        /* Manual card auths are authorized here; capture/reversal webhooks finalize them later */
         return match ($transaction->status?->value) {
             TransactionStatus::COMPLETED->value => $this->isOpenManualCardAuthorization($attempt)
-                ? $attempt->status
+                ? PaymentAttemptStatus::AUTHORIZED
                 : PaymentAttemptStatus::PAID,
             TransactionStatus::FAILED->value,
             TransactionStatus::ERROR->value => PaymentAttemptStatus::FAILED,
@@ -168,7 +168,6 @@ final class WebhookTransactionHandler
                 : PaymentAttemptStatus::CHECKOUT_PENDING,
             TransactionStatus::CHARGE_PENDING->value => PaymentAttemptStatus::CHECKOUT_PENDING,
             null => throw new WebhookException('Missing transaction status.', 400),
-            default => throw new WebhookException('Unsupported transaction status.', 400),
         };
     }
 

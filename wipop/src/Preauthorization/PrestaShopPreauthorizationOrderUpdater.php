@@ -85,7 +85,7 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
 
         $statusChanged = (int) $order->current_state !== $paidStateId;
         if ($statusChanged) {
-            $this->updateOrderStatus($orderId, $paidStateId);
+            $this->updateOrderStatus($orderId, $paidStateId, true);
         }
 
         if ($paymentAdded || $statusChanged) {
@@ -161,9 +161,9 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
     /**
      * @throws PreauthorizationException
      */
-    private function updateOrderStatus(int $orderId, int $stateId): void
+    private function updateOrderStatus(int $orderId, int $stateId, bool $useExistingPayment = false): void
     {
-        if ($this->commandBus !== null) {
+        if ($this->commandBus !== null && !$useExistingPayment) {
             $this->commandBus->handle(new UpdateOrderStatusCommand($orderId, $stateId));
 
             return;
@@ -171,9 +171,9 @@ final class PrestaShopPreauthorizationOrderUpdater implements PreauthorizationOr
 
         $history = new OrderHistory();
         $history->id_order = $orderId;
-        $history->changeIdOrderState($stateId, $orderId);
+        $history->changeIdOrderState($stateId, $orderId, $useExistingPayment);
 
-        if (!$history->add(false)) {
+        if (!$history->addWithemail() && (int) $history->id <= 0) {
             throw new PreauthorizationException('Unable to update the Wipop preauthorization order status.');
         }
     }
