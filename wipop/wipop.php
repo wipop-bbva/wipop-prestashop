@@ -67,6 +67,7 @@ use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 use PrestaShop\PrestaShop\Core\Action\ActionsBarButton;
 use PrestaShop\PrestaShop\Core\Action\ActionsBarButtonsCollection;
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use PrestaShopBundle\Form\FormBuilderModifier;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
@@ -165,6 +166,9 @@ class Wipop extends PaymentModule
         }
     }
 
+    /**
+     * @return PaymentOption[]
+     */
     public function hookPaymentOptions(array $params): array
     {
         $cart = $params['cart'] ?? null;
