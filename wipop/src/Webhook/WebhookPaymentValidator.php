@@ -62,11 +62,7 @@ final class WebhookPaymentValidator
         }
 
         $transactionCurrency = $this->normalizeCurrency($transaction->currency);
-        if ($transactionCurrency === '') {
-            throw new WebhookException('Missing transaction currency for completed payment.', 400);
-        }
-
-        if ($transactionCurrency !== $attemptCurrency) {
+        if ($transactionCurrency !== '' && $transactionCurrency !== $attemptCurrency) {
             throw new WebhookException('Webhook currency does not match the local Wipop payment attempt.', 400);
         }
     }

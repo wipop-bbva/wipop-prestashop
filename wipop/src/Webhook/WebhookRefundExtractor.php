@@ -47,7 +47,7 @@ final class WebhookRefundExtractor
     public function extract(Transaction $transaction, array $payload): ?PaymentEventData
     {
         if (TransactionType::isRefund($transaction->transactionType)) {
-            return $this->fromTransaction($transaction);
+            return $this->fromTransaction($transaction, $payload['charge'] ?? null);
         }
 
         $refundPayload = $payload['refund'] ?? null;
@@ -61,17 +61,19 @@ final class WebhookRefundExtractor
     /**
      * @throws WebhookException
      */
-    private function fromTransaction(Transaction $transaction): PaymentEventData
+    private function fromTransaction(Transaction $transaction, mixed $chargePayload): PaymentEventData
     {
         $transactionId = $this->nullableString($transaction->id);
         if ($transactionId === null) {
             throw new WebhookException('Missing refund transaction id.', 400);
         }
 
+        $charge = is_array($chargePayload) ? $chargePayload : [];
+
         return new PaymentEventData(
             $transactionId,
-            null,
-            $this->nullableString($transaction->orderId),
+            $this->nullableString($charge['id'] ?? $charge['public_id'] ?? null),
+            $this->nullableString($charge['order_id'] ?? $transaction->orderId),
             PaymentEventData::TYPE_REFUND,
             $this->nullableString($transaction->operationType),
             $transaction->status?->value,

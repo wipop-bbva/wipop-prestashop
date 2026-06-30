@@ -33,10 +33,12 @@ use Order;
 use PaymentModule;
 use PrestaShop\Module\Wipop\Exception\WebhookException;
 use PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter;
+use PrestaShop\Module\Wipop\Payment\PaymentAmount;
 use PrestaShop\Module\Wipop\Payment\PaymentAttempt;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
 use PrestaShop\Module\Wipop\Payment\TransactionType;
 use RuntimeException;
+use Throwable;
 use Validate;
 use Wipop\Domain\Transaction;
 
@@ -59,7 +61,7 @@ final class WebhookOrderSynchronizer
      */
     public function sync(PaymentAttempt $attempt, Transaction $transaction, int $orderStateId): void
     {
-        if (!TransactionType::isCharge($transaction->transactionType)) {
+        if (!TransactionType::isChargeOrMissing($transaction->transactionType)) {
             return;
         }
 
@@ -120,17 +122,29 @@ final class WebhookOrderSynchronizer
             throw new RuntimeException('Unable to resolve the target order status.');
         }
 
-        $created = $this->module->validateOrder(
-            (int) $cart->id,
-            $orderStateId,
-            $attempt->amount,
-            (string) $this->module->displayName,
-            null,
-            ['transaction_id' => $transactionId],
-            (int) $cart->id_currency,
-            false,
-            $secureKey
-        );
+        try {
+            $created = $this->module->validateOrder(
+                (int) $cart->id,
+                $orderStateId,
+                $attempt->amount,
+                (string) $this->module->displayName,
+                null,
+                ['transaction_id' => $transactionId],
+                (int) $cart->id_currency,
+                false,
+                $secureKey
+            );
+        } catch (Throwable $throwable) {
+            $orderId = $this->existingOrderId((int) $cart->id);
+            if ($orderId === null || !$this->isExpectedCreatedOrder($orderId, $cart, $attempt, $orderStateId)) {
+                throw $throwable;
+            }
+
+            $this->paymentAttemptRepository->assignOrderId($attempt->id, $orderId);
+            $this->orderNotes->addPaymentConfirmed($orderId, $transactionId);
+
+            return;
+        }
 
         if (!$created) {
             throw new RuntimeException('Unable to create the PrestaShop order from the Wipop webhook.');
@@ -147,6 +161,19 @@ final class WebhookOrderSynchronizer
 
         $this->paymentAttemptRepository->assignOrderId($attempt->id, $orderId);
         $this->orderNotes->addPaymentConfirmed($orderId, $transactionId);
+    }
+
+    private function isExpectedCreatedOrder(int $orderId, Cart $cart, PaymentAttempt $attempt, int $orderStateId): bool
+    {
+        $order = new Order($orderId);
+        if (!Validate::isLoadedObject($order)) {
+            return false;
+        }
+
+        return (int) $order->id_cart === (int) $cart->id
+            && (int) $order->id_currency === (int) $cart->id_currency
+            && (int) $order->current_state === $orderStateId
+            && PaymentAmount::matches($attempt->amount, (float) $order->total_paid_tax_incl);
     }
 
     /**

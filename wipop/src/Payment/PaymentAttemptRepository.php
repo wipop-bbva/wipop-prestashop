@@ -178,14 +178,6 @@ final class PaymentAttemptRepository implements
 
     public function findByRemoteIdentifiers(?string $wipopOrderId, ?string $transactionId): ?PaymentAttempt
     {
-        $wipopOrderId = $this->nullableString($wipopOrderId);
-        if ($wipopOrderId !== null) {
-            $attempt = $this->findOneByColumn('wipop_order_id', $wipopOrderId);
-            if ($attempt !== null) {
-                return $attempt;
-            }
-        }
-
         $transactionId = $this->nullableString($transactionId);
         if ($transactionId !== null) {
             $attempt = $this->findOneByColumn('wipop_transaction_id', $transactionId);
@@ -196,6 +188,14 @@ final class PaymentAttemptRepository implements
             $attemptId = $this->paymentEventRepository()->findAttemptIdByRemoteTransactionId($transactionId);
             if ($attemptId !== null) {
                 return $this->findOneByColumn('id_wipop_payment_attempt', $attemptId);
+            }
+        }
+
+        $wipopOrderId = $this->nullableString($wipopOrderId);
+        if ($wipopOrderId !== null) {
+            $attempt = $this->findOneByColumn('wipop_order_id', $wipopOrderId);
+            if ($attempt !== null) {
+                return $attempt;
             }
         }
 
