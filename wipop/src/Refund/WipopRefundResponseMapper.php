@@ -39,7 +39,7 @@ final class WipopRefundResponseMapper
     /**
      * @throws ManualRefundException
      */
-    public function map(string $parentTransactionId, Charge $charge): WipopRefundResult
+    public function map(string $parentTransactionId, Charge $charge, ?float $requestedAmount = null): WipopRefundResult
     {
         $refund = $charge->refund;
         if ($refund === null) {
@@ -60,10 +60,10 @@ final class WipopRefundResponseMapper
             throw new ManualRefundException('Wipop did not return a refund status.');
         }
 
-        $amount = $refund->amount;
-        if ($amount === null) {
+        if ($refund->amount === null) {
             throw new ManualRefundException('Wipop did not return a refund amount.');
         }
+        $amount = $requestedAmount ?? $refund->amount;
 
         $currencyIso = $this->nullableString($refund->currency);
         if ($currencyIso === null) {

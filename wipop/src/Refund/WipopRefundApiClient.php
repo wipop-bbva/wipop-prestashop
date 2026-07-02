@@ -66,6 +66,7 @@ final class WipopRefundApiClient implements WipopRefundClientInterface
             fn () => $client->chargeOperation()->refund($chargeTransactionId, $params),
         );
 
-        return $this->responseMapper->map($chargeTransactionId, $charge);
+        // The immediate response can echo the parent charge amount; the accepted request amount is the refund amount.
+        return $this->responseMapper->map($chargeTransactionId, $charge, $amount);
     }
 }
