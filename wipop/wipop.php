@@ -509,6 +509,19 @@ class Wipop extends PaymentModule
         );
     }
 
+    private function csrfTokenManager($container): ?CsrfTokenManagerInterface
+    {
+        try {
+            return $container->get(CsrfTokenManagerInterface::class);
+        } catch (Throwable) {
+            try {
+                return $container->get('security.csrf.token_manager');
+            } catch (Throwable) {
+                return null;
+            }
+        }
+    }
+
     /**
      * @param array<string, mixed> $payment
      *
@@ -528,12 +541,11 @@ class Wipop extends PaymentModule
         }
 
         $router = $container->get('router');
-        try {
-            /** @var CsrfTokenManagerInterface $tokenManager */
-            $tokenManager = $container->get(CsrfTokenManagerInterface::class);
-        } catch (Throwable) {
-            /** @var CsrfTokenManagerInterface $tokenManager */
-            $tokenManager = $container->get('security.csrf.token_manager');
+        $tokenManager = $this->csrfTokenManager($container);
+        if ($tokenManager === null) {
+            $payment['can_manage_preauthorization'] = false;
+
+            return $payment;
         }
 
         $payment['preauthorization_capture_url'] = $router->generate('wipop_order_preauthorization_capture', [
@@ -579,8 +591,14 @@ class Wipop extends PaymentModule
             }
 
             $router = $container->get('router');
-            /** @var CsrfTokenManagerInterface $tokenManager */
-            $tokenManager = $container->get('security.csrf.token_manager');
+            $tokenManager = $this->csrfTokenManager($container);
+            if ($tokenManager === null) {
+                $recurring['can_stop'] = false;
+                $payment['recurring'] = $recurring;
+
+                return $payment;
+            }
+
             $subscriptionId = (int) $recurring['subscription_id'];
 
             $recurring['stop_url'] = $router->generate('wipop_order_recurring_stop', [
