@@ -39,6 +39,17 @@ final class WipopRefundResponseMapperTest extends TestCase
         self::assertSame('tx_refund_from_charge', $result->refundTransactionId);
     }
 
+    public function testItUsesRequestedAmountWhenImmediateResponseEchoesChargeAmount(): void
+    {
+        $result = (new WipopRefundResponseMapper())->map(
+            'tx_charge',
+            $this->chargeWithRefund(refundId: 'tx_refund', amount: 9.0),
+            3.0
+        );
+
+        self::assertSame(3.0, $result->amount);
+    }
+
     public function testItRejectsResponseWithoutRefundTransactionIdentifier(): void
     {
         $this->expectException(ManualRefundException::class);
@@ -91,15 +102,18 @@ final class WipopRefundResponseMapperTest extends TestCase
         }
     }
 
-    private function chargeWithRefund(?string $chargeId = 'tx_charge', ?string $refundId = 'tx_refund'): Charge
-    {
+    private function chargeWithRefund(
+        ?string $chargeId = 'tx_charge',
+        ?string $refundId = 'tx_refund',
+        float $amount = 12.1,
+    ): Charge {
         $charge = new Charge();
         $charge->id = $chargeId;
         $charge->orderId = 'WP1234567890';
 
         $refund = new Refund();
         $refund->id = $refundId;
-        $refund->amount = 12.1;
+        $refund->amount = $amount;
         $refund->status = TransactionStatus::COMPLETED;
         $refund->currency = 'EUR';
         $refund->operationType = 'refund';
