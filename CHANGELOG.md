@@ -1,3 +1,10 @@
+## [1.13.2](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.13.1...v1.13.2) (2026-07-02)
+
+### Bug Fixes
+
+* **admin:** resolve CSRF token manager for recurring actions ([30d1eb8](https://github.com/wipop-bbva/wipop-prestashop/commit/30d1eb8871a4701bea6800c61afe6c92e1bbc237))
+* **refund:** preserve requested amount for partial refunds ([8266d2f](https://github.com/wipop-bbva/wipop-prestashop/commit/8266d2f97ab595289dfcbe5ae158169c3e1f3e83))
+
 ## [1.13.1](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.13.0...v1.13.1) (2026-06-30)
 
 ### Bug Fixes

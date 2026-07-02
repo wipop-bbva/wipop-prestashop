@@ -2,7 +2,7 @@
 <module>
     <name>wipop</name>
     <displayName><![CDATA[Wipöp]]></displayName>
-    <version><![CDATA[1.13.1]]></version>
+    <version><![CDATA[1.13.2]]></version>
     <description><![CDATA[PrestaShop module that integrates the Wipöp payment gateway]]></description>
     <author><![CDATA[BBVA]]></author>
     <tab><![CDATA[payments_gateways]]></tab>
