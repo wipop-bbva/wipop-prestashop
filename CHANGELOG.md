@@ -1,3 +1,26 @@
+## [1.14.1](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.14.0...v1.14.1) (2026-07-03)
+
+### Bug Fixes
+
+* **docs:** update PrestaShop version and credential names in README and LEEME ([987c1c2](https://github.com/wipop-bbva/wipop-prestashop/commit/987c1c24171c960cfd1aab7d1a06a64a37ea89da))
+
+## [1.14.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.13.2...v1.14.0) (2026-07-03)
+
+### Features
+
+* **admin:** align Wipop settings labels and tooltips ([b6f889f](https://github.com/wipop-bbva/wipop-prestashop/commit/b6f889f67d672740e47c4af45fd9b1457ca7d3f7))
+
+### Bug Fixes
+
+* **checkout:** use native notifications for start errors ([0a665ce](https://github.com/wipop-bbva/wipop-prestashop/commit/0a665ce8ba96371461529348c4dcc5e294ad62d1))
+
+## [1.13.2](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.13.1...v1.13.2) (2026-07-02)
+
+### Bug Fixes
+
+* **admin:** resolve CSRF token manager for recurring actions ([30d1eb8](https://github.com/wipop-bbva/wipop-prestashop/commit/30d1eb8871a4701bea6800c61afe6c92e1bbc237))
+* **refund:** preserve requested amount for partial refunds ([8266d2f](https://github.com/wipop-bbva/wipop-prestashop/commit/8266d2f97ab595289dfcbe5ae158169c3e1f3e83))
+
 ## [1.13.1](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.13.0...v1.13.1) (2026-06-30)
 
 ### Bug Fixes
