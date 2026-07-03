@@ -52,7 +52,7 @@ final class ProductRecurringSettingsType extends TranslatorAwareType
             ->add('period', ChoiceType::class, [
                 'label' => $this->trans('Periodicity', TranslationDomains::ADMIN),
                 'required' => false,
-                'placeholder' => $this->trans('Choose a period', TranslationDomains::ADMIN),
+                'placeholder' => false,
                 'choice_translation_domain' => TranslationDomains::ADMIN,
                 'choices' => [
                     'Monthly' => RecurringPeriod::MONTHLY->value,
@@ -64,6 +64,7 @@ final class ProductRecurringSettingsType extends TranslatorAwareType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
+            'label' => $this->trans('Recurring payment', TranslationDomains::ADMIN),
             'translation_domain' => TranslationDomains::ADMIN,
         ]);
     }
