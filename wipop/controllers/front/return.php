@@ -29,6 +29,7 @@ if (!defined('_PS_VERSION_')) {
 
 require_once dirname(__DIR__, 2) . '/autoload.php';
 
+use PrestaShop\Module\Wipop\Checkout\ReturnUrlToken;
 use PrestaShop\Module\Wipop\Log\Logger;
 use PrestaShop\Module\Wipop\Payment\PaymentAttempt;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository;
@@ -37,6 +38,9 @@ use PrestaShop\Module\Wipop\TranslationDomains;
 
 class WipopReturnModuleFrontController extends ModuleFrontController
 {
+    private const ORDER_WAIT_ATTEMPTS = 16;
+    private const ORDER_WAIT_MICROSECONDS = 500000;
+
     public $ssl = true;
 
     public function initContent()
@@ -49,19 +53,22 @@ class WipopReturnModuleFrontController extends ModuleFrontController
             'Your Wipop payment is being confirmed. '
             . 'Your order will be confirmed automatically when the payment is complete.'
         );
+        $repository = PaymentAttemptRepository::createDefault();
+        $attempt = $this->attemptFromReturn($repository, $cartId);
+        $attempt = $this->waitForOrder($repository, $attempt);
 
-        if ($cartId === null) {
-            $logger->warning('Wipop return endpoint reached without cart.');
+        if ($cartId === null && $attempt === null) {
+            $logger->warning('Wipop return endpoint reached without cart or attempt.');
             $this->redirectToCheckoutWithWarning($pendingMessage);
 
             return;
         }
 
         $logger->info('Wipop return endpoint reached.', [
-            'cart_id' => $cartId,
+            'cart_id' => $cartId ?? 0,
+            'attempt_id' => $attempt !== null ? $attempt->id : 0,
         ]);
 
-        $attempt = PaymentAttemptRepository::createDefault()->findLatestByCartId($cartId);
         if ($attempt !== null && $attempt->orderId !== null) {
             Tools::redirect($this->orderConfirmationUrl($attempt));
 
@@ -77,6 +84,44 @@ class WipopReturnModuleFrontController extends ModuleFrontController
         }
 
         $this->redirectToCheckoutWithWarning($pendingMessage);
+    }
+
+    private function attemptFromReturn(PaymentAttemptRepository $repository, ?int $cartId): ?PaymentAttempt
+    {
+        $attemptId = Tools::getValue('wipop_attempt_id');
+        $attemptId = is_numeric($attemptId) ? (int) $attemptId : 0;
+        $returnToken = Tools::getValue('wipop_return_token', '');
+        if (is_string($returnToken) && ReturnUrlToken::fromPrestaShopCookieKey()->matches($attemptId, $returnToken)) {
+            $attempt = $repository->findById($attemptId);
+            if ($attempt !== null) {
+                return $attempt;
+            }
+        }
+
+        return $cartId !== null ? $repository->findLatestByCartId($cartId) : null;
+    }
+
+    private function waitForOrder(PaymentAttemptRepository $repository, ?PaymentAttempt $attempt): ?PaymentAttempt
+    {
+        if ($attempt === null || $attempt->orderId !== null || $attempt->status === PaymentAttemptStatus::FAILED) {
+            return $attempt;
+        }
+
+        for ($i = 0; $i < self::ORDER_WAIT_ATTEMPTS; ++$i) {
+            usleep(self::ORDER_WAIT_MICROSECONDS);
+
+            $freshAttempt = $repository->findById($attempt->id);
+            if ($freshAttempt === null) {
+                return $attempt;
+            }
+
+            $attempt = $freshAttempt;
+            if ($attempt->orderId !== null || $attempt->status === PaymentAttemptStatus::FAILED) {
+                return $attempt;
+            }
+        }
+
+        return $attempt;
     }
 
     private function redirectToCheckoutWithError(string $message): void
