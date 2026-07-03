@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="shop" source-language="en-US" target-language="es-ES" datatype="plaintext">
     <body>
-      <trans-unit id="fc8238ac558549bdf182e1367245e0e4">
-        <source>Return to checkout</source>
-        <target>Volver al pago</target>
-        <note>Line: </note>
-      </trans-unit>
       <trans-unit id="d093d5eb00ab75cca9dc628459ea2a41">
         <source>Unsupported Wipop payment method.</source>
         <target>Método de pago de Wipöp no compatible.</target>
@@ -142,24 +137,14 @@
         <target>Transacción:</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="5f6690a6216d4757bcb959f74d617e61">
-        <source>Wipop payment failed</source>
-        <target>Pago con Wipöp fallido</target>
-        <note>Line: </note>
-      </trans-unit>
       <trans-unit id="96f9ce3de0d902102d70f862d8ad44bd">
         <source>The Wipop payment was not completed. Please return to checkout and try again.</source>
         <target>El pago con Wipöp no se completó. Vuelve al checkout e inténtalo de nuevo.</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="c87a93f3285c8fd6f654c7034f307219">
-        <source>Wipop payment pending</source>
-        <target>Pago con Wipöp pendiente</target>
-        <note>Line: </note>
-      </trans-unit>
-      <trans-unit id="b83986e3c451e30356c3e30116a38c43">
-        <source>The payment is waiting for webhook confirmation. Your order will be confirmed when Wipop completes the payment.</source>
-        <target>El pago está esperando confirmación por webhook. Tu pedido se confirmará cuando Wipöp complete el pago.</target>
+      <trans-unit id="bed4de8515f150c191f2f4c77618afd9">
+        <source>Your Wipop payment is being confirmed. Your order will be confirmed automatically when the payment is complete.</source>
+        <target>Tu pago con Wipöp se está confirmando. El pedido se confirmará automáticamente cuando el pago se complete.</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="2c6946353a96c083f3353e91b416b6f0">

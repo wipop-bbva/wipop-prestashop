@@ -45,10 +45,14 @@ class WipopReturnModuleFrontController extends ModuleFrontController
 
         $logger = new Logger();
         $cartId = $this->cartId();
+        $pendingMessage = $this->translateMessage(
+            'Your Wipop payment is being confirmed. '
+            . 'Your order will be confirmed automatically when the payment is complete.'
+        );
 
         if ($cartId === null) {
             $logger->warning('Wipop return endpoint reached without cart.');
-            $this->renderPendingMessage();
+            $this->redirectToCheckoutWithWarning($pendingMessage);
 
             return;
         }
@@ -65,37 +69,33 @@ class WipopReturnModuleFrontController extends ModuleFrontController
         }
 
         if ($attempt?->status === PaymentAttemptStatus::FAILED) {
-            $this->renderReturnMessage(
-                $this->translateMessage('Wipop payment failed'),
+            $this->redirectToCheckoutWithError(
                 $this->translateMessage('The Wipop payment was not completed. Please return to checkout and try again.')
             );
 
             return;
         }
 
-        $this->renderPendingMessage();
+        $this->redirectToCheckoutWithWarning($pendingMessage);
     }
 
-    private function renderPendingMessage(): void
+    private function redirectToCheckoutWithError(string $message): void
     {
-        $this->renderReturnMessage(
-            $this->translateMessage('Wipop payment pending'),
-            $this->translateMessage(
-                'The payment is waiting for webhook confirmation. '
-                . 'Your order will be confirmed when Wipop completes the payment.'
-            )
-        );
+        $this->errors[] = $message;
+
+        $this->redirectWithNotifications($this->checkoutUrl());
     }
 
-    private function renderReturnMessage(string $title, string $message): void
+    private function redirectToCheckoutWithWarning(string $message): void
     {
-        $this->context->smarty->assign([
-            'checkout_url' => $this->context->link->getPageLink('order', true, null, 'step=3'),
-            'message' => $message,
-            'title' => $title,
-        ]);
+        $this->warning[] = $message;
 
-        $this->setTemplate('module:wipop/views/templates/front/unavailable.tpl');
+        $this->redirectWithNotifications($this->checkoutUrl());
+    }
+
+    private function checkoutUrl(): string
+    {
+        return $this->context->link->getPageLink('order', true, null, 'step=3');
     }
 
     private function cartId(): ?int
