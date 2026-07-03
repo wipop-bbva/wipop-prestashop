@@ -37,11 +37,6 @@
         <target>Ezin izan da Wipöp checkout-a hasi.</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="d74a204146ff8c707c0ec7b30f7ffd1c">
-        <source>Wipop unavailable</source>
-        <target>Wipöp ez dago erabilgarri</target>
-        <note>Line: </note>
-      </trans-unit>
       <trans-unit id="efba4a538a86df1668430d1fd25699dd">
         <source>Pay by card with Wipop</source>
         <target>Ordaindu txartelarekin Wipöp erabiliz</target>
@@ -165,6 +160,11 @@
       <trans-unit id="b83986e3c451e30356c3e30116a38c43">
         <source>The payment is waiting for webhook confirmation. Your order will be confirmed when Wipop completes the payment.</source>
         <target>Ordainketa webhook baieztapenaren zain dago. Eskaera Wipöp-ek ordainketa osatzen duenean berretsiko da.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2c6946353a96c083f3353e91b416b6f0">
+        <source>We could not start the Wipop payment. Please return to checkout and try again or use another payment method.</source>
+        <target>Ezin izan dugu Wipöp ordainketa hasi. Itzuli ordainketara eta saiatu berriro edo erabili beste ordainketa-metodo bat.</target>
         <note>Line: </note>
       </trans-unit>
     </body>
