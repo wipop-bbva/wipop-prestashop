@@ -36,14 +36,14 @@ soporte de pagos recurrentes personalizados.
 ## Requisitos
 
 - PHP 8.1 o superior.
-- PrestaShop 8.1 a 9.0.
+- PrestaShop 8.1 a 9.1.
 - Extensión PHP cURL habilitada.
 - Cuenta de comercio Wipöp con credenciales de Sandbox y Producción.
 - Credenciales del comercio:
   - Merchant ID.
   - Terminal ID.
-  - Secret key.
-  - Public secret key.
+  - Public Key.
+  - Private Key.
 - HTTPS habilitado en la tienda para que Wipöp pueda enviar webhooks de forma
   segura.
 
@@ -65,8 +65,8 @@ soporte de pagos recurrentes personalizados.
 ## Antes de empezar
 
 - Completa el alta con Wipöp para obtener terminales de Sandbox y Producción.
-- Reúne todas las credenciales del módulo: Merchant ID, Terminal ID, Secret key y
-  Public secret key.
+- Reúne todas las credenciales del módulo: Merchant ID, Terminal ID, Public Key y
+  Private Key.
 - Asegúrate de que la tienda es accesible por HTTPS.
 - En el portal Wipöp/BBVA, configura el webhook usando la URL, usuario y
   contraseña exactos que se muestran en la página de configuración del módulo.
@@ -75,7 +75,7 @@ soporte de pagos recurrentes personalizados.
 
 1. Instala el módulo desde ZIP.
 2. Abre la página de configuración de Wipöp en el Back Office de PrestaShop.
-3. Rellena Merchant ID, Terminal ID, Secret key, Public secret key y el entorno
+3. Rellena Merchant ID, Terminal ID, Public Key, Private Key y el entorno
    objetivo.
 4. Elige el modo de **Preautorizaciones**:
    - `Cobrar en el checkout`, o
@@ -100,10 +100,10 @@ Los ajustes se guardan en el valor de configuración de PrestaShop
 `WIPOP_SETTINGS`. Campos obligatorios:
 
 - `Merchant ID`: proporcionado por Wipöp.
-- `Secret key` / `Public secret key`: claves criptográficas usadas para firmar
+- `Public Key` / `Private Key`: claves criptográficas usadas para firmar
   peticiones.
 - `Terminal ID`: número entre 1 y 99.
-- `Live mode`: desactivado para Sandbox, activado para Producción.
+- `Entorno`: `Sandbox` para pruebas o `Producción` para procesar pagos reales.
 
 ### Captura manual / preautorización
 
@@ -227,10 +227,11 @@ cargos dejan de estar disponibles.
 
 ### Reembolsos
 
-Los pedidos Wipöp pagados se pueden reembolsar desde la página de pedido de
-PrestaShop. El módulo soporta reembolsos totales y parciales, valida la
-consistencia de importe/moneda, guarda el evento de reembolso y crea el abono de
-PrestaShop cuando es posible.
+Los pedidos Wipöp de tarjeta pagados se pueden reembolsar desde la página de
+pedido de PrestaShop. El módulo soporta reembolsos totales y parciales, valida
+la consistencia de importe/moneda, guarda el evento de reembolso y crea el abono
+de PrestaShop cuando es posible. Los reembolsos Bizum no están soportados desde
+el módulo.
 
 Los webhooks de reembolso también sincronizan el estado de reembolso con el
 intento de pago local.

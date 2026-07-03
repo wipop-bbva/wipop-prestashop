@@ -34,14 +34,14 @@ tokenization, optional preauthorizations, and custom recurring payment support.
 ## Requirements
 
 - PHP 8.1 or higher.
-- PrestaShop 8.1 to 9.0.
+- PrestaShop 8.1 to 9.1.
 - cURL PHP extension enabled.
 - Wipöp merchant account with Sandbox and Production credentials.
 - Merchant credentials:
   - Merchant ID.
   - Terminal ID.
-  - Secret key.
-  - Public secret key.
+  - Public Key.
+  - Private Key.
 - HTTPS enabled in the store so Wipöp can send webhooks securely.
 
 ## Installation
@@ -61,8 +61,8 @@ tokenization, optional preauthorizations, and custom recurring payment support.
 ## Before you start
 
 - Complete onboarding with Wipöp to get Sandbox and Production terminals.
-- Gather all module credentials: Merchant ID, Terminal ID, Secret key and Public
-  secret key.
+- Gather all module credentials: Merchant ID, Terminal ID, Public Key and
+  Private Key.
 - Ensure the store is reachable via HTTPS.
 - In the Wipöp/BBVA portal, configure the webhook using the exact URL, username
   and password shown in the module configuration page.
@@ -71,7 +71,7 @@ tokenization, optional preauthorizations, and custom recurring payment support.
 
 1. Install the module from ZIP.
 2. Open the Wipöp configuration page in the PrestaShop Back Office.
-3. Fill in Merchant ID, Terminal ID, Secret key, Public secret key and the target
+3. Fill in Merchant ID, Terminal ID, Public Key, Private Key and the target
    environment.
 4. Choose the **Preauthorizations** mode:
    - `Charge at checkout`, or
@@ -95,9 +95,9 @@ Settings are stored in the PrestaShop `WIPOP_SETTINGS` configuration value.
 Required fields:
 
 - `Merchant ID`: as provided by Wipöp.
-- `Secret key` / `Public secret key`: cryptographic keys used to sign requests.
+- `Public Key` / `Private Key`: cryptographic keys used to sign requests.
 - `Terminal ID`: number between 1 and 99.
-- `Live mode`: disabled for Sandbox, enabled for Production.
+- `Environment`: `Sandbox` for tests or `Production` to process real payments.
 
 ### Manual capture / preauthorization
 
@@ -216,9 +216,10 @@ is no longer available.
 
 ### Refunds
 
-Paid Wipöp orders can be refunded from the PrestaShop order page. The module
-supports full and partial refunds, validates amount/currency consistency, stores
-the refund event and creates the PrestaShop credit slip when possible.
+Paid Wipöp card orders can be refunded from the PrestaShop order page. The
+module supports full and partial refunds, validates amount/currency consistency,
+stores the refund event and creates the PrestaShop credit slip when possible.
+Bizum refunds are not supported from the module.
 
 Refund webhooks also synchronize refund state back into the local payment
 attempt.
