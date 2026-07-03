@@ -1,3 +1,9 @@
+## [1.14.1](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.14.0...v1.14.1) (2026-07-03)
+
+### Bug Fixes
+
+* **docs:** update PrestaShop version and credential names in README and LEEME ([987c1c2](https://github.com/wipop-bbva/wipop-prestashop/commit/987c1c24171c960cfd1aab7d1a06a64a37ea89da))
+
 ## [1.14.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.13.2...v1.14.0) (2026-07-03)
 
 ### Features
