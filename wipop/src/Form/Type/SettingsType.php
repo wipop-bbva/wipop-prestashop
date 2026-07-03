@@ -31,7 +31,6 @@ namespace PrestaShop\Module\Wipop\Form\Type;
 use PrestaShop\Module\Wipop\Configuration\CaptureMode;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\TranslationDomains;
-use PrestaShopBundle\Form\Admin\Type\SwitchType;
 use PrestaShopBundle\Form\Admin\Type\TranslatorAwareType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -54,32 +53,33 @@ final class SettingsType extends TranslatorAwareType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('live_mode', SwitchType::class, [
-                'label' => $this->trans('Live mode', TranslationDomains::ADMIN),
-                'required' => false,
-            ])
             ->add('merchant_id', TextType::class, [
                 'label' => $this->trans('Merchant ID', TranslationDomains::ADMIN),
                 'required' => false,
             ])
-            ->add('secret_key', PasswordType::class, [
-                'label' => $this->trans('Secret key', TranslationDomains::ADMIN),
-                'required' => false,
-                'empty_data' => '',
-                'always_empty' => true,
-                'attr' => [
-                    'autocomplete' => 'new-password',
-                    'placeholder' => $options['secret_key_configured'] ? '****' : '',
+            ->add('live_mode', ChoiceType::class, [
+                'label' => $this->trans('Environment', TranslationDomains::ADMIN),
+                'required' => true,
+                'expanded' => false,
+                'multiple' => false,
+                'choice_translation_domain' => false,
+                'choices' => [
+                    $this->trans('Sandbox', TranslationDomains::ADMIN) => false,
+                    $this->trans('Production', TranslationDomains::ADMIN) => true,
                 ],
             ])
-            ->add('public_secret_key', PasswordType::class, [
-                'label' => $this->trans('Public secret key', TranslationDomains::ADMIN),
-                'required' => false,
-                'empty_data' => '',
-                'always_empty' => true,
-                'attr' => [
-                    'autocomplete' => 'new-password',
-                    'placeholder' => $options['public_secret_key_configured'] ? '****' : '',
+            ->add('capture_mode', ChoiceType::class, [
+                'label' => $this->trans('Preauthorizations', TranslationDomains::ADMIN),
+                'required' => true,
+                'expanded' => true,
+                'multiple' => false,
+                'choice_translation_domain' => false,
+                'choices' => [
+                    $this->trans('Charge at checkout', TranslationDomains::ADMIN) => CaptureMode::IMMEDIATE->value,
+                    $this->trans(
+                        'Reserve the amount to charge it later',
+                        TranslationDomains::ADMIN
+                    ) => CaptureMode::MANUAL->value,
                 ],
             ])
             ->add('terminal_id', IntegerType::class, [
@@ -98,20 +98,24 @@ final class SettingsType extends TranslatorAwareType
                     ]),
                 ],
             ])
-            ->add('capture_mode', ChoiceType::class, [
-                'label' => $this->trans('Preauthorizations', TranslationDomains::ADMIN),
-                'required' => true,
-                'expanded' => true,
-                'multiple' => false,
-                'choice_translation_domain' => TranslationDomains::ADMIN,
-                'help' => $this->trans(
-                    'If you choose to reserve the amount, you will need to confirm or cancel the charge manually'
-                    . ' from the order details. Only applies to card payments.',
-                    TranslationDomains::ADMIN
-                ),
-                'choices' => [
-                    'Charge at checkout' => CaptureMode::IMMEDIATE->value,
-                    'Reserve the amount to charge it later' => CaptureMode::MANUAL->value,
+            ->add('public_secret_key', PasswordType::class, [
+                'label' => $this->trans('Public Key', TranslationDomains::ADMIN),
+                'required' => false,
+                'empty_data' => '',
+                'always_empty' => true,
+                'attr' => [
+                    'autocomplete' => 'new-password',
+                    'placeholder' => $options['public_secret_key_configured'] ? '****' : '',
+                ],
+            ])
+            ->add('secret_key', PasswordType::class, [
+                'label' => $this->trans('Private Key', TranslationDomains::ADMIN),
+                'required' => false,
+                'empty_data' => '',
+                'always_empty' => true,
+                'attr' => [
+                    'autocomplete' => 'new-password',
+                    'placeholder' => $options['secret_key_configured'] ? '****' : '',
                 ],
             ])
             ->add('enabled_gateways', ChoiceType::class, [
@@ -119,10 +123,10 @@ final class SettingsType extends TranslatorAwareType
                 'required' => false,
                 'expanded' => true,
                 'multiple' => true,
-                'choice_translation_domain' => TranslationDomains::ADMIN,
+                'choice_translation_domain' => false,
                 'choices' => [
-                    'Card' => ChargeMethod::CARD,
-                    'Bizum' => ChargeMethod::BIZUM,
+                    $this->trans('Card', TranslationDomains::ADMIN) => ChargeMethod::CARD,
+                    $this->trans('Bizum', TranslationDomains::ADMIN) => ChargeMethod::BIZUM,
                 ],
             ]);
 

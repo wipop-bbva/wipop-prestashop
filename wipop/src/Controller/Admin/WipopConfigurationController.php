@@ -268,7 +268,7 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
         $enabledGateways = Settings::normalizeGateways($data['enabled_gateways']);
 
         return new Settings(
-            (bool) $data['live_mode'],
+            $this->liveModeValue($data['live_mode']),
             trim((string) $data['merchant_id']),
             $this->secretValue($data['secret_key'], $currentSettings->secretKey),
             $this->secretValue($data['public_secret_key'], $currentSettings->publicSecretKey),
@@ -276,6 +276,11 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
             $enabledGateways,
             CaptureMode::fromValue($data['capture_mode'])
         );
+    }
+
+    private function liveModeValue(mixed $value): bool
+    {
+        return $value === true || $value === 1 || $value === '1';
     }
 
     private function defaultSettings(): Settings

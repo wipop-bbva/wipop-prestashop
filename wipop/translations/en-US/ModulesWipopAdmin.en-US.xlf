@@ -857,6 +857,56 @@
         <target>The payment was refunded, but the recurring subscription could not be stopped automatically.</target>
         <note>Line: </note>
       </trans-unit>
+      <trans-unit id="0ba29c6a1afacf586b03a26162c72274">
+        <source>Environment</source>
+        <target>Environment</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2652eec977dcb2a5aea85f5bec235b05">
+        <source>Sandbox</source>
+        <target>Sandbox</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="756d97bb256b8580d4d71ee0c547804e">
+        <source>Production</source>
+        <target>Production</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d2560860c51f895a9871741f0805c39e">
+        <source>Private Key</source>
+        <target>Private Key</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="37c5b6e7c4291021b6100a6754ae7ffe">
+        <source>Public Key</source>
+        <target>Public Key</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0fe942041deedef9a6418a705c8d3e8d">
+        <source>Choose Sandbox for tests or Production to process real payments.</source>
+        <target>Choose Sandbox for tests or Production to process real payments.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="60bbadfe517e624125b845017e8d45d6">
+        <source>Merchant identifier available in the Technical integration section of your Dashboard.</source>
+        <target>Merchant identifier available in the Technical integration section of your Dashboard.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="031dd2ee9c6ab9c785608b2d8b53bd04">
+        <source>Terminal number available in the Technical integration section of your Dashboard.</source>
+        <target>Terminal number available in the Technical integration section of your Dashboard.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9a98d46d4355275b7fa23d04a4748d62">
+        <source>Enter the public API key provided to identify your merchant securely. You can find it in the Technical integration section of your Dashboard.</source>
+        <target>Enter the public API key provided to identify your merchant securely. You can find it in the Technical integration section of your Dashboard.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6cbd3d453352389f1cfc7642ab42b9a7">
+        <source>Enter the private API key provided to validate your operations securely. You can find it in the Technical integration section of your Dashboard.</source>
+        <target>Enter the private API key provided to validate your operations securely. You can find it in the Technical integration section of your Dashboard.</target>
+        <note>Line: </note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
