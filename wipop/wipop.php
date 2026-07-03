@@ -80,7 +80,7 @@ class Wipop extends PaymentModule
     {
         $this->name = 'wipop';
         $this->tab = 'payments_gateways';
-        $this->version = '1.13.2';
+        $this->version = '1.14.0';
         $this->author = 'BBVA';
         $this->need_instance = 1;
         $this->bootstrap = true;
