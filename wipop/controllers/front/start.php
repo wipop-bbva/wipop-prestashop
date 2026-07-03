@@ -38,6 +38,7 @@ use PrestaShop\Module\Wipop\Card\StoredCardRepository;
 use PrestaShop\Module\Wipop\Checkout\CartOrderIdFactory;
 use PrestaShop\Module\Wipop\Checkout\ChargeRequestFactory;
 use PrestaShop\Module\Wipop\Checkout\ChargeStarter;
+use PrestaShop\Module\Wipop\Checkout\ReturnUrlToken;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Customer\LoggedCartCustomerResolver;
 use PrestaShop\Module\Wipop\Exception\ApiCallException;
@@ -191,7 +192,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
             $redirectUrl = $this->chargeStarter($logger, $paymentAttemptRepository)->start(
                 $cart,
                 $paymentMethod,
-                $this->returnUrl(),
+                $this->returnUrl($attemptId),
                 $settings,
                 $wipopOrderId,
                 $attemptId,
@@ -249,9 +250,17 @@ class WipopStartModuleFrontController extends ModuleFrontController
         );
     }
 
-    private function returnUrl(): string
+    private function returnUrl(int $attemptId): string
     {
-        return $this->context->link->getModuleLink($this->module->name, 'return', [], true);
+        return $this->context->link->getModuleLink(
+            $this->module->name,
+            'return',
+            [
+                'wipop_attempt_id' => $attemptId,
+                'wipop_return_token' => ReturnUrlToken::fromPrestaShopCookieKey()->create($attemptId),
+            ],
+            true
+        );
     }
 
     private function selectedStoredCardId(): ?int

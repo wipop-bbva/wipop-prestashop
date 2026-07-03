@@ -45,7 +45,7 @@ if (!defined('_PS_VERSION_')) {
 final class ModuleInstaller
 {
     private const MODULE_NAME = 'wipop';
-    private const AUTHORIZED_ORDER_STATE_LABEL = 'Wipop authorized manual';
+    private const AUTHORIZED_ORDER_STATE_LABEL = 'Wipop authorized';
 
     public function __construct(private SettingsRepository $settingsRepository)
     {

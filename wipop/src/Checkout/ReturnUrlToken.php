@@ -1,4 +1,5 @@
-{**
+<?php
+/**
  * 2007-2026 PrestaShop
  *
  * NOTICE OF LICENSE
@@ -21,18 +22,41 @@
  *  @copyright 2007-2026 PrestaShop SA
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
- *}
+ */
 
-<section class="wipop-unavailable">
-	<div class="card">
-		<div class="card-block">
-			<h1 class="h3">{$title|escape:'htmlall':'UTF-8'}</h1>
-			<p>{$message|escape:'htmlall':'UTF-8'}</p>
-			<p class="mt-3">
-				<a class="btn btn-primary" href="{$checkout_url|escape:'htmlall':'UTF-8'}">
-					{l s='Return to checkout' d='Modules.Wipop.Shop'}
-				</a>
-			</p>
-		</div>
-	</div>
-</section>
+declare(strict_types=1);
+
+namespace PrestaShop\Module\Wipop\Checkout;
+
+use RuntimeException;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
+final class ReturnUrlToken
+{
+    public function __construct(private string $secret)
+    {
+    }
+
+    public static function fromPrestaShopCookieKey(): self
+    {
+        $cookieKey = defined('_COOKIE_KEY_') ? constant('_COOKIE_KEY_') : null;
+        if (!is_string($cookieKey) || $cookieKey === '') {
+            throw new RuntimeException('PrestaShop cookie key is required to sign Wipop return URLs.');
+        }
+
+        return new self($cookieKey);
+    }
+
+    public function create(int $attemptId): string
+    {
+        return hash_hmac('sha256', (string) $attemptId, $this->secret);
+    }
+
+    public function matches(int $attemptId, string $token): bool
+    {
+        return $attemptId > 0 && hash_equals($this->create($attemptId), $token);
+    }
+}

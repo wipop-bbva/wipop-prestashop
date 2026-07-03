@@ -682,11 +682,6 @@
         <target>Periodicidade</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="d518033ae94128fa99a4445c2150defb">
-        <source>Choose a period</source>
-        <target>Escolle unha periodicidade</target>
-        <note>Line: </note>
-      </trans-unit>
       <trans-unit id="9030e39f00132d583da4122532e509e9">
         <source>Monthly</source>
         <target>Mensual</target>
