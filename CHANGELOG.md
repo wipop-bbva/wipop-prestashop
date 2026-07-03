@@ -1,3 +1,15 @@
+## [1.15.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.14.1...v1.15.0) (2026-07-03)
+
+### Features
+
+* **checkout:** implement ReturnUrlToken for secure return URL handling ([478cedb](https://github.com/wipop-bbva/wipop-prestashop/commit/478cedb5973a0f18f73c606e84343e254d55eb98))
+
+### Bug Fixes
+
+* **admin:** simplify recurring product settings ([8309260](https://github.com/wipop-bbva/wipop-prestashop/commit/8309260d738a609d32a1e97f85ba46f03850f504))
+* **checkout:** use native PrestaShop return notifications ([4a09aee](https://github.com/wipop-bbva/wipop-prestashop/commit/4a09aee01e38bc5cb1d3ef94b5ed28215c1b78a5))
+* **install:** update authorized order state label to remove 'manual' ([4a583cf](https://github.com/wipop-bbva/wipop-prestashop/commit/4a583cfe4e4b8a967d9c2d0b8b0e3da1c007da1c))
+
 ## [1.14.1](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.14.0...v1.14.1) (2026-07-03)
 
 ### Bug Fixes
