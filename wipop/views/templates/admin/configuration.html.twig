@@ -44,14 +44,42 @@
             <i class="material-icons">settings</i> {{ 'Payment configuration with Wipop'|trans }}
           </h3>
           <div class="card-body">
+            {% set settingTooltips = {
+              'live_mode': 'Choose Sandbox for tests or Production to process real payments.'|trans,
+              'merchant_id': 'Merchant identifier available in the Technical integration section of your Dashboard.'|trans,
+              'secret_key': 'Enter the private API key provided to validate your operations securely. You can find it in the Technical integration section of your Dashboard.'|trans,
+              'public_secret_key': 'Enter the public API key provided to identify your merchant securely. You can find it in the Technical integration section of your Dashboard.'|trans,
+              'terminal_id': 'Terminal number available in the Technical integration section of your Dashboard.'|trans,
+              'capture_mode': 'If you choose to reserve the amount, you will need to confirm or cancel the charge manually from the order details. Only applies to card payments.'|trans
+            } %}
+            {% set settingFields = [
+              configurationForm.merchant_id,
+              configurationForm.live_mode,
+              configurationForm.capture_mode,
+              configurationForm.terminal_id,
+              configurationForm.public_secret_key,
+              configurationForm.secret_key
+            ] %}
+
             <div class="wipop-settings-form">
               {{ form_errors(configurationForm) }}
-              {{ form_row(configurationForm.live_mode) }}
-              {{ form_row(configurationForm.merchant_id) }}
-              {{ form_row(configurationForm.secret_key) }}
-              {{ form_row(configurationForm.public_secret_key) }}
-              {{ form_row(configurationForm.terminal_id) }}
-              {{ form_row(configurationForm.capture_mode) }}
+              {% for field in settingFields %}
+                <div class="form-group row wipop-setting-row">
+                  <div class="col-lg-3">
+                    <div class="wipop-field-label">
+                      {{ form_label(field, null, {'label_attr': {'class': 'form-control-label'}}) }}
+                      {% set tooltip = settingTooltips[field.vars.name]|default('') %}
+                      {% if tooltip %}
+                        <span class="wipop-help-tip" data-tooltip="{{ tooltip }}" tabindex="0" role="img" aria-label="{{ tooltip }}">?</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="col-lg-9">
+                    {{ form_errors(field) }}
+                    {{ form_widget(field) }}
+                  </div>
+                </div>
+              {% endfor %}
             </div>
             <div id="wipop-verify-credentials-result" class="alert d-none mt-3" role="alert" aria-live="polite"></div>
           </div>
@@ -119,7 +147,7 @@
                         <i class="material-icons">{{ gatewayCard.icon }}</i>
                       </span>
                       <span class="wipop-gateway-content">
-                        <span class="wipop-gateway-title">{{ gateway.vars.label|trans }}</span>
+                        <span class="wipop-gateway-title">{{ gateway.vars.label }}</span>
                         {% if gatewayCard.description %}
                           <span class="wipop-gateway-description">{{ gatewayCard.description }}</span>
                         {% endif %}

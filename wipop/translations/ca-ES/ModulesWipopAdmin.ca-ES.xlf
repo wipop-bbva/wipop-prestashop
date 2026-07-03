@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="229a7ec501323b94db7ff3157a7623c9">
         <source>Merchant ID</source>
-        <target>ID de comerç</target>
+        <target>Merchant ID</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="952bf87c967660b7bbd4e1eb08cefc92">
@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="f642c37324f865b5d27bd38a831f1702">
         <source>Terminal ID</source>
-        <target>ID del terminal</target>
+        <target>Terminal ID</target>
         <note>Line: </note>
       </trans-unit>
       <trans-unit id="d06f12476a233750984ad8595f2f48bc">
@@ -855,6 +855,56 @@
       <trans-unit id="454173b3a14a7cfd60e14a789031491d">
         <source>The payment was refunded, but the recurring subscription could not be stopped automatically.</source>
         <target>El pagament s'ha reemborsat, però la subscripció recurrent no s'ha pogut aturar automàticament.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0ba29c6a1afacf586b03a26162c72274">
+        <source>Environment</source>
+        <target>Entorn</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2652eec977dcb2a5aea85f5bec235b05">
+        <source>Sandbox</source>
+        <target>Sandbox</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="756d97bb256b8580d4d71ee0c547804e">
+        <source>Production</source>
+        <target>Producció</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="d2560860c51f895a9871741f0805c39e">
+        <source>Private Key</source>
+        <target>Clau privada</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="37c5b6e7c4291021b6100a6754ae7ffe">
+        <source>Public Key</source>
+        <target>Clau pública</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="0fe942041deedef9a6418a705c8d3e8d">
+        <source>Choose Sandbox for tests or Production to process real payments.</source>
+        <target>Selecciona Sandbox per fer proves o Producció per processar pagaments reals.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="60bbadfe517e624125b845017e8d45d6">
+        <source>Merchant identifier available in the Technical integration section of your Dashboard.</source>
+        <target>Identificador de comerç que pots consultar a la secció Integració tècnica del teu tauler de control.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="031dd2ee9c6ab9c785608b2d8b53bd04">
+        <source>Terminal number available in the Technical integration section of your Dashboard.</source>
+        <target>Número de terminal que pots trobar a la secció Integració tècnica del teu tauler de control.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="9a98d46d4355275b7fa23d04a4748d62">
+        <source>Enter the public API key provided to identify your merchant securely. You can find it in the Technical integration section of your Dashboard.</source>
+        <target>Introdueix l’API key pública que et proporcionem per identificar el teu comerç de manera segura. La pots consultar a la secció Integració tècnica del teu tauler de control.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="6cbd3d453352389f1cfc7642ab42b9a7">
+        <source>Enter the private API key provided to validate your operations securely. You can find it in the Technical integration section of your Dashboard.</source>
+        <target>Introdueix l’API key privada que et proporcionem per validar les teves operacions de manera segura. La pots consultar a la secció Integració tècnica del teu tauler de control.</target>
         <note>Line: </note>
       </trans-unit>
     </body>

@@ -37,11 +37,6 @@
         <target>Non se puido iniciar o checkout de Wipöp.</target>
         <note>Line: </note>
       </trans-unit>
-      <trans-unit id="d74a204146ff8c707c0ec7b30f7ffd1c">
-        <source>Wipop unavailable</source>
-        <target>Wipöp non dispoñible</target>
-        <note>Line: </note>
-      </trans-unit>
       <trans-unit id="efba4a538a86df1668430d1fd25699dd">
         <source>Pay by card with Wipop</source>
         <target>Pagar con tarxeta con Wipöp</target>
@@ -165,6 +160,11 @@
       <trans-unit id="b83986e3c451e30356c3e30116a38c43">
         <source>The payment is waiting for webhook confirmation. Your order will be confirmed when Wipop completes the payment.</source>
         <target>O pagamento está esperando confirmación por webhook. O teu pedido confirmarase cando Wipöp complete o pagamento.</target>
+        <note>Line: </note>
+      </trans-unit>
+      <trans-unit id="2c6946353a96c083f3353e91b416b6f0">
+        <source>We could not start the Wipop payment. Please return to checkout and try again or use another payment method.</source>
+        <target>Non puidemos iniciar o pagamento con Wipöp. Volve ao pagamento e téntao de novo ou utiliza outro método de pagamento.</target>
         <note>Line: </note>
       </trans-unit>
     </body>

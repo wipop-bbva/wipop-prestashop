@@ -67,14 +67,14 @@ class WipopStartModuleFrontController extends ModuleFrontController
             $logger->warning('Invalid token received on Wipop start controller.', [
                 'payment_method' => $paymentMethod,
             ]);
-            $this->renderUnavailable($this->translateMessage('Invalid checkout session.'));
+            $this->redirectToCheckoutWithError($this->translateMessage('Invalid checkout session.'));
 
             return;
         }
 
         if (!MerchantOperationsService::supportsGateway($paymentMethod)) {
             $logger->warning('Unsupported payment method received on start controller.');
-            $this->renderUnavailable($this->translateMessage('Unsupported Wipop payment method.'));
+            $this->redirectToCheckoutWithError($this->translateMessage('Unsupported Wipop payment method.'));
 
             return;
         }
@@ -87,7 +87,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
                 'payment_method' => $paymentMethod,
                 'error_class' => $exception::class,
             ]);
-            $this->renderUnavailable($this->translateMessage('Configuration required.'));
+            $this->redirectToCheckoutWithError($this->translateMessage('Configuration required.'));
 
             return;
         }
@@ -96,7 +96,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
             $logger->warning('Wipop start controller reached without complete credentials.', [
                 'payment_method' => $paymentMethod,
             ]);
-            $this->renderUnavailable($this->translateMessage('Configuration required.'));
+            $this->redirectToCheckoutWithError($this->translateMessage('Configuration required.'));
 
             return;
         }
@@ -106,7 +106,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
             $logger->error('Wipop start controller reached without cart.', [
                 'payment_method' => $paymentMethod,
             ]);
-            $this->renderUnavailable($this->translateMessage('A valid cart is required.'));
+            $this->redirectToCheckoutWithError($this->translateMessage('A valid cart is required.'));
 
             return;
         }
@@ -118,7 +118,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
         $startError = $recurringPolicy->startError($recurringCart, $paymentMethod);
 
         if ($startError !== null) {
-            $this->renderUnavailable($this->translateMessage($startError));
+            $this->redirectToCheckoutWithError($this->translateMessage($startError));
 
             return;
         }
@@ -134,7 +134,7 @@ class WipopStartModuleFrontController extends ModuleFrontController
                 $logger->warning('Unavailable payment method received on start controller.', [
                     'payment_method' => $paymentMethod,
                 ]);
-                $this->renderUnavailable($this->translateMessage('Unsupported Wipop payment method.'));
+                $this->redirectToCheckoutWithError($this->translateMessage('Unsupported Wipop payment method.'));
 
                 return;
             }
@@ -142,7 +142,9 @@ class WipopStartModuleFrontController extends ModuleFrontController
             $logger->warning('Wipop start controller could not verify available payment methods.', [
                 'payment_method' => $paymentMethod,
             ]);
-            $this->renderUnavailable($this->translateMessage('Unable to verify the available payment methods.'));
+            $this->redirectToCheckoutWithError($this->translateMessage(
+                'Unable to verify the available payment methods.'
+            ));
 
             return;
         }
@@ -201,12 +203,23 @@ class WipopStartModuleFrontController extends ModuleFrontController
             Tools::redirect($redirectUrl);
 
             return;
-        } catch (CardCofException | ClientConfigurationException | ApiCallException $exception) {
+        } catch (CardCofException $exception) {
             $logger->error('Wipop checkout start failed.', [
                 'payment_method' => $paymentMethod,
                 'error_class' => $exception::class,
             ]);
-            $this->renderUnavailable($this->translateMessage($exception->getMessage()));
+            $this->redirectToCheckoutWithError($this->translateMessage($exception->getMessage()));
+
+            return;
+        } catch (ClientConfigurationException | ApiCallException $exception) {
+            $logger->error('Wipop checkout start failed.', [
+                'payment_method' => $paymentMethod,
+                'error_class' => $exception::class,
+            ]);
+            $this->redirectToCheckoutWithError($this->translateMessage(
+                'We could not start the Wipop payment. '
+                    . 'Please return to checkout and try again or use another payment method.'
+            ));
 
             return;
         } catch (Throwable $throwable) {
@@ -214,19 +227,15 @@ class WipopStartModuleFrontController extends ModuleFrontController
                 'payment_method' => $paymentMethod,
                 'error_class' => $throwable::class,
             ]);
-            $this->renderUnavailable($this->translateMessage('Unable to start the Wipop checkout.'));
+            $this->redirectToCheckoutWithError($this->translateMessage('Unable to start the Wipop checkout.'));
         }
     }
 
-    private function renderUnavailable(string $message): void
+    private function redirectToCheckoutWithError(string $message): void
     {
-        $this->context->smarty->assign([
-            'checkout_url' => $this->context->link->getPageLink('order', true, null, 'step=3'),
-            'message' => $message,
-            'title' => $this->translateMessage('Wipop unavailable'),
-        ]);
+        $this->errors[] = $message;
 
-        $this->setTemplate('module:wipop/views/templates/front/unavailable.tpl');
+        $this->redirectWithNotifications($this->context->link->getPageLink('order', true, null, 'step=3'));
     }
 
     private function chargeStarter(Logger $logger, PaymentAttemptRepository $paymentAttemptRepository): ChargeStarter
