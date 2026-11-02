@@ -92,6 +92,33 @@ soporte de pagos recurrentes personalizados.
     primer cargo pagado, el módulo programe cargos MIT automáticos según la
     frecuencia seleccionada.
 
+## Pruebas en Sandbox
+
+Utiliza estas tarjetas solo en Sandbox, con credenciales del comercio de pruebas.
+[Descargar tarjetas de prueba en PDF](docs/test-cards-es.pdf).
+
+| Operación | Resultado esperado | Número de tarjeta | Importe | Caducidad |
+| --- | --- | --- | --- | --- |
+| Compra | Autorizada | `5410080000000021` | Cualquiera | Cualquiera |
+| Compra | Denegada | `5424180805648190` | Cualquiera | Cualquiera |
+| Devolución | Autorizada | `5410080000000021` | 5 EUR | Cualquiera |
+| Devolución | Denegada | `5410080000000021` | 15 EUR | Cualquiera |
+| Preautorización | Autorizada | `4548814479727229` | Cualquiera | Cualquiera |
+| Preautorización | Denegada | `5424180805648190` | Cualquiera | Cualquiera |
+| Captura de preautorización | Autorizada | `4548814479727229` | 10 EUR | Cualquiera |
+| Captura de preautorización | Denegada | `4548814479727229` | 15 EUR | Cualquiera |
+| Anulación de preautorización | Autorizada | `4548814479727229` | 10 EUR | -- |
+| Anulación de preautorización | Denegada | `4548814479727229` | 15 EUR | -- |
+| Solicitud de token | Autorizada | `5410080000000021` | Cualquiera | Cualquiera |
+| Solicitud de token | Denegada | `5424180805648190` | Cualquiera | Cualquiera |
+| Pago en un clic | Autorizada | `5410080000000021` | Cualquiera | Cualquiera |
+| Pago en un clic | Denegada | `5424180805648190` | Cualquiera | Cualquiera |
+| Pago recurrente | Autorizada | `5410080000000021` | Cualquiera | Cualquiera |
+| Pago recurrente | Denegada | `5424180805648190` | Cualquiera | Cualquiera |
+
+Cuando la caducidad indique `Cualquiera`, utiliza una fecha futura válida.
+Puedes usar cualquier CVV.
+
 ## Configuración
 
 ### Credenciales y entorno

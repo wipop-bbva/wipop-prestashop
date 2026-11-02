@@ -87,6 +87,32 @@ tokenization, optional preauthorizations, and custom recurring payment support.
     charge, the module schedules automatic MIT charges according to the selected
     frequency.
 
+## Sandbox testing
+
+Use these cards only in Sandbox, with test merchant credentials.
+[Download the test cards as a PDF](docs/test-cards-en.pdf).
+
+| Operation | Expected result | Card number | Amount | Expiry date |
+| --- | --- | --- | --- | --- |
+| Purchase | Approved | `5410080000000021` | Any | Any |
+| Purchase | Declined | `5424180805648190` | Any | Any |
+| Refund | Approved | `5410080000000021` | 5 EUR | Any |
+| Refund | Declined | `5410080000000021` | 15 EUR | Any |
+| Preauthorization | Approved | `4548814479727229` | Any | Any |
+| Preauthorization | Declined | `5424180805648190` | Any | Any |
+| Capture of preauthorization | Approved | `4548814479727229` | 10 EUR | Any |
+| Capture of preauthorization | Declined | `4548814479727229` | 15 EUR | Any |
+| Void of preauthorization | Approved | `4548814479727229` | 10 EUR | -- |
+| Void of preauthorization | Declined | `4548814479727229` | 15 EUR | -- |
+| Token request | Approved | `5410080000000021` | Any | Any |
+| Token request | Declined | `5424180805648190` | Any | Any |
+| One-click payment | Approved | `5410080000000021` | Any | Any |
+| One-click payment | Declined | `5424180805648190` | Any | Any |
+| Recurring payment | Approved | `5410080000000021` | Any | Any |
+| Recurring payment | Declined | `5424180805648190` | Any | Any |
+
+Where the expiry date is `Any`, use any valid future date. You can use any CVV.
+
 ## Configuration
 
 ### Credentials and environment
