@@ -25,7 +25,7 @@
     "prestashop/autoindex": "2.1.0",
     "prestashop/header-stamp": "2.6.0",
     "prestashop/php-dev-tools": "5.0",
-    "squizlabs/php_codesniffer": "4.0.1"
+    "squizlabs/php_codesniffer": "4.0.4"
   },
   "scripts": {
     "grumphp-init": [
