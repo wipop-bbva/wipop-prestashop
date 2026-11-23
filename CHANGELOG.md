@@ -1,3 +1,9 @@
+## [1.15.1](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.15.0...v1.15.1) (2026-11-23)
+
+### Bug Fixes
+
+* **deps:** require wipop-php-client ^0.10.4 ([11c6c63](https://github.com/wipop-bbva/wipop-prestashop/commit/11c6c63c046c4371a1045736b2acb1b46bab1520))
+
 ## [1.15.0](https://github.com/wipop-bbva/wipop-prestashop/compare/v1.14.1...v1.15.0) (2026-07-03)
 
 ### Features
