@@ -6,7 +6,7 @@
   "version": "1.8.0",
   "require": {
     "php": ">=8.1",
-    "wipop-bbva/wipop-php-client": "^0.9.0"
+    "wipop-bbva/wipop-php-client": "^0.10.4"
   },
   "autoload": {
     "psr-4": {
@@ -26,11 +26,11 @@
     "prestashop/autoindex": "2.1.0",
     "prestashop/header-stamp": "2.6.0",
     "prestashop/php-dev-tools": "5.0",
-    "squizlabs/php_codesniffer": "4.0.1"
+    "squizlabs/php_codesniffer": "4.0.4"
   },
   "scripts": {
     "grumphp-init": [
-      "@php -r 'if (getenv(\"CI\")) { echo \"Skipping GrumPHP init on CI\".PHP_EOL; exit(0); } $bin = \"vendor/bin/grumphp\"; if (!file_exists($bin)) { echo \"Skipping GrumPHP init (binary missing)\".PHP_EOL; exit(0); } $cmd = escapeshellarg(PHP_BINARY) . \" \" . escapeshellarg($bin) . \" git:init\"; passthru($cmd, $exit); exit($exit);'"
+      "@php -r 'if (getenv(\"CI\")) { echo \"Skipping GrumPHP init on CI\".PHP_EOL; exit(0); } $bin = \"vendor-dev/bin/grumphp\"; if (!file_exists($bin)) { echo \"Skipping GrumPHP init (binary missing)\".PHP_EOL; exit(0); } $cmd = escapeshellarg(PHP_BINARY) . \" \" . escapeshellarg($bin) . \" git:init\"; passthru($cmd, $exit); exit($exit);'"
     ],
     "post-install-cmd": [
       "@grumphp-init"
@@ -40,7 +40,7 @@
     ],
     "cs-fixer:init": "php vendor/bin/prestashop-coding-standards cs-fixer:init",
     "phpstan:init": "php vendor/bin/prestashop-coding-standards phpstan:init",
-    "lint:php": "find . -type f -name '*.php' -not -path './var/*' -not -path './dist/*' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l",
+    "lint:php": "find . -type f -name '*.php' -not -path './var/*' -not -path './dist/*' -not -path './vendor/*' -not -path './vendor-dev/*' -print0 | xargs -0 -n1 php -l",
     "lint:cs": "php vendor/bin/php-cs-fixer fix --dry-run --diff",
     "lint:phpcs": "php vendor/bin/phpcs -q --standard=phpcs.xml",
     "fix:cs": "php vendor/bin/php-cs-fixer fix",
@@ -59,6 +59,7 @@
     "allow-plugins": {
       "phpro/grumphp": true
     },
+    "prepend-autoloader": false,
     "platform": {
       "php": "8.1.0"
     },

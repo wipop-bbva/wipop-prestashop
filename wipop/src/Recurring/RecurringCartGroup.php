@@ -1,7 +1,6 @@
 <?php
-
 /**
- * 2007-2025 PrestaShop
+ * 2007-2026 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -20,23 +19,28 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  *  @author    PrestaShop SA <contact@prestashop.com>
- *  @copyright 2007-2025 PrestaShop SA
+ *  @copyright 2007-2026 PrestaShop SA
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
+
+declare(strict_types=1);
+
+namespace PrestaShop\Module\Wipop\Recurring;
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require_once dirname(__DIR__) . '/autoload.php';
-
-use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
-use PrestaShop\Module\Wipop\Install\ModuleInstaller;
-
-function upgrade_module_0_2_0($module)
+final class RecurringCartGroup
 {
-    $installer = new ModuleInstaller(new SettingsRepository());
-
-    return $installer->installSettings()
-        && $installer->installTables();
+    /**
+     * @param RecurringCartItem[] $items
+     */
+    public function __construct(
+        public readonly RecurringPeriod $period,
+        public readonly float $amount,
+        public readonly array $items,
+    ) {
+    }
 }

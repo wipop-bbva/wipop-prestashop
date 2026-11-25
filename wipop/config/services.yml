@@ -1,0 +1,13 @@
+imports:
+  - { resource: common.yml }
+
+services:
+  _defaults:
+    public: true
+
+  PrestaShop\Module\Wipop\Command\ProcessRecurringPaymentsCommand:
+    class: PrestaShop\Module\Wipop\Command\ProcessRecurringPaymentsCommand
+    arguments:
+      $runner: '@PrestaShop\Module\Wipop\Recurring\RecurringChargeRunner'
+    tags:
+      - { name: console.command }

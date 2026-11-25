@@ -1,4 +1,28 @@
 <?php
+/**
+ * 2007-2026 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author    PrestaShop SA <contact@prestashop.com>
+ *  @copyright 2007-2026 PrestaShop SA
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
 declare(strict_types=1);
 
@@ -7,26 +31,20 @@ namespace PrestaShop\Module\Wipop\Webhook;
 use PrestaShop\Module\Wipop\Exception\WebhookCredentialGenerationException;
 use PrestaShop\Module\Wipop\Exception\WebhookPasswordDecryptionException;
 use PrestaShop\Module\Wipop\Exception\WebhookPasswordEncryptionException;
+use PrestaShop\Module\Wipop\Security\SecretCipher;
 use Throwable;
 
-use function base64_decode;
-use function base64_encode;
 use function bin2hex;
 use function gmdate;
-use function hash;
-use function is_string;
-use function openssl_cipher_iv_length;
-use function openssl_decrypt;
-use function openssl_encrypt;
 use function random_bytes;
-use function strlen;
-use function substr;
 use function trim;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 final class WebhookCredentials
 {
-    private const CIPHER = 'aes-256-cbc';
-
     /**
      * @param array<string, mixed> $settings
      *
@@ -134,45 +152,16 @@ final class WebhookCredentials
         }
     }
 
-    private static function encryptionKey(): string
-    {
-        $cookieKey = defined('_COOKIE_KEY_') && is_string(_COOKIE_KEY_) ? _COOKIE_KEY_ : '';
-        $cookieIv = defined('_COOKIE_IV_') && is_string(_COOKIE_IV_) ? _COOKIE_IV_ : '';
-
-        return hash('sha256', $cookieKey . '|' . $cookieIv, true);
-    }
-
     /**
      * @throws WebhookPasswordEncryptionException
      */
     private static function encryptPassword(string $password): string
     {
-        $ivLength = openssl_cipher_iv_length(self::CIPHER);
-        if ($ivLength <= 0) {
-            throw new WebhookPasswordEncryptionException('Unsupported webhook password encryption cipher.');
-        }
-
         try {
-            $iv = random_bytes($ivLength);
+            return (new SecretCipher())->encrypt($password);
         } catch (Throwable $throwable) {
-            $message = 'Unable to generate webhook password encryption IV.';
-
-            throw new WebhookPasswordEncryptionException($message, 0, $throwable);
+            throw new WebhookPasswordEncryptionException('Unable to encrypt webhook password.', 0, $throwable);
         }
-
-        $encrypted = openssl_encrypt(
-            $password,
-            self::CIPHER,
-            self::encryptionKey(),
-            OPENSSL_RAW_DATA,
-            $iv
-        );
-
-        if (!is_string($encrypted) || $encrypted === '') {
-            throw new WebhookPasswordEncryptionException('Unable to encrypt webhook password.');
-        }
-
-        return base64_encode($iv . $encrypted);
     }
 
     /**
@@ -180,35 +169,10 @@ final class WebhookCredentials
      */
     private static function decryptPassword(string $encryptedValue): string
     {
-        $decoded = base64_decode($encryptedValue, true);
-        if (!is_string($decoded) || $decoded === '') {
-            throw new WebhookPasswordDecryptionException('Stored webhook password is not valid base64.');
+        try {
+            return (new SecretCipher())->decrypt($encryptedValue);
+        } catch (Throwable $throwable) {
+            throw new WebhookPasswordDecryptionException('Unable to decrypt stored webhook password.', 0, $throwable);
         }
-
-        $ivLength = openssl_cipher_iv_length(self::CIPHER);
-        if ($ivLength <= 0) {
-            throw new WebhookPasswordDecryptionException('Unsupported webhook password encryption cipher.');
-        }
-
-        if (strlen($decoded) <= $ivLength) {
-            throw new WebhookPasswordDecryptionException('Stored webhook password payload is incomplete.');
-        }
-
-        $iv = substr($decoded, 0, $ivLength);
-        $cipherText = substr($decoded, $ivLength);
-
-        $plain = openssl_decrypt(
-            $cipherText,
-            self::CIPHER,
-            self::encryptionKey(),
-            OPENSSL_RAW_DATA,
-            $iv
-        );
-
-        if (!is_string($plain) || $plain === '') {
-            throw new WebhookPasswordDecryptionException('Unable to decrypt stored webhook password.');
-        }
-
-        return $plain;
     }
 }

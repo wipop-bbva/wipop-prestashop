@@ -30,18 +30,8 @@ jobs:
         run: composer install --no-interaction --no-progress --prefer-dist --no-dev --optimize-autoloader
         working-directory: wipop
 
-      - name: Build module zip
-        run: |
-          command -v zip
-          zip -r wipop.zip wipop \
-            -x "wipop/vendor/bin/*" \
-            -x "wipop/node_modules/*" \
-            -x "wipop/tests/*" \
-            -x "wipop/var/*" \
-            -x "wipop/.php-cs-fixer.cache" \
-            -x "wipop/.phpunit.cache/*" \
-            -x "wipop/.grumphp/*" \
-            -x "wipop/dist/*"
+      - name: Check zip command
+        run: command -v zip
 
       - name: Setup Node
         uses: actions/setup-node@v4

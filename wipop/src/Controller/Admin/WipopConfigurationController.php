@@ -1,4 +1,28 @@
 <?php
+/**
+ * 2007-2026 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author    PrestaShop SA <contact@prestashop.com>
+ *  @copyright 2007-2026 PrestaShop SA
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
 declare(strict_types=1);
 
@@ -6,6 +30,7 @@ namespace PrestaShop\Module\Wipop\Controller\Admin;
 
 use Context;
 use PrestaShop\Module\Wipop\Api\MerchantOperationsService;
+use PrestaShop\Module\Wipop\Configuration\CaptureMode;
 use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Configuration\SettingsRepository;
 use PrestaShop\Module\Wipop\Exception\ApiCallException;
@@ -20,8 +45,15 @@ use PrestaShop\Module\Wipop\TranslationDomains;
 use PrestaShop\Module\Wipop\Webhook\WebhookAuth;
 use PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
+use PrestaShopBundle\Security\Annotation\AdminSecurity;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Wipop\Domain\ChargeMethod;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 final class WipopConfigurationController extends FrameworkBundleAdminController
 {
@@ -51,12 +83,13 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
             $formData = $this->emptyFormData();
         }
 
-        $form = $this->createForm(SettingsType::class, $formData);
+        $form = $this->createForm(SettingsType::class, $formData, [
+            'secret_key_configured' => $this->hasSecret($currentSettings?->secretKey),
+            'public_secret_key_configured' => $this->hasSecret($currentSettings?->publicSecretKey),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $settings = null;
-
             $settings = $this->buildSettings($form->getData(), $currentSettings ?? $this->defaultSettings());
             $errors = $this->saveConfiguration($settings);
 
@@ -87,6 +120,7 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
 
         return $this->render('@Modules/wipop/views/templates/admin/configuration.html.twig', [
             'configurationForm' => $form->createView(),
+            'canVerifyStoredSettings' => $currentSettings?->isConfigured() === true && !$form->isSubmitted(),
             'webhook' => $webhookData,
         ]);
     }
@@ -122,7 +156,88 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
     }
 
     /**
-     * @return array<string, bool|int|string>
+     * @AdminSecurity(
+     *     "is_granted('update', request.get('_legacy_controller'))",
+     *     message="You do not have permission to do this."
+     * )
+     */
+    public function verifyCredentialsAction(Request $request): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('wipop_verify_credentials', (string) $request->request->get('_csrf_token'))) {
+            return $this->verificationResponse(
+                'error',
+                $this->trans('Invalid security token.', TranslationDomains::ADMIN),
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
+        try {
+            $settings = $this->settingsRepository->get();
+        } catch (SettingsReadException $exception) {
+            $this->logger->error('Unable to load Wipop settings data during credentials verification.', [
+                'error_class' => $exception::class,
+            ]);
+
+            return $this->verificationResponse(
+                'error',
+                $this->trans(
+                    'Could not verify Wipop data. Check the settings and try again.',
+                    TranslationDomains::ADMIN
+                ),
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        if (!$settings->isConfigured()) {
+            return $this->verificationResponse(
+                'error',
+                $this->trans(
+                    'Wipop settings are incomplete. Save them before verifying data.',
+                    TranslationDomains::ADMIN
+                ),
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        try {
+            $gateways = $this->merchantOperationsService->getAvailableGatewaysFor($settings, true);
+        } catch (ClientConfigurationException | ApiCallException $exception) {
+            $this->logger->warning('Unable to verify Wipop payment methods from settings page.', [
+                'error_class' => $exception::class,
+            ]);
+
+            return $this->verificationResponse(
+                'error',
+                $this->trans(
+                    'Could not verify Wipop data. Check the settings and try again.',
+                    TranslationDomains::ADMIN
+                ),
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        if ($gateways === []) {
+            return $this->verificationResponse(
+                'warning',
+                $this->trans(
+                    'Wipop data verified, but no supported methods were found.',
+                    TranslationDomains::ADMIN
+                )
+            );
+        }
+
+        return $this->verificationResponse(
+            'success',
+            $this->trans(
+                'Wipop data verified. Available methods: %methods%.',
+                TranslationDomains::ADMIN,
+                ['%methods%' => implode(', ', $this->gatewayLabels($gateways))]
+            )
+        );
+    }
+
+    /**
+     * @return array<string, bool|int|string|string[]>
      */
     private function formData(Settings $settings): array
     {
@@ -132,23 +247,17 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
             'secret_key' => '',
             'public_secret_key' => '',
             'terminal_id' => $settings->terminalId,
+            'capture_mode' => $settings->captureMode->value,
+            'enabled_gateways' => $settings->enabledGateways,
         ];
     }
 
     /**
-     * @return array<string, bool|int|string>
+     * @return array<string, bool|int|string|string[]>
      */
     private function emptyFormData(): array
     {
-        $settings = $this->defaultSettings();
-
-        return [
-            'live_mode' => $settings->liveMode,
-            'merchant_id' => '',
-            'secret_key' => '',
-            'public_secret_key' => '',
-            'terminal_id' => $settings->terminalId,
-        ];
+        return $this->formData($this->defaultSettings());
     }
 
     /**
@@ -156,18 +265,57 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
      */
     private function buildSettings(array $data, Settings $currentSettings): Settings
     {
+        $enabledGateways = Settings::normalizeGateways($data['enabled_gateways']);
+
         return new Settings(
-            (bool) ($data['live_mode'] ?? false),
-            trim((string) ($data['merchant_id'] ?? '')),
-            $this->secretValue($data['secret_key'] ?? null, $currentSettings->secretKey),
-            $this->secretValue($data['public_secret_key'] ?? null, $currentSettings->publicSecretKey),
-            $this->terminalIdValue($data['terminal_id'] ?? null, $currentSettings->terminalId)
+            $this->liveModeValue($data['live_mode']),
+            trim((string) $data['merchant_id']),
+            $this->secretValue($data['secret_key'], $currentSettings->secretKey),
+            $this->secretValue($data['public_secret_key'], $currentSettings->publicSecretKey),
+            $this->terminalIdValue($data['terminal_id'], $currentSettings->terminalId),
+            $enabledGateways,
+            CaptureMode::fromValue($data['capture_mode'])
         );
+    }
+
+    private function liveModeValue(mixed $value): bool
+    {
+        return $value === true || $value === 1 || $value === '1';
     }
 
     private function defaultSettings(): Settings
     {
         return new Settings(false, '', '', '', Settings::DEFAULT_TERMINAL_ID);
+    }
+
+    private function verificationResponse(
+        string $status,
+        string $message,
+        int $httpStatus = Response::HTTP_OK,
+    ): JsonResponse {
+        return new JsonResponse([
+            'status' => $status,
+            'message' => $message,
+        ], $httpStatus);
+    }
+
+    /**
+     * @param string[] $gateways
+     *
+     * @return string[]
+     */
+    private function gatewayLabels(array $gateways): array
+    {
+        return array_values(array_map(fn (string $gateway): string => $this->gatewayLabel($gateway), $gateways));
+    }
+
+    private function gatewayLabel(string $gateway): string
+    {
+        return match ($gateway) {
+            ChargeMethod::CARD => $this->trans('Card', TranslationDomains::ADMIN),
+            ChargeMethod::BIZUM => $this->trans('Bizum', TranslationDomains::ADMIN),
+            default => $gateway,
+        };
     }
 
     /**
@@ -199,15 +347,15 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
         }
 
         try {
-            $gateways = $this->merchantOperationsService->getAvailableGateways(true);
-        } catch (SettingsReadException | ClientConfigurationException | ApiCallException $exception) {
+            $gateways = $this->merchantOperationsService->getCheckoutGatewaysFor($settings, true);
+        } catch (ClientConfigurationException | ApiCallException $exception) {
             $this->logger->warning('Unable to verify Wipop payment methods after saving settings.', [
                 'error_class' => $exception::class,
             ]);
             $this->addFlash(
                 'warning',
                 $this->trans(
-                    'Settings saved, but the available payment methods could not be verified.',
+                    'Settings saved, but methods could not be verified.',
                     TranslationDomains::ADMIN,
                 ),
             );
@@ -219,7 +367,7 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
             $this->addFlash(
                 'warning',
                 $this->trans(
-                    'Settings saved, but no supported payment methods were detected.',
+                    'Settings saved, but no Wipop methods are available at checkout.',
                     TranslationDomains::ADMIN,
                 ),
             );
@@ -235,6 +383,11 @@ final class WipopConfigurationController extends FrameworkBundleAdminController
         $value = trim((string) $submittedValue);
 
         return $value !== '' ? $value : $currentValue;
+    }
+
+    private function hasSecret(?string $value): bool
+    {
+        return trim((string) $value) !== '';
     }
 
     private function terminalIdValue(mixed $submittedValue, int $currentValue): int

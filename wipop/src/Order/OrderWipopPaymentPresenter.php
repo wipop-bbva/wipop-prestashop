@@ -1,29 +1,64 @@
 <?php
+/**
+ * 2007-2026 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author    PrestaShop SA <contact@prestashop.com>
+ *  @copyright 2007-2026 PrestaShop SA
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
 declare(strict_types=1);
 
 namespace PrestaShop\Module\Wipop\Order;
 
+use PrestaShop\Module\Wipop\Configuration\Settings;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptStatus;
 use PrestaShop\Module\Wipop\Payment\PaymentAttemptSummary;
-use PrestaShop\Module\Wipop\Payment\PaymentRefundSummary;
+use PrestaShop\Module\Wipop\Payment\PaymentEventData;
+use PrestaShop\Module\Wipop\Preauthorization\PreauthorizationOperationStatus;
+use Wipop\Domain\ChargeMethod;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 final class OrderWipopPaymentPresenter
 {
     /**
-     * @return array<string, bool|string>
+     * @param array<int, array<string, float|int|string|null>> $preauthorizationEvents
+     *
+     * @return array<string, bool|string|array<int, array<string, string|bool>>>
      */
-    public function present(PaymentAttemptSummary $summary): array
+    public function present(PaymentAttemptSummary $summary, array $preauthorizationEvents = []): array
     {
         $remoteError = $this->joinValues($summary->remoteErrorCode, $summary->remoteErrorMessage);
         $refund = $this->presentRefund($summary);
+        $events = $this->presentPreauthorizationEvents($preauthorizationEvents);
+        $canManagePreauthorization = $this->canManagePreauthorization($summary, $preauthorizationEvents);
 
         return [
             'attempt_id' => (string) $summary->id,
             'cart_id' => (string) $summary->cartId,
             'status_label' => $this->formatStatus($summary->status->value),
             'status_badge_class' => $this->badgeClass($summary->status),
-            'remote_status' => $this->displayValue($summary->remoteStatus),
+            'remote_status' => $this->preauthorizationStatus($summary, $preauthorizationEvents),
             'payment_method' => $this->displayValue($summary->paymentMethod),
             'amount' => $this->formatAmount($summary->amount, $summary->currencyIso),
             'wipop_order_id' => $this->displayValue($summary->wipopOrderId),
@@ -31,6 +66,10 @@ final class OrderWipopPaymentPresenter
             'webhook_received_at' => $this->displayValue($summary->webhookReceivedAt),
             'has_error' => $remoteError !== null,
             'remote_error' => $this->displayValue($remoteError),
+            'native_refunds_disabled' => $this->disablesNativeRefunds($summary),
+            'can_manage_preauthorization' => $canManagePreauthorization,
+            'has_preauthorization_events' => $events !== [],
+            'preauthorization_events' => $events,
             ...$refund,
         ];
     }
@@ -55,6 +94,78 @@ final class OrderWipopPaymentPresenter
         return $value ?? '-';
     }
 
+    private function disablesNativeRefunds(PaymentAttemptSummary $summary): bool
+    {
+        if ($summary->status === PaymentAttemptStatus::PAID) {
+            $method = strtoupper(trim((string) $summary->paymentMethod));
+
+            return $method !== ChargeMethod::BIZUM;
+        }
+
+        return in_array($summary->status, [
+            PaymentAttemptStatus::AUTHORIZED,
+            PaymentAttemptStatus::REFUNDED,
+        ], true);
+    }
+
+    /**
+     * @param array<int, array<string, float|int|string|null>> $events
+     */
+    private function canManagePreauthorization(PaymentAttemptSummary $summary, array $events): bool
+    {
+        return $summary->status === PaymentAttemptStatus::AUTHORIZED
+            && Settings::isCardMethod((string) $summary->paymentMethod)
+            && $this->nullableString($summary->wipopTransactionId) !== null
+            && !$this->hasSuccessfulPreauthorizationEvent($events, PaymentEventData::TYPE_CAPTURE)
+            && !$this->hasSuccessfulPreauthorizationEvent($events, PaymentEventData::TYPE_REVERSAL);
+    }
+
+    /**
+     * @param array<int, array<string, float|int|string|null>> $events
+     */
+    private function hasSuccessfulPreauthorizationEvent(array $events, string $eventType): bool
+    {
+        foreach ($events as $event) {
+            if (
+                $event['transaction_type'] === $eventType
+                && PreauthorizationOperationStatus::isSuccessful($eventType, (string) $event['status'])
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<int, array<string, float|int|string|null>> $events
+     */
+    private function preauthorizationStatus(PaymentAttemptSummary $summary, array $events): string
+    {
+        $expectedType = match ($summary->status) {
+            PaymentAttemptStatus::PAID => PaymentEventData::TYPE_CAPTURE,
+            PaymentAttemptStatus::CANCELLED => PaymentEventData::TYPE_REVERSAL,
+            default => null,
+        };
+
+        if ($expectedType === null) {
+            return $this->displayValue($summary->remoteStatus);
+        }
+
+        foreach ($events as $event) {
+            $status = $this->nullableString($event['status']);
+
+            if (
+                $this->nullableString($event['transaction_type']) === $expectedType
+                && PreauthorizationOperationStatus::isSuccessful($expectedType, $status)
+            ) {
+                return $this->displayValue($status);
+            }
+        }
+
+        return $this->displayValue($summary->remoteStatus);
+    }
+
     private function formatAmount(float $amount, string $currencyIso): string
     {
         return sprintf('%s %s', number_format($amount, 2, '.', ''), strtoupper($currencyIso));
@@ -71,7 +182,7 @@ final class OrderWipopPaymentPresenter
     private function presentRefund(PaymentAttemptSummary $summary): array
     {
         $refund = $summary->refundSummary;
-        if (!$refund instanceof PaymentRefundSummary) {
+        if ($refund === null) {
             return [
                 'has_refund' => false,
                 'refund_status' => '-',
@@ -80,6 +191,8 @@ final class OrderWipopPaymentPresenter
                 'last_refund_amount' => '-',
                 'last_refund_status' => '-',
                 'last_refund_received_at' => '-',
+                'has_refund_order_slip' => false,
+                'last_refund_order_slip_id' => '-',
                 'has_refund_error' => false,
                 'last_refund_error' => '-',
             ];
@@ -100,6 +213,10 @@ final class OrderWipopPaymentPresenter
             ),
             'last_refund_status' => $this->displayValue($refund->lastRefundStatus),
             'last_refund_received_at' => $this->displayValue($refund->lastRefundReceivedAt),
+            'has_refund_order_slip' => $refund->lastRefundOrderSlipId !== null,
+            'last_refund_order_slip_id' => $refund->lastRefundOrderSlipId === null
+                ? '-'
+                : (string) $refund->lastRefundOrderSlipId,
             'has_refund_error' => $refundError !== null,
             'last_refund_error' => $this->displayValue($refundError),
         ];
@@ -116,6 +233,41 @@ final class OrderWipopPaymentPresenter
         }
 
         return 'Partial refund';
+    }
+
+    /**
+     * @param array<int, array<string, float|int|string|null>> $events
+     *
+     * @return array<int, array<string, string|bool>>
+     */
+    private function presentPreauthorizationEvents(array $events): array
+    {
+        return array_map(function (array $event): array {
+            $error = $this->joinValues(
+                $this->nullableString($event['remote_error_code']),
+                $this->nullableString($event['remote_error_message'])
+            );
+            $amount = is_numeric($event['amount']) ? (float) $event['amount'] : null;
+
+            return [
+                'type' => $this->eventTypeLabel($this->nullableString($event['transaction_type'])),
+                'status' => $this->displayValue($this->nullableString($event['status'])),
+                'amount' => $this->formatOptionalAmount($amount, (string) $event['currency_iso']),
+                'transaction_id' => $this->displayValue($this->nullableString($event['remote_transaction_id'])),
+                'received_at' => $this->displayValue($this->nullableString($event['received_at'])),
+                'has_error' => $error !== null,
+                'error' => $this->displayValue($error),
+            ];
+        }, $events);
+    }
+
+    private function eventTypeLabel(?string $eventType): string
+    {
+        return match ($eventType) {
+            PaymentEventData::TYPE_CAPTURE => 'Capture',
+            PaymentEventData::TYPE_REVERSAL => 'Reversal',
+            default => $this->displayValue($eventType),
+        };
     }
 
     private function formatOptionalAmount(?float $amount, string $currencyIso): string
@@ -139,7 +291,7 @@ final class OrderWipopPaymentPresenter
         return sprintf('%s - %s', $first, $second);
     }
 
-    private function nullableString(?string $value): ?string
+    private function nullableString(mixed $value): ?string
     {
         $value = trim((string) $value);
 

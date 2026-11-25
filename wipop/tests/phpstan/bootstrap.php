@@ -15,6 +15,14 @@ if (!defined('_PS_ROOT_DIR_')) {
     define('_PS_ROOT_DIR_', $prestashopRoot);
 }
 
+if (!defined('_DB_PREFIX_')) {
+    define('_DB_PREFIX_', 'ps_');
+}
+
+if (!defined('_MYSQL_ENGINE_')) {
+    define('_MYSQL_ENGINE_', 'InnoDB');
+}
+
 if (!is_file($prestashopRoot . '/config/settings.inc.php')) {
     fwrite(STDERR, 'Invalid _PS_ROOT_DIR_: cannot find');
     exit(1);

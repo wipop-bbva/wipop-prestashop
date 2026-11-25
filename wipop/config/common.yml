@@ -1,0 +1,94 @@
+services:
+  _defaults:
+    public: true
+
+  PrestaShop\Module\Wipop\Configuration\SettingsRepository: ~
+
+  PrestaShop\Module\Wipop\Log\Logger: ~
+
+  PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter:
+    class: PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter
+    arguments:
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+      $translator: '@translator'
+
+  PrestaShop\Module\Wipop\Api\ClientFactory: ~
+
+  PrestaShop\Module\Wipop\Api\SdkCaller:
+    class: PrestaShop\Module\Wipop\Api\SdkCaller
+    arguments:
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
+  PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository:
+    class: PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository
+    factory: [ 'PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository', 'createDefault' ]
+
+  PrestaShop\Module\Wipop\Card\StoredCardRepository:
+    class: PrestaShop\Module\Wipop\Card\StoredCardRepository
+    factory: [ 'PrestaShop\Module\Wipop\Card\StoredCardRepository', 'createDefault' ]
+
+  PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository:
+    class: PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository
+    factory: [ 'PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository', 'createDefault' ]
+
+  PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository:
+    class: PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository
+    factory: [ 'PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository', 'createDefault' ]
+
+  PrestaShop\Module\Wipop\Recurring\MySqlRecurringNamedLock: ~
+
+  PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock:
+    class: PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock
+    arguments:
+      $lock: '@PrestaShop\Module\Wipop\Recurring\MySqlRecurringNamedLock'
+
+  PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopPolicy: ~
+
+  PrestaShop\Module\Wipop\Recurring\ConfigurationRecurringAutoRunnerState: ~
+
+  PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper:
+    class: PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper
+    arguments:
+      $subscriptions: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository'
+      $subscriptionLock: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
+  PrestaShop\Module\Wipop\Recurring\RecurringAutoRunner:
+    class: PrestaShop\Module\Wipop\Recurring\RecurringAutoRunner
+    arguments:
+      $runner: '@PrestaShop\Module\Wipop\Recurring\RecurringChargeRunner'
+      $state: '@PrestaShop\Module\Wipop\Recurring\ConfigurationRecurringAutoRunnerState'
+      $lock: '@PrestaShop\Module\Wipop\Recurring\MySqlRecurringNamedLock'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
+  PrestaShop\Module\Wipop\Recurring\RecurringCartFactory: ~
+
+  PrestaShop\Module\Wipop\Checkout\ChargeRequestFactory: ~
+
+  PrestaShop\Module\Wipop\Checkout\CartOrderIdFactory: ~
+
+  PrestaShop\Module\Wipop\Recurring\WipopRecurringChargeApiClient:
+    class: PrestaShop\Module\Wipop\Recurring\WipopRecurringChargeApiClient
+    arguments:
+      $clientFactory: '@PrestaShop\Module\Wipop\Api\ClientFactory'
+      $sdkCaller: '@PrestaShop\Module\Wipop\Api\SdkCaller'
+      $chargeRequestFactory: '@PrestaShop\Module\Wipop\Checkout\ChargeRequestFactory'
+
+  PrestaShop\Module\Wipop\Recurring\WipopRecurringChargeClientInterface:
+    alias: PrestaShop\Module\Wipop\Recurring\WipopRecurringChargeApiClient
+    public: true
+
+  PrestaShop\Module\Wipop\Recurring\RecurringChargeRunner:
+    class: PrestaShop\Module\Wipop\Recurring\RecurringChargeRunner
+    arguments:
+      $subscriptions: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository'
+      $charges: '@PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository'
+      $storedCards: '@PrestaShop\Module\Wipop\Card\StoredCardRepository'
+      $settingsRepository: '@PrestaShop\Module\Wipop\Configuration\SettingsRepository'
+      $paymentAttempts: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository'
+      $subscriptionLock: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock'
+      $cartFactory: '@PrestaShop\Module\Wipop\Recurring\RecurringCartFactory'
+      $wipopClient: '@PrestaShop\Module\Wipop\Recurring\WipopRecurringChargeClientInterface'
+      $orderIdFactory: '@PrestaShop\Module\Wipop\Checkout\CartOrderIdFactory'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+      $stopPolicy: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopPolicy'

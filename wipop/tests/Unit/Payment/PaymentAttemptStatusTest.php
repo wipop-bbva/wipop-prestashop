@@ -17,6 +17,34 @@ final class PaymentAttemptStatusTest extends TestCase
         );
     }
 
+    public function testItPreservesTerminalStatusesAcrossLateWebhookRetries(): void
+    {
+        self::assertSame(
+            PaymentAttemptStatus::PAID,
+            PaymentAttemptStatus::PAID->syncWithWebhookStatus(PaymentAttemptStatus::CHECKOUT_PENDING)
+        );
+        self::assertSame(
+            PaymentAttemptStatus::CANCELLED,
+            PaymentAttemptStatus::CANCELLED->syncWithWebhookStatus(PaymentAttemptStatus::PAID)
+        );
+        self::assertSame(
+            PaymentAttemptStatus::FAILED,
+            PaymentAttemptStatus::FAILED->syncWithWebhookStatus(PaymentAttemptStatus::PAID)
+        );
+    }
+
+    public function testItDoesNotDowngradeAuthorizedAttemptsToPendingOrFailed(): void
+    {
+        self::assertSame(
+            PaymentAttemptStatus::AUTHORIZED,
+            PaymentAttemptStatus::AUTHORIZED->syncWithWebhookStatus(PaymentAttemptStatus::CHECKOUT_PENDING)
+        );
+        self::assertSame(
+            PaymentAttemptStatus::AUTHORIZED,
+            PaymentAttemptStatus::AUTHORIZED->syncWithWebhookStatus(PaymentAttemptStatus::FAILED)
+        );
+    }
+
     public function testItUsesWebhookStatusForNonRefundedAttempts(): void
     {
         self::assertSame(

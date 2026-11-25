@@ -4,8 +4,52 @@ wipop_configuration:
   defaults:
     _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController::configurationAction
 
+wipop_verify_credentials:
+  path: /wipop/verify-credentials
+  methods: [POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController::verifyCredentialsAction
+    _legacy_controller: AdminModules
+
 wipop_webhook_regenerate:
   path: /wipop/webhook/regenerate
   methods: [POST]
   defaults:
     _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController::regenerateWebhookCredentialsAction
+
+wipop_order_refund:
+  path: /wipop/orders/{orderId}/refund
+  methods: [GET, POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRefundController::refundAction
+    _legacy_controller: AdminOrders
+  requirements:
+    orderId: \d+
+
+wipop_order_preauthorization_capture:
+  path: /wipop/orders/{orderId}/preauthorization/capture
+  methods: [POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderPreauthorizationController::captureAction
+    _legacy_controller: AdminOrders
+  requirements:
+    orderId: \d+
+
+wipop_order_preauthorization_reverse:
+  path: /wipop/orders/{orderId}/preauthorization/reverse
+  methods: [POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderPreauthorizationController::reverseAction
+    _legacy_controller: AdminOrders
+  requirements:
+    orderId: \d+
+
+wipop_order_recurring_stop:
+  path: /wipop/orders/{orderId}/recurring/{subscriptionId}/stop
+  methods: [POST]
+  defaults:
+    _controller: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRecurringController::stopAction
+    _legacy_controller: AdminOrders
+  requirements:
+    orderId: \d+
+    subscriptionId: \d+

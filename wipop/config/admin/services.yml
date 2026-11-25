@@ -1,19 +1,11 @@
+imports:
+  - { resource: ../common.yml }
+
 services:
   _defaults:
     public: true
 
-  PrestaShop\Module\Wipop\Configuration\SettingsRepository: ~
-
   PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository: ~
-
-  PrestaShop\Module\Wipop\Log\Logger: ~
-
-  PrestaShop\Module\Wipop\Api\ClientFactory: ~
-
-  PrestaShop\Module\Wipop\Api\SdkCaller:
-    class: PrestaShop\Module\Wipop\Api\SdkCaller
-    arguments:
-      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
   PrestaShop\Module\Wipop\Api\MerchantOperationsService:
     class: PrestaShop\Module\Wipop\Api\MerchantOperationsService
@@ -27,6 +19,89 @@ services:
     arguments:
       $settingsRepository: '@PrestaShop\Module\Wipop\Webhook\WebhookSettingsRepository'
 
+  PrestaShop\Module\Wipop\Payment\PaymentEventRepository:
+    class: PrestaShop\Module\Wipop\Payment\PaymentEventRepository
+    factory: [ 'PrestaShop\Module\Wipop\Payment\PaymentEventRepository', 'createDefault' ]
+
+  PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository:
+    class: PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository
+    factory: [ 'PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository', 'createDefault' ]
+
+  PrestaShop\Module\Wipop\Form\Modifier\ProductRecurringFormModifier:
+    class: PrestaShop\Module\Wipop\Form\Modifier\ProductRecurringFormModifier
+    arguments:
+      $settingsRepository: '@PrestaShop\Module\Wipop\Recurring\ProductRecurringSettingsRepository'
+      $formBuilderModifier: '@form.form_builder_modifier'
+
+  PrestaShop\Module\Wipop\Refund\WipopRefundTaxIncludedAmountCalculator: ~
+
+  PrestaShop\Module\Wipop\Refund\ManualRefundValidator:
+    class: PrestaShop\Module\Wipop\Refund\ManualRefundValidator
+    arguments:
+      $taxIncludedAmountCalculator: '@PrestaShop\Module\Wipop\Refund\WipopRefundTaxIncludedAmountCalculator'
+
+  PrestaShop\Module\Wipop\Refund\ManualRefundRequestFactory: ~
+
+  PrestaShop\Module\Wipop\Payment\PaymentAttemptLock: ~
+
+  PrestaShop\Module\Wipop\Refund\RefundableShippingCalculator: ~
+
+  PrestaShop\Module\Wipop\Refund\ManualRefundFormDataProvider:
+    class: PrestaShop\Module\Wipop\Refund\ManualRefundFormDataProvider
+    arguments:
+      $queryBus: '@prestashop.core.query_bus'
+      $shippingCalculator: '@PrestaShop\Module\Wipop\Refund\RefundableShippingCalculator'
+
+  PrestaShop\Module\Wipop\Refund\WipopRefundResponseMapper: ~
+
+  PrestaShop\Module\Wipop\Refund\WipopRefundApiClient:
+    class: PrestaShop\Module\Wipop\Refund\WipopRefundApiClient
+    arguments:
+      $settingsRepository: '@PrestaShop\Module\Wipop\Configuration\SettingsRepository'
+      $clientFactory: '@PrestaShop\Module\Wipop\Api\ClientFactory'
+      $sdkCaller: '@PrestaShop\Module\Wipop\Api\SdkCaller'
+      $responseMapper: '@PrestaShop\Module\Wipop\Refund\WipopRefundResponseMapper'
+
+  PrestaShop\Module\Wipop\Refund\PrestaShopOrderSlipIssuer:
+    class: PrestaShop\Module\Wipop\Refund\PrestaShopOrderSlipIssuer
+    arguments:
+      $commandBus: '@prestashop.core.command_bus'
+
+  PrestaShop\Module\Wipop\Refund\ManualRefundService:
+    class: PrestaShop\Module\Wipop\Refund\ManualRefundService
+    arguments:
+      $validator: '@PrestaShop\Module\Wipop\Refund\ManualRefundValidator'
+      $taxIncludedAmountCalculator: '@PrestaShop\Module\Wipop\Refund\WipopRefundTaxIncludedAmountCalculator'
+      $wipopRefundClient: '@PrestaShop\Module\Wipop\Refund\WipopRefundApiClient'
+      $orderSlipIssuer: '@PrestaShop\Module\Wipop\Refund\PrestaShopOrderSlipIssuer'
+      $refundEventStore: '@PrestaShop\Module\Wipop\Payment\PaymentEventRepository'
+      $paymentAttemptRefundMarker: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
+  PrestaShop\Module\Wipop\Preauthorization\WipopPreauthorizationResponseMapper: ~
+
+  PrestaShop\Module\Wipop\Preauthorization\WipopPreauthorizationApiClient:
+    class: PrestaShop\Module\Wipop\Preauthorization\WipopPreauthorizationApiClient
+    arguments:
+      $settingsRepository: '@PrestaShop\Module\Wipop\Configuration\SettingsRepository'
+      $clientFactory: '@PrestaShop\Module\Wipop\Api\ClientFactory'
+      $sdkCaller: '@PrestaShop\Module\Wipop\Api\SdkCaller'
+      $responseMapper: '@PrestaShop\Module\Wipop\Preauthorization\WipopPreauthorizationResponseMapper'
+
+  PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater:
+    class: PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater
+    arguments:
+      $orderNotes: '@PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter'
+
+  PrestaShop\Module\Wipop\Preauthorization\PreauthorizationService:
+    class: PrestaShop\Module\Wipop\Preauthorization\PreauthorizationService
+    arguments:
+      $wipopClient: '@PrestaShop\Module\Wipop\Preauthorization\WipopPreauthorizationApiClient'
+      $eventStore: '@PrestaShop\Module\Wipop\Payment\PaymentEventRepository'
+      $attemptMarker: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository'
+      $orderUpdater: '@PrestaShop\Module\Wipop\Preauthorization\PrestaShopPreauthorizationOrderUpdater'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
   PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController:
     class: PrestaShop\Module\Wipop\Controller\Admin\WipopConfigurationController
     arguments:
@@ -35,8 +110,51 @@ services:
       $webhookAuth: '@PrestaShop\Module\Wipop\Webhook\WebhookAuth'
       $logger: '@PrestaShop\Module\Wipop\Log\Logger'
 
+  PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRefundController:
+    class: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRefundController
+    arguments:
+      $paymentAttemptRepository: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository'
+      $formDataProvider: '@PrestaShop\Module\Wipop\Refund\ManualRefundFormDataProvider'
+      $requestFactory: '@PrestaShop\Module\Wipop\Refund\ManualRefundRequestFactory'
+      $manualRefundService: '@PrestaShop\Module\Wipop\Refund\ManualRefundService'
+      $paymentAttemptLock: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptLock'
+      $recurringStopper: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionStopper'
+      $orderNotes: '@PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
+  PrestaShop\Module\Wipop\Controller\Admin\WipopOrderPreauthorizationController:
+    class: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderPreauthorizationController
+    arguments:
+      $paymentAttemptRepository: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptRepository'
+      $preauthorizationService: '@PrestaShop\Module\Wipop\Preauthorization\PreauthorizationService'
+      $paymentAttemptLock: '@PrestaShop\Module\Wipop\Payment\PaymentAttemptLock'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
+  PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRecurringController:
+    class: PrestaShop\Module\Wipop\Controller\Admin\WipopOrderRecurringController
+    arguments:
+      $subscriptions: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionRepository'
+      $charges: '@PrestaShop\Module\Wipop\Recurring\RecurringChargeRepository'
+      $subscriptionLock: '@PrestaShop\Module\Wipop\Recurring\RecurringSubscriptionLock'
+      $orderNotes: '@PrestaShop\Module\Wipop\Order\OrderPrivateNoteWriter'
+      $logger: '@PrestaShop\Module\Wipop\Log\Logger'
+
   PrestaShop\Module\Wipop\Form\Type\SettingsType:
     class: PrestaShop\Module\Wipop\Form\Type\SettingsType
+    parent: 'form.type.translatable.aware'
+    public: true
+    tags:
+      - { name: form.type }
+
+  PrestaShop\Module\Wipop\Form\Type\ManualRefundType:
+    class: PrestaShop\Module\Wipop\Form\Type\ManualRefundType
+    parent: 'form.type.translatable.aware'
+    public: true
+    tags:
+      - { name: form.type }
+
+  PrestaShop\Module\Wipop\Form\Type\ProductRecurringSettingsType:
+    class: PrestaShop\Module\Wipop\Form\Type\ProductRecurringSettingsType
     parent: 'form.type.translatable.aware'
     public: true
     tags:
